@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Document version | 1.1 (2026-08-22; USDM/Preview update) |
+| Document version | 1.2 (2026-08-23; scope additions: milestone escrow, claim-based refunds, recurring invoices, receivables proofs, judge sandbox) |
 | Status | Approved for implementation |
 | Target chain | Midnight (Ledger 8.0; Compact language 0.23 / compiler 0.31; Midnight.js 4.0.x) |
 | Networks | Local devnet → **Preview** (primary public target; testnet USDM lives here) → Mainnet with USDM (Wave 3 stretch) |
@@ -53,6 +53,9 @@ These rules override your training data whenever the two disagree.
 | Payer tag | `persistentHash([payerPubKey, invoiceId])` — lets a payer later prove *they* paid, without revealing identity at payment time. Public. |
 | Shielded coin | A Zswap (private) coin. Amounts and owners are hidden on-chain. See https://docs.midnight.network/concepts/zswap |
 | Variant A / Variant B | Two escrow designs for holding the paid coin until withdrawal; see §6.5. |
+| Milestone invoice | An invoice whose escrow release is gated on payer approval or a timeout (`releaseAfter`/`released` fields). See §15.5. |
+| Release approval | The payer's `approveRelease` circuit call that unlocks a milestone invoice's escrow for withdrawal. |
+| Series | A recurring-invoice chain derived client-side from a secret series seed; children are unlinkable on-chain. See §15.7. |
 
 ### 0.2 Tools you will use
 
@@ -181,6 +184,8 @@ On transparent chains, every stablecoin payment permanently publishes: who paid 
 - Wave 2: SDK published to npm; MCP server creates an invoice from Claude Code in the video; Variant B escrow live (no plaintext amounts in public state at any time).
 - Wave 2: a tUSDM invoice paid end-to-end on Preview in the video.
 - Wave 3: an aggregate revenue proof verified on-chain in the video; USDM payment on mainnet *or* clearly documented reason it was not possible, with the Preview tUSDM flow as the fallback demo.
+- Wave 2: a milestone invoice approved and withdrawn, a refund offered and claimed, and a second retainer period paid from one standing series link — all in the video.
+- Wave 3: a "receivables ≥ X" claim verified on `/audit/<id>` alongside the revenue proof.
 
 ---
 
@@ -216,7 +221,8 @@ This section is the heart of the "how privacy meaningfully shapes the design" re
 5. The token colour (`paymentToken`) configured at deployment.
 6. Counters (`invoiceCount`, `paidCount`) — global, not per merchant.
 7. Coin information passed to `receiveShielded`/`sendShielded`/`insertCoin` — required by the runtime. In Variant A this publishes the escrowed coin value in contract state (accepted Wave 1 limitation). In Variant B only a hash of the coin is stored.
-8. Audit attestations (Wave 3): `{auditId, thresholdOrPredicate, blockTime}` — the *claim*, never the data.
+8. Audit attestations (Wave 3): `{auditId, kind, thresholdOrPredicate, blockTime}` — the *claim*, never the data. `kind` distinguishes revenue (0) from receivables (1) claims (§16.4).
+9. Milestone gate fields (Wave 2, §15.5): `releaseAfter` (unix seconds; `0` = standard invoice) and `released` (Boolean), plus the `REFUNDABLE`/`REFUNDED` statuses (§15.6). *That* an invoice is milestone-gated or refunded is public by design; amounts and parties remain hidden.
 
 Anything else that originates from a witness or a circuit parameter must not be disclosed. If the compiler demands `disclose()` on something not on this list, the design is wrong — redesign, don't disclose.
 
@@ -230,6 +236,9 @@ Anything else that originates from a witness or a circuit parameter must not be 
 - **INV-6**: Only the holder of the merchant secret for that invoice can withdraw or cancel (owner-tag check).
 - **INV-7**: An invoice can be paid at most once (status machine; second payment fails).
 - **INV-8**: Expired invoices cannot be paid.
+- **INV-9** (Wave 2): A milestone invoice's escrow cannot be withdrawn before the payer's `approveRelease` unless `releaseAfter` has passed (timeout). Standard invoices (`releaseAfter = 0`) are unaffected.
+- **INV-10** (Wave 2): An offered refund can only be claimed by the original payer (payer-tag check); nobody else can redirect the coin.
+- **INV-11** (Wave 2): No public ledger value links two invoices of the same recurring series; child ids/salts derive from a secret seed and are indistinguishable from random.
 
 ### 4.5 Known privacy limitations (state them openly in README and video)
 
@@ -523,7 +532,7 @@ export circuit proveReceipt(invoiceId: Bytes<32>, attestationId: Bytes<32>): [] 
 }
 ```
 
-Also in Wave 2: `refund(invoiceId)` (merchant returns the escrowed coin to the payer — requires the payer's Zswap public key to be stored encrypted in the merchant's private state at pay time via the link's return channel; defer if complex) and Variant B escrow (§6.5).
+Also in Wave 2: **claim-based refunds** (§15.6 — `offerRefund` by the merchant, `claimRefund` by the payer; needs no payer Zswap key at all, mirroring the withdraw pattern's rationale), the **milestone escrow gate** (§15.5 — `approveRelease` plus a timeout check in `withdraw`), and Variant B escrow (§6.5). Recurring invoices (§15.7) need no new circuits.
 
 ### 6.8 Wave 3 circuit additions — selective-disclosure audit proofs
 
@@ -556,6 +565,8 @@ export circuit proveRevenueAtLeast(auditId: Bytes<32>, threshold: Uint<64>, anch
 
 The `anchor` is a per-merchant audit identifier the merchant chooses to reveal to *this* auditor; it does not link to invoices (different domain separator from `ownerTag`).
 
+**Wave 3 also adds `proveReceivablesAtLeast`** (§16.4): the same bounded-vector machinery with the status check flipped to `OPEN` (and not expired), proving "I am *owed* at least X" — a receivables-financing primitive. `AuditClaim` gains `kind: Uint<8>` (`0` = revenue, `1` = receivables).
+
 ---
 
 ## 7. Off-chain data model
@@ -575,6 +586,12 @@ export type MerchantPrivateState = {
     status: 'OPEN' | 'PAID' | 'WITHDRAWN' | 'CANCELLED';
     txIds: { created?: string; paid?: string; withdrawn?: string; cancelled?: string };
     escrowCoin?: { nonce: HexBytes32; color: HexBytes32; value: bigint; mtIndex?: bigint }; // Variant B
+  }>;
+  readonly series?: Record<HexSeriesId, {          // Wave 2 (§15.7) — recurring invoices
+    seed: HexBytes32;                              // derives child ids/salts; leaves the device only inside the standing link
+    amount: bigint; memoTemplate: string;
+    periodDays: number; startAt: number;           // unix seconds
+    nextIndex: number; childIds: HexInvoiceId[];
   }>;
 };
 ```
@@ -611,6 +628,8 @@ Both are stored with `levelPrivateStateProvider` (encrypted at rest; requires `a
 ```
 
 Rules: the fragment is never sent to a server; the UI must refuse payloads whose `net` or `contract` do not match the app configuration; `memoHash` is recomputed from `memo` on the payer side and must match the commitment.
+
+Series standing links (Wave 2, §15.7) use `"v": 2, "kind": "series"` and carry `{seed, amount, memoTemplate, periodDays, startAt}` in place of the per-invoice fields; the payer's client derives the current period's `invoiceId`/`salt` locally from the seed.
 
 ### 7.4 Identifiers and encodings
 
@@ -649,8 +668,14 @@ export interface TacitPayApi {
 
   // Wave 2
   proveReceipt?(invoiceId: string): Promise<{ attestationId: string; txId: string }>;
+  approveRelease?(invoiceId: string): Promise<{ txId: string }>;                   // payer unlocks milestone escrow (§15.5)
+  offerRefund?(invoiceId: string): Promise<{ txId: string }>;                      // merchant offers refund (§15.6)
+  claimRefund?(invoiceId: string): Promise<{ txId: string }>;                      // payer claims offered refund (§15.6)
+  createSeries?(input: { amount: bigint; memoTemplate: string; periodDays: number; startAt?: number }): Promise<{ seriesId: string; link: string; firstInvoiceId: string }>; // §15.7
+  mintNextInSeries?(seriesId: string): Promise<{ invoiceId: string; txId: string }>; // §15.7
   // Wave 3
   proveRevenueAtLeast?(input: { invoiceIds: string[]; threshold: bigint; auditId?: string }): Promise<{ auditId: string; anchor: string; txId: string }>;
+  proveReceivablesAtLeast?(input: { invoiceIds: string[]; threshold: bigint; auditId?: string }): Promise<{ auditId: string; anchor: string; txId: string }>; // §16.4
 }
 ```
 
@@ -701,9 +726,9 @@ Read `/mnt/skills/public/frontend-design/SKILL.md` (if present in your environme
 | Route | Who | Purpose |
 |---|---|---|
 | `/` | all | Landing: one-paragraph pitch, "I'm a merchant" / "I have an invoice link" / "Verify an invoice". Network badge (Preview/Local). |
-| `/merchant` | merchant | Dashboard: connect wallet, unlock private state, invoice table (status chips, amount, memo, created, expires, actions), "New invoice" modal, withdraw/cancel buttons, copy-link/QR. |
+| `/merchant` | merchant | Dashboard: connect wallet, unlock private state, invoice table (status chips, amount, memo, created, expires, actions), "New invoice" modal, withdraw/cancel buttons, copy-link/QR. Wave 2: series (recurring) management with "mint next period", offer-refund action, milestone release-status chips. |
 | `/pay#<payload>` | payer | Decodes fragment; shows merchant-free summary (amount, memo, expiry), on-chain status check, Connect wallet → Pay. Success state shows txId, receipt saved, link to `/verify/<id>`. |
-| `/receipts` | payer | Receipts from private state; each with "Verify on chain" and (Wave 2) "Prove I paid". |
+| `/receipts` | payer | Receipts from private state; each with "Verify on chain" and (Wave 2) "Prove I paid", "Approve release" (milestone invoices, §15.5) and "Claim refund" (offered refunds, §15.6). |
 | `/verify/<invoiceId>` | anyone | Public status page. No wallet. Shows status, expiry, block/tx references, and an explanation of what is and isn't visible on chain. |
 | `/settings` | all | Network selection (local / preprod), proof server status (`GET http://localhost:6300/` health), export/import private state (Midnight.js supports private-state export/import — see `PrivateStateExport` types in the midnight-js API reference). |
 
@@ -734,6 +759,12 @@ tacitpay invoice pay --link <url>
 tacitpay invoice withdraw --id <hex>
 tacitpay invoice cancel --id <hex>
 tacitpay invoice status --id <hex>
+tacitpay invoice approve-release --id <hex>   # Wave 2: payer unlocks milestone escrow (§15.5)
+tacitpay invoice refund-offer --id <hex>      # Wave 2: merchant offers refund (§15.6)
+tacitpay invoice refund-claim --id <hex>      # Wave 2: payer claims offered refund (§15.6)
+tacitpay series create --amount 1.25 --memo "..." --period 30d   # Wave 2 (§15.7)
+tacitpay series mint-next --series <hex>                          # Wave 2 (§15.7)
+tacitpay demo seed                  # judge sandbox: seed local devnet with wallets + sample invoices (§14.1)
 tacitpay wallet fund-local          # uses local devnet genesis wallet helpers
 tacitpay wallet dust-status         # shows DUST balance/generation (see acquire-tokens guide)
 ```
@@ -748,9 +779,9 @@ Wallets come from `@midnight-ntwrk/wallet-sdk` (`WalletFacade`) seeded from `TAC
 
 | Layer | Tool | Runs where | What it proves |
 |---|---|---|---|
-| Compile gate | `compact compile` in CI | CI | Technical gate (§2.4). |
-| Unit / simulation | Vitest + generated contract module (`new Contract(witnesses)`, `impureCircuits.*`) | CI, no network | Circuit logic, state machine, assertions, privacy invariants. Pattern: https://docs.midnight.network/compact/test-and-debug and https://docs.midnight.network/guides/compact-javascript-runtime |
-| Integration | Vitest against `midnight-local-dev` (docker compose: node + indexer + proof server) | CI (optional job) + local | Real deploy, real proofs, real coins, `callTx`, indexer reads. |
+| Compile gate | `compact compile` in the local gate (§11.5) | local | Technical gate (§2.4). |
+| Unit / simulation | Vitest + generated contract module (`new Contract(witnesses)`, `impureCircuits.*`) | local, no network | Circuit logic, state machine, assertions, privacy invariants. Pattern: https://docs.midnight.network/compact/test-and-debug and https://docs.midnight.network/guides/compact-javascript-runtime |
+| Integration | Vitest against `midnight-local-dev` (docker compose: node + indexer + proof server) | local (pre-submission run) | Real deploy, real proofs, real coins, `callTx`, indexer reads. |
 | End-to-end (manual + recorded) | Lace on Preview | Before each submission | Demo readiness. |
 
 ### 11.2 Unit test matrix (minimum; file `contracts/src/test/tacitpay.test.ts`)
@@ -776,6 +807,15 @@ Wallets come from `@midnight-ntwrk/wallet-sdk` (`WalletFacade`) seeded from `TAC
 | U-17 | privacy: after full lifecycle, serialise ledger state; assert amount (as bytes/bigint), memo bytes, merchant secret, payer secret do not appear anywhere (INV-1, INV-3, INV-4) | pass (Variant A: allow escrow entry only while PAID) |
 | U-18 | Wave 2: proveReceipt by payer succeeds; by non-payer fails | |
 | U-19 | Wave 3: proveRevenueAtLeast with 3 invoices summing ≥ threshold passes; < threshold fails; invoice from another merchant fails | |
+| U-20 | Wave 2: milestone — withdraw before approveRelease and before releaseAfter (INV-9) | throws "Escrow not released" |
+| U-21 | Wave 2: milestone — approveRelease by payer, then withdraw | WITHDRAWN |
+| U-22 | Wave 2: milestone — approveRelease by non-payer secret | throws "Not the payer" |
+| U-23 | Wave 2: milestone — withdraw after releaseAfter without approval (timeout path) | WITHDRAWN |
+| U-24 | Wave 2: refund — offerRefund by owner on PAID → REFUNDABLE; by non-owner throws | pass |
+| U-25 | Wave 2: refund — claimRefund by payer → REFUNDED, escrow removed, coin to payer; by non-payer throws (INV-10) | pass |
+| U-26 | Wave 2: refund — withdraw on REFUNDABLE throws; claimRefund on WITHDRAWN throws | pass |
+| U-27 | Wave 2: series — child id/salt derivation deterministic; children share no public value (INV-11; api-layer test) | pass |
+| U-28 | Wave 3: proveReceivablesAtLeast counts only OPEN, unexpired invoices; PAID/expired excluded | pass |
 
 > **VERIFY (Day 2):** how coin-handling circuits (`receiveShielded`, `insertCoin`, `sendShielded`) are exercised in the JS runtime without a network — i.e. what the `CircuitContext`/Zswap local state must contain (see `createCircuitContext`, `emptyZswapLocalState`, `createZswapInput/Output` in https://docs.midnight.network/api-reference/compact-runtime and the "Use Compact contracts from JavaScript" guide). If coin circuits cannot be unit-tested offline, cover U-05/U-07/U-08/U-12 in the integration layer and say so in the README test section.
 
@@ -788,9 +828,9 @@ Wallets come from `@midnight-ntwrk/wallet-sdk` (`WalletFacade`) seeded from `TAC
 
 Implement as unit tests where possible (U-04, U-05, U-09, U-10, U-13, U-17) and as one integration test that dumps the public contract state via the indexer after a full lifecycle and greps for forbidden values. Document the result in README under "Privacy verification".
 
-### 11.5 CI (`.github/workflows/ci.yml`)
+### 11.5 Verification gate (local — no CI by owner decision)
 
-Jobs: (1) install Compact via the official installer script, `compact compile contracts/tacitpay.compact contracts/managed/tacitpay`; (2) `yarn lint && yarn typecheck && yarn test` (unit); (3) optional nightly `yarn test:int` with docker. A green badge in the README is cheap QA points.
+There is deliberately no CI in this repo (docs/DECISIONS.md D-008). The equivalent gate runs locally before every push and before every submission, on a clean checkout: `yarn compile && yarn lint && yarn typecheck && yarn test` (plus `yarn test:int` when the local devnet is up). The README's test-inventory section reports the latest results.
 
 ---
 
@@ -872,7 +912,7 @@ tacitpay/
 │   └── mcp/                     Wave 2 (MCP server)
 ├── deployments/                 contract addresses per network
 ├── config/networks.json
-├── .github/workflows/ci.yml
+├── assets/                      logo (light/dark SVG) used by the README
 └── package.json                 yarn workspaces; scripts: compile, build, test, test:int, env:up, env:down, lint, typecheck
 ```
 
@@ -889,7 +929,7 @@ Notes:
 ### 14.1 Wave 1 (Aug 27 – Sep 16) — "The loop works"
 
 **Scope (must ship):**
-1. `tacitpay.compact` with `createInvoice`, `payInvoice`, `withdraw`, `cancelInvoice`; Variant A escrow; compiles on CI.
+1. `tacitpay.compact` with `createInvoice`, `payInvoice`, `withdraw`, `cancelInvoice`; Variant A escrow; compiles via the §11.5 local gate.
 2. Unit tests U-01…U-17 (coin tests may move to integration per the Day-2 VERIFY).
 3. Integration test on local devnet: full lifecycle with two wallets.
 4. `packages/api` with the Wave 1 interface.
@@ -897,7 +937,8 @@ Notes:
 6. `packages/ui`: `/`, `/merchant`, `/pay`, `/receipts`, `/verify/:id`, `/settings`; Lace connection; works on Preview.
 7. Deployed contract on **Preview**, address in `deployments/preview.json` and README.
 8. README (§17.1), `docs/PRIVACY.md`, `docs/ARCHITECTURE.md`, deck (§17.2), 3–5 minute video (§17.3), `docs/WAVE-CHANGELOG.md` "Wave 1" section.
-9. Repo topics + Apache-2.0 + CI badge.
+9. Repo topics + Apache-2.0.
+10. **Judge sandbox** (`yarn demo:seed` / `tacitpay demo seed`): scripted local-devnet seeding — two funded wallets and three sample invoices in known states — so judge path (b) completes in minutes; referenced from README item 6 (§17.1).
 
 **Acceptance criteria:**
 - A judge can clone, `yarn install`, `yarn compile`, `yarn test` and see all unit tests pass in < 5 minutes without Docker.
@@ -909,7 +950,7 @@ Notes:
 | Day | Work |
 |---|---|
 | 0 (Aug 26) | Kickoff workshop. Install Compact, proof server, Midnight Expert; `doctor` green. Clone `example-hello-world`, run `yarn test:local`. Fund Preview wallets (§12.4) — start DUST registration now. Also create a Cardano Preprod wallet and request tADA + tUSDM (needed for the Day-4 bridge spike). |
-| 1 | Repo skeleton (§13), LICENSE, CI compile gate. Write `tacitpay.compact` **without** coin handling (create/cancel + status) → compile → U-01…U-04, U-11, U-15, U-16. |
+| 1 | Repo skeleton (§13), LICENSE, local compile gate (§11.5). Write `tacitpay.compact` **without** coin handling (create/cancel + status) → compile → U-01…U-04, U-11, U-15, U-16. |
 | 2 | Add `payInvoice`/`withdraw` with `receiveShielded`/`insertCoin`/`sendShielded`. Resolve all Day-1/2 VERIFY items. Compile. Spike coin flow on local devnet with the CLI (integration test skeleton). **Go/no-go on Variant A by end of day 3.** |
 | 3 | Integration test passes locally (create → pay → withdraw, balances checked). Resolve Day-3 VERIFY (browser providers from example-bboard). |
 | 4 | **tUSDM spike (Completed ahead of schedule on 2026-08-22):** Bridged 5 tUSDM to Preview wallet (`0c0de55f...`), confirmed token color `003bacd9...`, verified 6-decimal micro-unit balance, and established dual-path architecture in §16.2. |
@@ -917,7 +958,7 @@ Notes:
 | 6–7 | UI: wallet connect, merchant dashboard, create invoice, link + QR. |
 | 8–9 | UI: pay page, receipts, verify page, settings; proof stepper; error mapping. |
 | 10 | Deploy to Preview; e2e with Lace; fix. Commit `deployments/preview.json`. |
-| 11–12 | Polish UI (frontend-design skill), empty/error states, mobile. Host static UI. |
+| 11–12 | Polish UI (frontend-design skill), empty/error states, mobile. Host static UI. Build the judge-sandbox seeding script (`demo seed`). |
 | 13 | README, PRIVACY.md, ARCHITECTURE.md, WAVE-CHANGELOG.md. |
 | 14 | Deck + record video (one clean take; re-record if any step fails). |
 | 15 | Buffer / judge-walkthrough test on a clean machine. Submit ≥ 12 h before the platform deadline. |
@@ -933,9 +974,12 @@ Notes:
 5. Hosted checkout page improvements: QR code, countdown to expiry, auto-refresh on payment (indexer subscription), printable receipt.
 6. **DUST sponsorship** (merchant pays the payer's fee) if the guide's contract rule fits — https://docs.midnight.network/guides/dust-sponsorship . This is a strong "Midnight-native" feature for UX score.
 7. **tUSDM payments on Preview**: deploy a second contract instance with `paymentToken = <USDM colour>` (or make the token selectable per invoice if the spike shows both forms are usable), UI token selector, 6-decimal formatting, and a bridged-tUSDM funding guide in the README.
-8. Wave 2 tests U-18 + SDK/MCP tests; CHANGELOG with before/after privacy table.
+8. **Milestone escrow** (§15.5): `approveRelease` circuit, `withdraw` gate + timeout, dashboard/receipts UI.
+9. **Claim-based refunds** (§15.6): `offerRefund`/`claimRefund` circuits + UI on both sides.
+10. **Recurring invoices** (§15.7): series creation, standing links, "mint next period" flow — no new circuits.
+11. Wave 2 tests U-18, U-20…U-27 + SDK/MCP tests; CHANGELOG with before/after privacy table.
 
-**Acceptance:** from a fresh Claude Code session with `@tacitpay/mcp` configured, "create an invoice for 25 NIGHT for 'consulting'" yields a link that a Lace user pays; the merchant dashboard updates live; the payer produces a receipt attestation a third party verifies on `/attest/<id>`.
+**Acceptance:** from a fresh Claude Code session with `@tacitpay/mcp` configured, "create an invoice for 25 NIGHT for 'consulting'" yields a link that a Lace user pays; the merchant dashboard updates live; the payer produces a receipt attestation a third party verifies on `/attest/<id>`. Additionally: a milestone invoice is paid, release-approved and withdrawn; an offered refund is claimed back by the payer; and a second period of a retainer series is minted and paid from the same standing link.
 
 ### 14.3 Wave 3 (Oct 27 – Nov 16) — "Prove it to the auditor; real stablecoin"
 
@@ -945,9 +989,10 @@ Notes:
 3. Mobile: Kuira SDK (Android) proof-of-concept pay screen — https://github.com/kuiralabs/kuira-sdk-android — or, if time is short, a responsive PWA pay page with QR scan.
 4. Optional: index contract state with EffectStream for a public "settlement feed" — https://docs.midnight.network/guides/index-state-with-effectstream .
 5. Batch operations (multi-withdraw), invoice expiry reminders, CSV export of private records.
-6. Tests U-19 + proof-time benchmarks in README; final deck with the full three-wave story; Build Club application material.
+6. **Receivables proofs** (§16.4): `proveReceivablesAtLeast` + claim-kind badge on `/audit/<auditId>`.
+7. Tests U-19, U-28 + proof-time benchmarks in README; final deck with the full three-wave story; Build Club application material.
 
-**Acceptance:** a third party opens `/audit/<id>` and sees a verified "revenue ≥ X between dates" claim with no invoice data exposed; the video shows a USDM (or mock-stablecoin) invoice paid and withdrawn.
+**Acceptance:** a third party opens `/audit/<id>` and sees a verified "revenue ≥ X between dates" claim with no invoice data exposed; the video shows a USDM (or mock-stablecoin) invoice paid and withdrawn. A "receivables ≥ X" claim verifies the same way.
 
 ---
 
@@ -970,6 +1015,36 @@ If merchants want payment notifications without keeping a browser open, add a ti
 ### 15.4 DUST sponsorship
 
 Follow https://docs.midnight.network/guides/dust-sponsorship . If the contract-side rule is compatible with `payInvoice`, add a merchant toggle "Cover the payer's network fee". This directly addresses "first-time user has no DUST" friction and scores on UX and Midnight-nativeness.
+
+### 15.5 Milestone escrow (payer-gated release)
+
+Turns the escrow the contract already holds into payment protection for milestone/deliverable work — freelance-escrow semantics with private amounts and no platform in the middle. Rides the same code area as the Variant B rework; implement them together.
+
+- `InvoiceRecord` gains `releaseAfter: Uint<64>` (`0` = standard invoice; otherwise the unix time after which the merchant may withdraw without approval) and `released: Boolean`.
+- `createInvoice` gains a `releaseAfter` parameter. UI: a "Require my client's approval before payout" toggle plus the timeout; the payer sees both in the link before paying.
+- New circuit `approveRelease(invoiceId)`: asserts status PAID, checks `tagFor(payerPubKey(payerSecret()), invoiceId) == payerTag` (same pattern as `proveReceipt`), sets `released = true`.
+- `withdraw` gate (INV-9): when `releaseAfter != 0`, require `released` or block time ≥ `releaseAfter`; assert message "Escrow not released".
+- Say the semantics plainly in UI and README: the gate protects the *payer's leverage* (the merchant cannot take funds before approval or timeout); the remedy for non-delivery is a refund (§15.6). There is deliberately no arbitration — that is a feature, not an omission.
+
+> **VERIFY (Wave 2, with Variant B):** the kernel construction for "block time ≥ t" (the standard library documents `blockTimeLt`; confirm the correct inverse-bound form), and the proof-size impact of the two extra `InvoiceRecord` fields.
+
+### 15.6 Claim-based refunds
+
+Refunds without ever touching the payer's Zswap key — the same insight that made withdrawal merchant-initiated (§5.3): the party who should *receive* a coin initiates the transaction, so their own wallet learns about it.
+
+- `InvoiceStatus` gains `REFUNDABLE` and `REFUNDED`.
+- `offerRefund(invoiceId)`: merchant-only (owner-tag check); allowed from PAID (released or not); sets REFUNDABLE. `withdraw` on a REFUNDABLE invoice fails.
+- `claimRefund(invoiceId)`: payer-only (payer-tag check, INV-10); `sendShielded(escrowCoin → ownPublicKey())`, escrow entry removed, sets REFUNDED.
+- UI: "Offer refund" on the merchant's PAID rows; "Refund offered — claim it" on the payer's `/receipts`.
+
+### 15.7 Recurring invoices (series)
+
+Retainers and subscriptions — the primary persona's actual income shape — with **zero new circuits**: every period is an ordinary invoice whose id and salt are *derived*.
+
+- Merchant creates a series: `seriesSeed = random32()`, stored in private state (§7.1). Child *n*: `invoiceId_n = sha256("tacitpay:series:id:" ‖ seriesSeed ‖ n)`, `salt_n = sha256("tacitpay:series:salt:" ‖ seriesSeed ‖ n)`, memo = template + period label.
+- The standing link (§7.3, `kind: "series"`) carries the seed and template; the payer's client computes the current period from `startAt`/`periodDays`, derives the child preimage, checks on-chain status, and pays. One link, every period.
+- The merchant mints period *n* with an ordinary `createInvoice` (dashboard prompts "mint next period" when the previous one settles or the period rolls). If the payer opens the link before minting, the UI says "this period hasn't been issued yet" instead of attempting a failing transaction.
+- Privacy (INV-11): on-chain, children are ordinary invoices with independent-looking ids and unlinkable tags; only seed-holders (merchant and payer) can correlate the series.
 
 ---
 
@@ -1017,13 +1092,21 @@ Follow https://docs.midnight.network/guides/dust-sponsorship . If the contract-s
 
 Kuira SDK (Android) repo: https://github.com/kuiralabs/kuira-sdk-android . Minimum: scan invoice QR → show amount/memo → pay. If the SDK's wallet model differs from Lace, scope to "view + verify" and keep paying on desktop.
 
+### 16.4 Receivables proofs (prove what you're owed)
+
+`proveRevenueAtLeast` proves money *received*; its sibling proves money *owed* — the underwriting primitive for receivables financing. A lender verifies "≥ X in open invoices, none expired" without seeing a single invoice: private credit data for the invoice economy.
+
+- `proveReceivablesAtLeast(auditId, threshold, anchor)`: identical bounded-vector machinery to §6.8, with the per-slot status check requiring `OPEN` and not expired (`expiresAt == 0` or block time < `expiresAt`) instead of PAID/WITHDRAWN.
+- Stored with `AuditClaim.kind = 1`; `/audit/<auditId>` renders "open receivables ≥ X" with the same verification statement as revenue claims.
+- Benchmark in the same N sweep as §16.1; the two circuits share the ownership/commitment sub-checks in source.
+
 ---
 
 ## 17. Submission package
 
 ### 17.1 README outline (mandatory sections, in this order)
 
-1. Title, one-liner, badges (CI, license, Preview contract address link).
+1. Title, one-liner, logo masthead, badges (license, status, Preview contract address link).
 2. 90-second summary + the three paragraphs from §1.
 3. **Why privacy is load-bearing** (condensed §4.2 table + §4.3 allowed-public list).
 4. **Dual-ledger design** (§5.2 table) + Mermaid sequence diagram of create → pay → withdraw.
@@ -1072,6 +1155,7 @@ Kuira SDK (Android) repo: https://github.com/kuiralabs/kuira-sdk-android . Minim
 | Compiler upgrade mid-wave breaks artifacts | Low | Pin versions in `package.json` and `docs/DECISIONS.md`; upgrade only between waves. |
 | Another team ships "private payments" | High | Differentiate on: unlinkable per-invoice tags, receipt proofs, audit proofs, SDK/MCP, tests, changelog quality. |
 | Scope creep | High | Anything not in §14 for the current wave goes to `docs/BACKLOG.md`. |
+| Milestone/refund states widen the contract state machine | Medium | Every new status transition ships with negative tests (U-20…U-26) before any UI work; the states land together with Variant B in Wave 2, never in Wave 1. |
 
 Decision rule for any ambiguity not covered here: choose the option that (1) keeps the contract compiling, (2) keeps private data off the public ledger, (3) is simplest to test, in that order — and log it.
 

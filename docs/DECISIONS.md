@@ -50,6 +50,15 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
 
 - **D-008 (2026-08-23) — No CI at all** (owner decision; supersedes D-007).
   `.github/workflows/ci.yml` removed. The same gates run locally before each
-  push: `yarn compile && yarn lint && yarn typecheck && yarn test`. Deliberate
-  PRD deviation: §11.5 specifies CI and §14.1 counts a green badge toward QA —
-  revisit before the Wave 1 submission if that changes.
+  push: `yarn compile && yarn lint && yarn typecheck && yarn test`. PRD §11.5
+  updated in v1.2 to reflect this.
+
+- **D-009 (2026-08-23) — PRD v1.2 scope additions, approved by owner:**
+  milestone escrow (§15.5 — payer-gated release; rides the Variant B rework),
+  claim-based refunds (§15.6 — claim pattern needs no payer key), recurring
+  invoices (§15.7 — client-side derivation, zero new circuits), receivables
+  proofs (§16.4 — reuses the §6.8 machinery), and the Wave 1 judge sandbox.
+  Rationale: each deepens the contract-centric 55% of the rubric or the judge
+  experience without adding a new subsystem. Everything else surveyed went to
+  `docs/BACKLOG.md`; oracle conversion, custodial checkout and an in-app
+  assistant were rejected as conflicts with §1.1 principles.

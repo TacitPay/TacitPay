@@ -34,3 +34,11 @@ describe('config/networks.json (PRD §12.2)', () => {
     }
   });
 });
+
+// Recurring-invoice series derivation is pure client-side logic (PRD §15.7),
+// so its unit test lives here rather than with the contract circuits.
+describe('recurring series derivation (PRD §15.7, Wave 2)', () => {
+  it.todo(
+    'U-27 child id/salt derivation is deterministic; children share no public value (INV-11)',
+  );
+});

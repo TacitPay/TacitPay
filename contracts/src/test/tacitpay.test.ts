@@ -37,3 +37,20 @@ describe('tacitpay contract — Wave 1 unit matrix (PRD §11.2)', () => {
   it.todo('U-16 cancel on PAID throws');
   it.todo('U-17 privacy: no amount/memo/secret bytes anywhere in serialized ledger state');
 });
+
+// Wave 2/3 circuits (PRD §11.2, §15.5–15.6, §16.4). U-27 (series derivation)
+// is api-layer and lives in packages/api/test.
+describe('tacitpay contract — Wave 2/3 matrix (PRD §11.2)', () => {
+  it.todo('U-18 proveReceipt by payer succeeds; by non-payer fails');
+  it.todo('U-19 proveRevenueAtLeast ≥ threshold passes; below fails; foreign invoice fails');
+  it.todo('U-20 milestone: withdraw before approveRelease and before releaseAfter throws (INV-9)');
+  it.todo('U-21 milestone: approveRelease by payer, then withdraw → WITHDRAWN');
+  it.todo('U-22 milestone: approveRelease by non-payer throws "Not the payer"');
+  it.todo('U-23 milestone: withdraw after releaseAfter without approval (timeout) → WITHDRAWN');
+  it.todo('U-24 refund: offerRefund by owner on PAID → REFUNDABLE; by non-owner throws');
+  it.todo(
+    'U-25 refund: claimRefund by payer → REFUNDED, escrow removed; by non-payer throws (INV-10)',
+  );
+  it.todo('U-26 refund: withdraw on REFUNDABLE throws; claimRefund on WITHDRAWN throws');
+  it.todo('U-28 proveReceivablesAtLeast counts only OPEN, unexpired invoices');
+});

@@ -6,6 +6,8 @@
 export const API_NAME = '@tacitpay/api';
 
 // Invoice lifecycle states, mirrored from the contract enum (PRD §6.1).
+// Wave 2 extends the enum with 'REFUNDABLE' | 'REFUNDED' (claim-based refunds,
+// PRD §15.6) — mirror here when those circuits land.
 export type InvoiceStatus = 'OPEN' | 'PAID' | 'WITHDRAWN' | 'CANCELLED';
 
 // Network ids supported across the three waves (PRD §12.2 / config/networks.json).

@@ -12,7 +12,10 @@ list what changed since the previous submission — a hard AKINDO requirement.
   (Compact compile + lint/typecheck/test), network endpoint config, docs skeleton.
 - Placeholder Compact contract (compiles under compiler 0.31.1).
 - Wave 1 unit-test matrix U-01…U-17 pre-registered as vitest todos (PRD §11.2).
-- TacitPay logo component (`packages/ui/src/components/Logo.tsx`).
+- TacitPay logo component (`packages/ui/src/components/Logo.tsx`) and README masthead (light/dark SVG).
+- PRD v1.2: milestone escrow (§15.5), claim-based refunds (§15.6), recurring
+  invoices (§15.7), receivables proofs (§16.4) and the judge sandbox committed
+  into wave scopes; unit matrix extended to U-28.
 
 ## Wave 1 (Aug 27 – Sep 16, 2026)
 

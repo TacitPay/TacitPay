@@ -62,7 +62,7 @@ Judge paths (a) unit-only, (b) local devnet integration, (c) Preview with Lace �
 
 ## Test inventory
 
-The Wave 1 unit matrix **U-01…U-17** (PRD §11.2) is pre-registered as vitest todos in `contracts/src/test/tacitpay.test.ts` and converts to real simulation tests as the contract lands. Current live tests: scaffold sanity + network-config guards.
+The unit matrix **U-01…U-28** (PRD §11.2) — the Wave 1 core plus the Wave 2/3 circuits (milestone escrow, refunds, series derivation, audit proofs) — is pre-registered as vitest todos and converts to real simulation tests as the circuits land. Current live tests: scaffold sanity + network-config guards.
 
 ## Repository layout
 
@@ -82,11 +82,11 @@ The Wave 1 unit matrix **U-01…U-17** (PRD §11.2) is pre-registered as vitest 
 
 ## Roadmap
 
-| Wave                | Theme                   | Highlights                                                               |
-| ------------------- | ----------------------- | ------------------------------------------------------------------------ |
-| 1 (Aug 27 – Sep 16) | The loop works          | Contract + tests, API, CLI, UI on Preview, Variant A escrow              |
-| 2 (Sep 27 – Oct 17) | Developers and agents   | Variant B escrow, receipt proofs, Node SDK, MCP server, tUSDM on Preview |
-| 3 (Oct 27 – Nov 16) | Prove it to the auditor | ZK revenue proofs, USDM on mainnet (stretch), mobile PoC                 |
+| Wave                | Theme                   | Highlights                                                                                                                          |
+| ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1 (Aug 27 – Sep 16) | The loop works          | Contract + tests, API, CLI, UI on Preview, Variant A escrow, judge sandbox                                                          |
+| 2 (Sep 27 – Oct 17) | Developers and agents   | Milestone escrow, claim-based refunds, recurring invoices, Variant B escrow, receipt proofs, Node SDK, MCP server, tUSDM on Preview |
+| 3 (Oct 27 – Nov 16) | Prove it to the auditor | ZK revenue & receivables proofs, USDM on mainnet (stretch), mobile PoC                                                              |
 
 Progress per wave: [`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md).
 

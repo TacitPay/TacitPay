@@ -20,6 +20,11 @@ are binding on every circuit and ledger field from day one.
   withdraw or cancel.
 - **INV-7** — An invoice can be paid at most once.
 - **INV-8** — Expired invoices cannot be paid.
+- **INV-9** (Wave 2) — A milestone invoice's escrow cannot be withdrawn before the
+  payer's release approval unless the timeout has passed.
+- **INV-10** (Wave 2) — An offered refund can only be claimed by the original payer.
+- **INV-11** (Wave 2) — No public ledger value links two invoices of the same
+  recurring series; child ids derive from a secret seed.
 
 ## Allowed-public list
 

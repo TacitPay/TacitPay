@@ -9,6 +9,9 @@ Planned commands (PRD §10):
   tacitpay invoice create --amount <n> --memo "..." [--expires <date>]
   tacitpay invoice pay --link <url>
   tacitpay invoice withdraw|cancel|status --id <hex>
+  tacitpay invoice approve-release|refund-offer|refund-claim --id <hex>  (Wave 2)
+  tacitpay series create|mint-next                                       (Wave 2)
+  tacitpay demo seed        judge sandbox: seeded local devnet (Wave 1)
   tacitpay wallet fund-local | dust-status`;
 
 const [, , command] = process.argv;
