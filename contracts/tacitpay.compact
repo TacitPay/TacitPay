@@ -1,0 +1,20 @@
+pragma language_version >= 0.23;
+
+import CompactStandardLibrary;
+
+// ---------------------------------------------------------------------------
+// TacitPay — scaffold placeholder contract.
+//
+// The real Wave 1 contract (createInvoice / payInvoice / withdraw /
+// cancelInvoice with Variant A escrow, PRD §6) replaces this file on Day 1–2.
+// This placeholder keeps `compact compile` green from the first commit so the
+// repo satisfies the "compiles successfully" technical gate shape (PRD §2.4)
+// at every point in history.
+// ---------------------------------------------------------------------------
+
+// Global, non-identifying counter — on the allowed-public list (PRD §4.3 #6).
+export ledger invoiceCount: Counter;
+
+export circuit ping(): [] {
+  invoiceCount.increment(1);
+}

@@ -1,0 +1,27 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+
+# Environment files — only .env.example is committed (PRD §12.3)
+.env
+.env.*
+!.env.example
+
+# Compact compiler output. Whether keys/zkir get committed is a Day-2 decision
+# after the first real compile (PRD §13 note; docs/DECISIONS.md D-002).
+contracts/managed/
+
+# Yarn 4
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Tooling scratch
+.vite/
+.firecrawl/

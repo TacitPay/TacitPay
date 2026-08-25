@@ -1,0 +1,12 @@
+<svg width="150" height="40" viewBox="0 0 150 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TacitPay">
+  <!-- Static render of packages/ui/src/components/Logo.tsx, inverted for dark backgrounds — keep in sync. -->
+  <!-- 1. Shielded State Circle (background line, zinc-400) -->
+  <circle cx="24" cy="20" r="9" stroke="#a1a1aa" stroke-width="2.25"/>
+  <!-- 2. Public Ledger Disc (inverted to zinc-50 for contrast on dark) -->
+  <circle cx="16" cy="20" r="9" fill="#fafafa"/>
+  <!-- 3. Verified Settlement Node (inverted to zinc-950) -->
+  <circle cx="20" cy="20" r="2.25" fill="#09090b"/>
+  <text x="50" y="20" dominant-baseline="central" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16.5" letter-spacing="-0.4">
+    <tspan font-weight="600" fill="#fafafa">Tacit</tspan><tspan font-weight="400" fill="#a1a1aa">Pay</tspan>
+  </text>
+</svg>

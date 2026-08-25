@@ -1,0 +1,38 @@
+{
+  "undeployed": {
+    "label": "Local devnet (midnightntwrk/midnight-local-dev)",
+    "nodeUrl": "ws://127.0.0.1:9944",
+    "indexerUrl": "http://127.0.0.1:8088/api/v4/graphql",
+    "indexerWsUrl": "ws://127.0.0.1:8088/api/v4/graphql/ws",
+    "proofServerUrl": "http://127.0.0.1:6300",
+    "faucetUrl": null,
+    "explorerUrl": null
+  },
+  "preview": {
+    "label": "Preview — primary public target; tUSDM is bridged here",
+    "nodeUrl": "https://rpc.preview.midnight.network",
+    "indexerUrl": "https://indexer.preview.midnight.network/api/v4/graphql",
+    "indexerWsUrl": "wss://indexer.preview.midnight.network/api/v4/graphql/ws",
+    "proofServerUrl": "http://localhost:6300",
+    "faucetUrl": "https://midnight-tmnight-preview.nethermind.dev/",
+    "explorerUrl": "https://preview.midnightexplorer.com/"
+  },
+  "preprod": {
+    "label": "Preprod — secondary testnet; no tUSDM",
+    "nodeUrl": "https://rpc.preprod.midnight.network",
+    "indexerUrl": "https://indexer.preprod.midnight.network/api/v4/graphql",
+    "indexerWsUrl": "wss://indexer.preprod.midnight.network/api/v4/graphql/ws",
+    "proofServerUrl": "http://localhost:6300",
+    "faucetUrl": "https://midnight-tmnight-preprod.nethermind.dev/",
+    "explorerUrl": "https://preprod.midnightexplorer.com/"
+  },
+  "mainnet": {
+    "label": "Mainnet — Wave 3 stretch target (USDM)",
+    "nodeUrl": "https://rpc.mainnet.midnight.network",
+    "indexerUrl": "https://indexer.mainnet.midnight.network/api/v4/graphql",
+    "indexerWsUrl": "wss://indexer.mainnet.midnight.network/api/v4/graphql/ws",
+    "proofServerUrl": "http://localhost:6300",
+    "faucetUrl": null,
+    "explorerUrl": "https://midnightexplorer.com/"
+  }
+}

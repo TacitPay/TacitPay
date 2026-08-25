@@ -1,0 +1,8 @@
+# PRD.md is the verbatim source-of-truth document — never reformat it.
+PRD.md
+LICENSE
+contracts/managed/
+.yarn/
+dist/
+coverage/
+yarn.lock
