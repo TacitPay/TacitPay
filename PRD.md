@@ -196,7 +196,7 @@ This section is the heart of the "how privacy meaningfully shapes the design" re
 ### 4.1 Parties and trust assumptions
 
 - The **contract** is trusted to enforce rules (ZK-verified). It cannot see witness data.
-- The **proof server** sees witness data in the clear; it must run locally (Docker) for every party. Never point a production user at a shared proof server. (https://docs.midnight.network/guides/local-proving)
+- The **prover** sees witness data in the clear — this is inherent to ZK proving, not a Midnight limitation: you cannot prove a statement about secret inputs without holding them. Privacy therefore comes from the circuit and the dual-ledger design (what reaches the chain), while the prover's *location* decides who else learns the invoice along the way. Acceptable locations, best first: **in the user's browser** (1AM's WASM prover — nothing leaves the tab), **a local proof server** (Docker, `localhost:6300` — opens no network connections), or **a remote server the user themselves controls**, over TLS. Never point a user at a shared or TacitPay-operated prover: that party would see every amount and counterparty, which is precisely the trusted intermediary this product exists to remove (§1.1). See §8.3 for the feature-detected provider tiers. (https://docs.midnight.network/guides/local-proving , https://docs.midnight.network/guides/run-proof-server)
 - The **indexer** sees only public state and shielded commitments/nullifiers.
 - There is **no TacitPay backend** in Wave 1. Invoice details travel from merchant to payer inside the invoice link's URL fragment (`#…`), which browsers do not send to servers. Wave 2 adds an optional relay; it must never receive plaintext invoice bodies (§15.3).
 
@@ -245,7 +245,7 @@ Anything else that originates from a witness or a circuit parameter must not be 
 - Timing correlation: a `payInvoice` call and the Zswap output it claims land in the same transaction; an observer learns "some invoice got paid at time T", not amount or parties.
 - Small anonymity sets early on are inherent to a new network.
 - The merchant learns the payer's identity off-chain (they sent them the link) — this is normal commerce and not a chain leak.
-- Variant A escrow exposure window (until Wave 2).
+- Variant A escrow exposure window (until Wave 2). This is more than a value leak: the escrowed `QualifiedShieldedCoinInfo` publishes the coin's **nonce**, so once the merchant withdraws, an observer who guesses the merchant's Zswap public key can recompute the withdrawal's coin commitment from public data and confirm the guess — permanently, in transaction history. While Variant A is live, a merchant's Zswap key is linkable across their withdrawn invoices (weakens INV-2 for the merchant side). Variant B (§6.5) closes this; until then, state it plainly in README/PRIVACY.
 
 ---
 
@@ -399,7 +399,7 @@ circuit commitInvoice(body: InvoiceBody, salt: Bytes<32>): Bytes<32> {
 The contract must hold the paid coin between `payInvoice` and `withdraw` because Compact's `sendShielded` to a user key other than the transaction creator does not notify that user's wallet (documented in the standard library reference). Withdrawal must therefore be a merchant-initiated transaction.
 
 **Variant A — canonical custody (ship in Wave 1).**
-`escrow: Map<Bytes<32>, QualifiedShieldedCoinInfo>`; `payInvoice` calls `escrow.insertCoin(invoiceId, coin, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()))` right after `receiveShielded(coin)`; the runtime fills in the Merkle index. `withdraw` does `escrow.lookup(invoiceId)` → `sendShielded(...)` → `escrow.remove(invoiceId)`. This is exactly the pattern the ledger-ADT docs describe (`insertCoin` "must have been allocated within the current transaction"). Limitation: the `QualifiedShieldedCoinInfo` in the Map is public, so the escrowed value is visible until the merchant withdraws. Document it; sweep quickly in the demo.
+`escrow: Map<Bytes<32>, QualifiedShieldedCoinInfo>`; `payInvoice` calls `escrow.insertCoin(invoiceId, coin, right<ZswapCoinPublicKey, ContractAddress>(kernel.self()))` right after `receiveShielded(coin)`; the runtime fills in the Merkle index. `withdraw` does `escrow.lookup(invoiceId)` → `sendShielded(...)` → `escrow.remove(invoiceId)`. This is exactly the pattern the ledger-ADT docs describe (`insertCoin` "must have been allocated within the current transaction"). Limitation: the `QualifiedShieldedCoinInfo` in the Map is public, so the escrowed value is visible until the merchant withdraws — and, worse, the public coin **nonce** turns the withdrawal into a Zswap-key oracle: an observer can test a guessed merchant key against the withdrawal's coin commitment recomputed from public data, permanently linking that merchant's withdrawals in history (see §4.5). `escrow.remove` does not undo this. Document it; sweep quickly in the demo; Variant B removes the exposure.
 
 **Variant B — commitment-only custody (ship in Wave 2).**
 Replace the Map value with `Bytes<32>` = `persistentHash<ShieldedCoinInfo>(coin)` and require the coin nonce to be derived deterministically from the invoice salt (`coin.nonce == persistentHash([pad(32,"tacitpay:nonce:"), salt])`) so the merchant can reconstruct `{nonce, color, value}` without the payer telling them. At `withdraw`, the merchant passes the `QualifiedShieldedCoinInfo` as a witness (`escrowCoin(invoiceId)`), the circuit asserts its hash matches the stored one, then `sendShielded`s it. The Merkle index (`mtIndex`) is discovered client-side from the indexer's Zswap events / chain state.
@@ -706,7 +706,13 @@ export async function createTacitPayApi(opts: {
 **Browser (UI)** — same six slots with:
 - `FetchZkConfigProvider` (`@midnight-ntwrk/midnight-js-fetch-zk-config-provider`) pointed at the served `managed/tacitpay` artifacts (`keys/`, `zkir/`) copied into `packages/ui/public/managed/tacitpay/`.
 - `indexerPublicDataProvider(http, ws, WebSocket)` — pass the native `WebSocket` as third argument for browser subscriptions (per the provider table in the deploy guide).
-- Proof provider: the wallet's proving path via `dappConnectorProofProvider` / `dappConnectorProvingProvider` (`@midnight-ntwrk/midnight-js-dapp-connector-proof-provider`) or `httpClientProofProvider('http://localhost:6300', zkConfigProvider)` when the user runs a local proof server. Lace currently supports only the local proof server option (installation docs); surface a "Proof server: Local (localhost:6300)" status indicator in the UI.
+- Proof provider — **three-tier, feature-detected, in this order** (D-010). Proving requires the private witness, so whoever proves sees the invoice secrets; the tier order is therefore a trust order, not a convenience order:
+  1. **Wallet-provided proving** — `dappConnectorProvingProvider` / `dappConnectorProofProvider` (`@midnight-ntwrk/midnight-js-dapp-connector-proof-provider`) when `typeof api.getProvingProvider === 'function'`. 1AM implements it and proves **in-browser via WASM** (Halo2 over BLS12-381, a few MB, no separate process) — this is the zero-install, zero-trust path and the one judges should be pointed at first. Never hardcode the deprecated `Configuration.proverServerUri`.
+  2. **Local proof server** — `httpClientProofProvider('http://localhost:6300', zkConfigProvider)`. Required for Lace as documented; witness data stays on the user's machine.
+  3. **User-supplied prover URL** — a remote proof server **the user controls**, over TLS (explicitly permitted by https://docs.midnight.network/guides/run-proof-server). Settings-only, never a default, and never a TacitPay-operated endpoint: a prover we ran would see every amount and party, reintroducing exactly the trusted intermediary this product removes (§1.1).
+  Surface the active tier in the UI as "Proving: in wallet / local server / your server (<host>)" with a health indicator for tiers 2–3.
+
+> **VERIFY (Day 3, blocking for the wallet matrix):** whether the currently shipping Lace build implements `getProvingProvider()`. Docs (community-wallets pages, accurate as of June 2026) say it does not; input-output-hk/lace issue #2224 was **closed as completed on 2026-08-07** with the maintainer stating the fix ships in the next release. Test against the installed extension and record the answer in D-010 — it decides whether Lace users still need Docker.
 - Wallet + Midnight provider: built on the DApp Connector `ConnectedAPI` obtained from `Object.values(window.midnight)[i].connect(networkId)` (§9.2). Never hardcode `window.midnight.mnLace`; wallets inject under a UUID key (React guide troubleshooting).
 
 > **VERIFY (Day 3):** the precise `ConnectedAPI` methods on DApp Connector API 4.0.1 used to balance/prove/submit a transaction from a DApp, and the reference implementation in the official bulletin-board DApp: https://github.com/midnightntwrk/example-bboard (its `ui` package wires browser providers). Mirror it; do not invent.
@@ -730,11 +736,13 @@ Read `/mnt/skills/public/frontend-design/SKILL.md` (if present in your environme
 | `/pay#<payload>` | payer | Decodes fragment; shows merchant-free summary (amount, memo, expiry), on-chain status check, Connect wallet → Pay. Success state shows txId, receipt saved, link to `/verify/<id>`. |
 | `/receipts` | payer | Receipts from private state; each with "Verify on chain" and (Wave 2) "Prove I paid", "Approve release" (milestone invoices, §15.5) and "Claim refund" (offered refunds, §15.6). |
 | `/verify/<invoiceId>` | anyone | Public status page. No wallet. Shows status, expiry, block/tx references, and an explanation of what is and isn't visible on chain. |
-| `/settings` | all | Network selection (local / preprod), proof server status (`GET http://localhost:6300/` health), export/import private state (Midnight.js supports private-state export/import — see `PrivateStateExport` types in the midnight-js API reference). |
+| `/settings` | all | Network selection (local / preprod), **proving mode** (auto / in-wallet / local server / your own server URL — §8.3 three-tier model, with health check and a plain-English note that whoever proves sees the invoice data), export/import private state (Midnight.js supports private-state export/import — see `PrivateStateExport` types in the midnight-js API reference). |
 
 ### 9.2 Wallet connection
 
 Follow https://docs.midnight.network/guides/react-wallet-connect exactly: enumerate `window.midnight`, let the user pick if >1 wallet, `await wallet.connect(networkId)` where `networkId` ∈ `'undeployed' | 'preprod' | 'preview' | 'mainnet'`, then `getConnectionStatus()`, `getUnshieldedAddress()`; request the shielded address only on the Pay and Withdraw flows where it is needed. Render wallet `name`/`icon` safely (no `dangerouslySetInnerHTML`).
+
+**Target both Lace and 1AM** (D-010). Both inject under friendly keys (`window.midnight.mnLace`, `window.midnight['1am']`) but the v4 spec installs each wallet under its own key with a stable `rdns` field — so discover by scanning `Object.values(window.midnight)` and matching on `rdns`/`name`, check `apiVersion` against the supported range, and **feature-detect every optional method before calling it** (`getProvingProvider`, `signData` — Lace omits both as of the June 2026 docs). Wallets that do not inject a conformant connector (Ctrl, Gero) must degrade gracefully rather than throw. Mirror the Edda Labs `midnight-starter-template` wallet widget (demo: `counter.nebula.builders`), which already wires Lace + 1AM, instead of re-deriving the logic.
 
 ### 9.3 States every screen must handle
 
@@ -842,16 +850,25 @@ There is deliberately no CI in this repo (docs/DECISIONS.md D-008). The equivale
 |---|---|---|
 | Compact language / compiler | 0.23 / 0.31.x | https://docs.midnight.network/compact/data-types/ledger-adt (header) |
 | Ledger | 8.0.x (`@midnight/ledger` 8.0.3) | https://docs.midnight.network/relnotes/overview |
-| Midnight.js | 4.0.4 | https://docs.midnight.network/api-reference/midnight-js |
+| Midnight.js | **4.1.1** (was written 4.0.4 — that version never existed; see below) | https://docs.midnight.network/relnotes/support-matrix |
 | compact-runtime | 0.16.0 | https://docs.midnight.network/api-reference/compact-runtime |
-| onchain-runtime | 3.0.0 | https://docs.midnight.network/api-reference/onchain-runtime |
+| onchain-runtime | 3.1.0 (floated by compact-runtime; **do not pin**) | https://docs.midnight.network/api-reference/onchain-runtime |
+| Wallet SDK | **`@midnightntwrk/wallet-sdk` 1.2.0** — note the scope has **no hyphen** | https://docs.midnight.network/relnotes/support-matrix |
 | DApp Connector API | 4.0.1 | https://docs.midnight.network/api-reference/dapp-connector |
 | Indexer API | v4 (`/api/v4/graphql`) | https://docs.midnight.network/api-reference/midnight-indexer |
 | Proof server image | `midnightntwrk/proof-server:8.1.0` | https://docs.midnight.network/getting-started/installation |
-| testkit-js | 4.0.4 | https://docs.midnight.network/api-reference/testkit-js |
+| Devnet images | node `1.0.0` · indexer-standalone `4.3.3` | midnightntwrk/midnight-local-dev `standalone.yml` |
+| testkit-js | 4.1.1 | https://docs.midnight.network/api-reference/testkit-js |
 | Node.js | 22+ ; package manager: yarn (matches official examples) | https://docs.midnight.network/getting-started/hello-world |
 
 Compatibility matrix (authoritative): https://docs.midnight.network/relnotes/support-matrix
+
+> **Corrected 2026-08-24 (rule 0.10 — the registry wins over this document; recorded as D-011).** Verified against npm, not memory:
+>
+> - **Midnight.js 4.0.x does not exist for every package.** `@midnight-ntwrk/midnight-js-protocol` publishes `4.1.0` upward; there is no `4.0.4`. Pin the whole Midnight.js set at **4.1.1**.
+> - **4.0.x would not have worked anyway**: `midnight-js-contracts@4.0.4` targets compact-runtime **0.15.0**, while the generated TacitPay contract requires **0.16.0**.
+> - **Two wallet-sdk scopes exist and have diverged.** `@midnightntwrk/wallet-sdk` (no hyphen) is at **1.2.0** and is the maintained one the support matrix names; `@midnight-ntwrk/wallet-sdk` (hyphenated, the scope every other Midnight package uses) is stuck at 1.1.0. Use the **no-hyphen** scope for the wallet SDK only — everything else keeps the hyphen. This is a genuine footgun; expect to trip over it again.
+> - Import surfaces that differ from earlier assumptions: `CompiledContract` comes from `@midnight-ntwrk/midnight-js-protocol/compact-js`; `deployContract`/`findDeployedContract` from `midnight-js-contracts`; ledger types **only** via `midnight-js-protocol/ledger` (wallet ledger ranges lock-aligned to `ledger-v8@8.1.0` to avoid nominal type clashes).
 
 ### 12.2 Endpoints (from https://docs.midnight.network/relnotes/network)
 
@@ -882,7 +899,14 @@ Per https://docs.midnight.network/guides/acquire-tokens and https://docs.midnigh
 
 ### 12.5 Local devnet
 
-`git clone https://github.com/midnightntwrk/midnight-local-dev` (or use the `yarn env:up` wrapper from https://github.com/midnightntwrk/example-hello-world). Three pre-funded wallets are available; the hello-world tutorial shows the `yarn test:local` flow. Keep local as the default loop; go to Preview only for e2e and demo.
+`git clone https://github.com/midnightntwrk/midnight-local-dev` next to this repo (or set `MIDNIGHT_LOCAL_DEV` to an existing checkout), then `yarn env:up` / `env:status` / `env:down` — wrappers over `scripts/devnet.sh`, which drives the devnet's `standalone.yml` and waits on its healthchecks. Keep local as the default loop; go to Preview only for e2e and demo.
+
+Verified 2026-08-24 against the cloned repo:
+
+- Three containers on **fixed** ports — node `9944`, indexer `8088` (`/api/v4/graphql`, ws at `/api/v4/graphql/ws`), proof server `6300`. Not configurable: these are the defaults Lace hardcodes for its **Undeployed** network, so Lace connects with no custom endpoint setup. They match `config/networks.json` → `undeployed` exactly.
+- Images: `midnightntwrk/midnight-node:1.0.0`, `midnightntwrk/indexer-standalone:4.3.3`, `midnightntwrk/proof-server:8.1.0`.
+- **Name-collision gotcha:** the compose project names its proof-server container `midnight-proof-server`. If one is already running that compose did not create (common — the same image is used standalone for Preview work), `docker compose up` fails. `scripts/devnet.sh` detects this and prints the exact `docker rm -f` fix instead of failing cryptically. The devnet's own `npm run clean` force-removes all three for the same reason.
+- Funding: `cd midnight-local-dev && npm install && npm start` gives an interactive menu. Option 1 (accounts JSON of BIP39 mnemonics) transfers 50,000 NIGHT **and registers DUST**, leaving accounts ready to submit transactions; option 2 (Bech32 addresses) sends NIGHT only, and the recipient must register DUST themselves. Genesis master seed is `0x00…001`. Up to 10 accounts per operation.
 
 ---
 
@@ -1111,7 +1135,7 @@ Kuira SDK (Android) repo: https://github.com/kuiralabs/kuira-sdk-android . Minim
 3. **Why privacy is load-bearing** (condensed §4.2 table + §4.3 allowed-public list).
 4. **Dual-ledger design** (§5.2 table) + Mermaid sequence diagram of create → pay → withdraw.
 5. Contract walkthrough: each circuit, what it asserts, what it discloses, with links to the standard-library docs.
-6. **How judges test it** — three paths: (a) unit tests only (no Docker), (b) local devnet integration, (c) Preview with Lace (wallet setup steps, faucet links, tUSDM bridging, proof-server setup).
+6. **How judges test it** — four paths, cheapest first: (a) unit tests only (no Docker, no wallet), (b) **Preview with 1AM — no Docker and no proof server at all** (in-browser WASM proving; wallet install + faucet links only), (c) Preview with Lace (adds the local proof-server setup unless the Day-3 VERIFY shows Lace now delegates proving), (d) local devnet integration (`yarn env:up` + `demo seed`). State the Docker requirement per path in one line each so a judge can pick before installing anything.
 7. Test inventory (U-xx table with pass status) + privacy verification results.
 8. Architecture & repo layout.
 9. Roadmap across waves + link to `docs/WAVE-CHANGELOG.md`.
