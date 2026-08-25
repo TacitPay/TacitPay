@@ -206,13 +206,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fontsource/instrument-serif@npm:5.3.0":
-  version: 5.3.0
-  resolution: "@fontsource/instrument-serif@npm:5.3.0"
-  checksum: 10c0/4b04757b67e17b00b631d6ecc9897fbe3129bff2a4320d222827be54f5685565b055ed7b656885da32c3cc05827b080513705d92aa746c666b5a785b3c9f30a2
-  languageName: node
-  linkType: hard
-
 "@graphql-typed-document-node/core@npm:^3.1.1, @graphql-typed-document-node/core@npm:^3.2.0":
   version: 3.2.0
   resolution: "@graphql-typed-document-node/core@npm:3.2.0"
@@ -2925,7 +2918,6 @@ __metadata:
   dependencies:
     "@fontsource/ibm-plex-mono": "npm:5.3.0"
     "@fontsource/instrument-sans": "npm:5.3.0"
-    "@fontsource/instrument-serif": "npm:5.3.0"
     "@gsap/react": "npm:2.1.2"
     "@tacitpay/api": "workspace:*"
     "@tailwindcss/vite": "npm:4.3.3"

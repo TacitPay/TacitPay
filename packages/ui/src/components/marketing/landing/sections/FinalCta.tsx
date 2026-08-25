@@ -54,7 +54,7 @@ export function FinalCta() {
 
       <div className="relative mx-auto max-w-[92rem] px-5 py-24 text-center sm:px-8 md:py-32">
         <Reveal>
-          <h2 className="mx-auto max-w-3xl font-display text-4xl leading-[1.08] tracking-tight text-balance sm:text-5xl">
+          <h2 className="mx-auto max-w-3xl font-display text-4xl leading-[1.08] font-semibold tracking-tight text-balance sm:text-5xl">
             Issue an invoice that proves itself.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-tp-ink-muted">

@@ -55,7 +55,7 @@ export function CannotSeeSection() {
                       aria-hidden="true"
                       className="shrink-0 text-tp-ink-faint"
                     />
-                    <h3 className="font-display text-2xl tracking-tight text-tp-ink">
+                    <h3 className="font-display text-2xl font-semibold tracking-tight text-tp-ink">
                       {item.title}
                     </h3>
                   </div>

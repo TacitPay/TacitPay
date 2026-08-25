@@ -39,7 +39,7 @@ export function ProofSection() {
                   aria-hidden="true"
                   className="text-tp-ink-faint"
                 />
-                <dt className="mt-4 font-display text-4xl tracking-tight tabular-nums">
+                <dt className="mt-4 font-display text-4xl font-semibold tracking-tight tabular-nums">
                   {fact.value}
                 </dt>
                 <dd className="mt-2">

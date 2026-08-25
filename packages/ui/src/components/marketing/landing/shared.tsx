@@ -50,7 +50,7 @@ export function SectionIntro({
       <MicroLabel className="text-tp-ink-faint">{eyebrow}</MicroLabel>
       <h2
         className={cn(
-          'mt-5 font-display text-4xl leading-[1.08] tracking-tight text-balance sm:text-5xl text-tp-ink',
+          'mt-5 font-display text-4xl leading-[1.08] font-semibold tracking-tight text-balance sm:text-5xl text-tp-ink',
         )}
       >
         {title}
