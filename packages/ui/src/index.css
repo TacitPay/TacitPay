@@ -1,1 +1,156 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+
+:root {
+  --background: oklch(0.985 0.004 205);
+  --foreground: oklch(0.22 0.018 220);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.018 220);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.018 220);
+  --primary: oklch(0.43 0.09 194);
+  --primary-foreground: oklch(0.985 0.004 205);
+  --secondary: oklch(0.955 0.01 205);
+  --secondary-foreground: oklch(0.3 0.03 210);
+  --muted: oklch(0.955 0.008 215);
+  --muted-foreground: oklch(0.47 0.025 218);
+  --accent: oklch(0.935 0.018 194);
+  --accent-foreground: oklch(0.32 0.06 194);
+  --destructive: oklch(0.54 0.19 27);
+  --border: oklch(0.9 0.012 215);
+  --input: oklch(0.87 0.015 215);
+  --ring: oklch(0.53 0.1 194);
+  --radius: 0.625rem;
+  --status-open-bg: oklch(0.94 0.035 235);
+  --status-open-fg: oklch(0.37 0.09 238);
+  --status-paid-bg: oklch(0.94 0.045 155);
+  --status-paid-fg: oklch(0.35 0.09 155);
+  --status-withdrawn-bg: oklch(0.94 0.025 292);
+  --status-withdrawn-fg: oklch(0.4 0.075 292);
+  --status-cancelled-bg: oklch(0.95 0.03 25);
+  --status-cancelled-fg: oklch(0.43 0.12 25);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  /* Typography follows the mark: a precise grotesque for interface text, an
+     editorial serif for display, and a technical mono for anything the chain
+     actually stores (ids, hashes, addresses). */
+  --font-sans:
+    'Instrument Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --radius-sm: calc(var(--radius) * 0.75);
+  --radius-md: calc(var(--radius) * 0.875);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    min-width: 320px;
+    background: var(--background);
+  }
+
+  body {
+    @apply min-h-screen bg-background font-sans text-foreground antialiased;
+    margin: 0;
+  }
+
+  button,
+  a,
+  input {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 20%, transparent);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Marketing surface (the `/` route only).
+   The app UI uses the shadcn token palette; the marketing page commits to the
+   logo's own monochrome zinc so the brand and the product look like one thing.
+   --------------------------------------------------------------------------- */
+@layer components {
+  /* Paper grain — keeps large flat areas from reading as dead screen space. */
+  .tp-grain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Hairline rules, the technical-drawing register the mark implies. */
+  .tp-rule {
+    border-color: color-mix(in oklab, currentColor 12%, transparent);
+  }
+}
+
+@layer utilities {
+  /* One orchestrated page load: content settles upward in sequence. Depth is
+     set per element with an inline animation-delay. */
+  @keyframes tp-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The eclipse itself: the shielded ring travels in and comes to rest over the
+     public disc. The whole product in one gesture. */
+  @keyframes tp-eclipse {
+    from {
+      opacity: 0;
+      transform: translateX(26px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .tp-rise {
+    animation: tp-rise 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .tp-eclipse {
+    animation: tp-eclipse 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tp-rise,
+    .tp-eclipse {
+      animation: none;
+    }
+  }
+}

@@ -1,18 +1,93 @@
-import { Logo } from './components/Logo';
+import { Component, type ErrorInfo, type ReactNode, useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 
-// Landing placeholder. The real routes — /, /merchant, /pay#…, /receipts,
-// /verify/:id, /settings — land on Days 6–9 of Wave 1 (PRD §9.1).
+import { AppLayout } from '@/components/AppLayout';
+import { AppShell } from '@/components/AppShell';
+import { ErrorState } from '@/components/DataStates';
+import { Button } from '@/components/ui/button';
+import { AppHomePage } from '@/pages/AppHomePage';
+import { HomePage } from '@/pages/HomePage';
+import { MerchantPage } from '@/pages/MerchantPage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
+import { PayPage } from '@/pages/PayPage';
+import { ReceiptsPage } from '@/pages/ReceiptsPage';
+import { SettingsPage } from '@/pages/SettingsPage';
+import { VerifyPage } from '@/pages/VerifyPage';
+
+// Routes whose hash is a section anchor. Everywhere else the hash is data —
+// /pay#<payload> carries the invoice itself — so it must never be treated as
+// a scroll target.
+const ANCHOR_ROUTES = new Set(['/', '/app']);
+
+function ScrollManager() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      if (ANCHOR_ROUTES.has(pathname) && hash) {
+        document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [hash, pathname]);
+
+  return null;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class AppErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('TacitPay route error', error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <AppShell>
+          <ErrorState
+            title="TacitPay could not render this page"
+            message="Your private state is unchanged. Reload the app to try again."
+          />
+          <Button type="button" className="mt-4" onClick={() => window.location.reload()}>
+            Reload app
+          </Button>
+        </AppShell>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function App() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-white px-6">
-      <Logo size={40} badge="Preview" />
-      <p className="max-w-md text-center text-sm leading-relaxed text-zinc-500">
-        Private by default, provable on demand. Invoices settle in stablecoins on Midnight — the
-        amount, the parties, and the contents stay off the public ledger.
-      </p>
-      <p className="rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 font-mono text-[11px] text-zinc-500">
-        Wave 1 scaffold — merchant, pay, receipts &amp; verify views land per PRD §9
-      </p>
-    </main>
+    <AppErrorBoundary>
+      <ScrollManager />
+      <Routes>
+        {/* Public marketing surface — no wallet, no app chrome. */}
+        <Route path="/" element={<HomePage />} />
+
+        {/* The app proper. `/app` is the door "Get started" opens. */}
+        <Route element={<AppLayout />}>
+          <Route path="/app" element={<AppHomePage />} />
+          <Route path="/merchant" element={<MerchantPage />} />
+          <Route path="/pay" element={<PayPage />} />
+          <Route path="/receipts" element={<ReceiptsPage />} />
+          <Route path="/verify/:invoiceId" element={<VerifyPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </AppErrorBoundary>
   );
 }
