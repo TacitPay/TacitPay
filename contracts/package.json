@@ -3,12 +3,20 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "exports": {
+    "./managed/tacitpay/contract": {
+      "types": "./managed/tacitpay/contract/index.d.ts",
+      "import": "./managed/tacitpay/contract/index.js"
+    },
+    "./witnesses": "./src/witnesses.ts"
+  },
   "scripts": {
     "compile": "compact compile tacitpay.compact managed/tacitpay",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
     "@types/node": "26.2.0",
     "typescript": "5.9.3",
     "vitest": "4.1.11"
