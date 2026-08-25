@@ -62,3 +62,48 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
   experience without adding a new subsystem. Everything else surveyed went to
   `docs/BACKLOG.md`; oracle conversion, custodial checkout and an in-app
   assistant were rejected as conflicts with §1.1 principles.
+
+- **D-010 (2026-08-24) — Proving is feature-detected across three tiers; both
+  Lace and 1AM are supported; Docker is optional, not required** (owner
+  decision). Tiers, in trust order: (1) wallet-provided proving via
+  `getProvingProvider()` — 1AM proves in-browser in WASM, so no Docker and no
+  separate process; (2) local proof server on `localhost:6300`; (3) a remote
+  prover **the user controls**, over TLS, settings-only.
+  **Rejected: a TacitPay-hosted proof server.** Rationale: proving needs the
+  private witness, so a prover we operated would see every amount and
+  counterparty — that is the trusted intermediary the product exists to remove
+  (§1.1, §4.1). It would not leak to the public chain, but it would make our
+  central privacy claim untrue, and "we cannot see your invoices" is only
+  defensible when it is structural rather than a promise. In-browser proving
+  gives the same zero-install convenience with none of that cost, so no tradeoff
+  is required.
+  Evidence: https://docs.midnight.network/guides/run-proof-server permits only a
+  local prover or "one on a remote machine that you control, over an encrypted
+  channel"; the community-wallets pages document 1AM's in-browser WASM prover
+  (Halo2/BLS12-381) and state that Lace requires a local proof server and does
+  not implement `getProvingProvider()`.
+  **Open (VERIFY Day 3, PRD §8.3):** input-output-hk/lace issue #2224 was closed
+  as completed on 2026-08-07 with a fix promised in the next Lace release, while
+  the docs (accurate as of June 2026) still say Lace lacks the method. Test the
+  installed extension and update this entry — the answer decides whether Lace
+  users still need Docker.
+
+- **D-011 (2026-08-24) — Midnight.js pinned at 4.1.1, and the Wallet SDK comes
+  from the un-hyphenated `@midnightntwrk` scope.** Supersedes the PRD §12.1 row
+  that said Midnight.js 4.0.4. Verified directly against the npm registry
+  (rule 0.10 — the registry wins over the PRD):
+  - `@midnight-ntwrk/midnight-js-protocol` has **no 4.0.x line at all**; its
+    published versions start at `4.1.0`. The PRD's `4.0.4` was never installable.
+  - Even if it had been, `midnight-js-contracts@4.0.4` targets compact-runtime
+    `0.15.0`, and the generated contract requires `0.16.0` — so the 4.0.x stack
+    was incompatible with our own contract regardless.
+  - **Two wallet-sdk scopes exist and have diverged:** `@midnightntwrk/wallet-sdk`
+    (no hyphen) is `1.2.0` and is what the official support matrix names;
+    `@midnight-ntwrk/wallet-sdk` (hyphenated, matching every other Midnight
+    package) is stuck at `1.1.0`. We use the **no-hyphen** scope for the wallet
+    SDK and the hyphenated scope for everything else. Easy to "correct" by
+    mistake — don't.
+  - `@midnight-ntwrk/onchain-runtime-v3` floats to `3.1.0` via compact-runtime
+    and works; deliberately **not pinned**. An early research pass wrongly
+    reported 3.1.0 as broken; that came from hand-rolled coin encodings in a
+    probe, not from compiler-generated code.
