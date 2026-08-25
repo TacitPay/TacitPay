@@ -3,18 +3,191 @@ pragma language_version >= 0.23;
 import CompactStandardLibrary;
 
 // ---------------------------------------------------------------------------
-// TacitPay — scaffold placeholder contract.
+// TacitPay — private invoicing & settlement on Midnight (PRD §6).
 //
-// The real Wave 1 contract (createInvoice / payInvoice / withdraw /
-// cancelInvoice with Variant A escrow, PRD §6) replaces this file on Day 1–2.
-// This placeholder keeps `compact compile` green from the first commit so the
-// repo satisfies the "compiles successfully" technical gate shape (PRD §2.4)
-// at every point in history.
+// Public state carries only commitments, tags and lifecycle status. Amounts,
+// memos and party identities never reach the ledger in plaintext (PRD §4.4).
+// Escrow is Variant A (PRD §6.5): the contract holds the paid coin between
+// payInvoice and withdraw, because sendShielded to a key other than the
+// transaction creator does not notify that user's wallet.
 // ---------------------------------------------------------------------------
 
-// Global, non-identifying counter — on the allowed-public list (PRD §4.3 #6).
-export ledger invoiceCount: Counter;
+// PRD §6.1 — invoice lifecycle. Exported so TypeScript can read the status.
+export enum InvoiceStatus { OPEN, PAID, WITHDRAWN, CANCELLED }
 
-export circuit ping(): [] {
+// Private body of an invoice; only its commitment is public (PRD §6.1).
+struct InvoiceBody {
+  amount: Uint<64>;      // smallest unit of paymentToken
+  memoHash: Bytes<32>;   // sha256 of the memo text, computed client-side
+}
+
+export struct InvoiceRecord {
+  ownerTag: Bytes<32>;    // persistentHash([merchantPubKey, invoiceId])
+  commitment: Bytes<32>;  // persistentCommit(InvoiceBody, salt)
+  status: InvoiceStatus;
+  expiresAt: Uint<64>;    // unix seconds; 0 = never
+  payerTag: Bytes<32>;    // persistentHash([payerPubKey, invoiceId]); zero until paid
+}
+
+// PRD §6.2 — public state. `sealed` freezes paymentToken after the constructor.
+export sealed ledger paymentToken: Bytes<32>;
+export ledger invoices: Map<Bytes<32>, InvoiceRecord>;
+export ledger escrow: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
+export ledger invoiceCount: Counter;
+export ledger paidCount: Counter;
+
+// PRD §6.3 — private inputs supplied by contracts/src/witnesses.ts.
+witness merchantSecret(): Bytes<32>;
+witness payerSecret(): Bytes<32>;
+
+// ---------------------------------------------------------------------------
+// PRD §6.4 — helper circuits (not exported).
+//
+// persistentCommit is hiding, so its output may be stored without disclose().
+// persistentHash is NOT hiding — hence the tags hash a secret-DERIVED public
+// key and never the secret itself. Domain separation keeps the merchant and
+// payer key spaces disjoint.
+// ---------------------------------------------------------------------------
+
+circuit merchantPubKey(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "tacitpay:merchant:"), sk]);
+}
+
+circuit payerPubKey(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "tacitpay:payer:"), sk]);
+}
+
+// Per-invoice tag: unlinkable across a merchant's invoices (PRD INV-2).
+circuit tagFor(pk: Bytes<32>, invoiceId: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pk, invoiceId]);
+}
+
+circuit commitInvoice(body: InvoiceBody, salt: Bytes<32>): Bytes<32> {
+  return persistentCommit<InvoiceBody>(body, salt);
+}
+
+// ---------------------------------------------------------------------------
+// PRD §6.6 — exported circuits (Wave 1).
+// ---------------------------------------------------------------------------
+
+// default<Bytes<32>> is the native token (NIGHT) colour; a stablecoin colour is
+// its own 32 bytes. Sealed ledger writes are a public boundary, hence disclose.
+constructor(token: Bytes<32>) {
+  paymentToken = disclose(token);
+}
+
+export circuit createInvoice(
+  invoiceId: Bytes<32>,
+  amount: Uint<64>,
+  memoHash: Bytes<32>,
+  salt: Bytes<32>,
+  expiresAt: Uint<64>
+): [] {
+  const id = disclose(invoiceId);
+  assert(!invoices.member(id), "Invoice already exists");
+  assert(amount > 0, "Amount must be positive");
+
+  const tag = tagFor(merchantPubKey(merchantSecret()), invoiceId);
+  // amount/memoHash/salt are never disclosed — only their commitment is.
+  const c = commitInvoice(InvoiceBody { amount: amount, memoHash: memoHash }, salt);
+
+  invoices.insert(
+    id,
+    InvoiceRecord {
+      ownerTag: disclose(tag),
+      commitment: c,
+      status: InvoiceStatus.OPEN,
+      expiresAt: disclose(expiresAt),
+      payerTag: default<Bytes<32>>
+    }
+  );
   invoiceCount.increment(1);
+}
+
+export circuit payInvoice(
+  invoiceId: Bytes<32>,
+  amount: Uint<64>,
+  memoHash: Bytes<32>,
+  salt: Bytes<32>,
+  coin: ShieldedCoinInfo
+): [] {
+  const id = disclose(invoiceId);
+  assert(invoices.member(id), "Unknown invoice");
+  const inv = invoices.lookup(id);
+  assert(inv.status == InvoiceStatus.OPEN, "Invoice is not open");
+  // expiresAt == 0 means "never expires" (PRD §6.1).
+  if (inv.expiresAt != 0) {
+    assert(blockTimeLt(inv.expiresAt), "Invoice expired");
+  }
+
+  // Proves the payer knows the invoice preimage without revealing it.
+  assert(
+    commitInvoice(InvoiceBody { amount: amount, memoHash: memoHash }, salt) == inv.commitment,
+    "Invoice details do not match"
+  );
+  assert(coin.color == paymentToken, "Wrong token");
+  assert(coin.value == amount as Uint<128>, "Wrong amount");
+
+  // Variant A custody: take the coin, then hand it to the ledger Map. The
+  // runtime fills in the Merkle index (PRD §6.5).
+  receiveShielded(disclose(coin));
+  escrow.insertCoin(id, disclose(coin), right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+
+  const ptag = tagFor(payerPubKey(payerSecret()), invoiceId);
+  invoices.insert(
+    id,
+    InvoiceRecord {
+      ownerTag: inv.ownerTag,
+      commitment: inv.commitment,
+      status: InvoiceStatus.PAID,
+      expiresAt: inv.expiresAt,
+      payerTag: disclose(ptag)
+    }
+  );
+  paidCount.increment(1);
+}
+
+export circuit withdraw(invoiceId: Bytes<32>): [] {
+  const id = disclose(invoiceId);
+  assert(invoices.member(id), "Unknown invoice");
+  const inv = invoices.lookup(id);
+  assert(inv.status == InvoiceStatus.PAID, "Nothing to withdraw");
+  // Ownership is proven from the witness secret, never from ownPublicKey()
+  // (which is prover-supplied and therefore not an authorization check).
+  assert(tagFor(merchantPubKey(merchantSecret()), invoiceId) == inv.ownerTag, "Not the invoice owner");
+
+  const coin = escrow.lookup(id);
+  // Full value goes out, so ShieldedSendResult.change is always none.
+  sendShielded(coin, left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey()), coin.value);
+  escrow.remove(id);
+
+  invoices.insert(
+    id,
+    InvoiceRecord {
+      ownerTag: inv.ownerTag,
+      commitment: inv.commitment,
+      status: InvoiceStatus.WITHDRAWN,
+      expiresAt: inv.expiresAt,
+      payerTag: inv.payerTag
+    }
+  );
+}
+
+export circuit cancelInvoice(invoiceId: Bytes<32>): [] {
+  const id = disclose(invoiceId);
+  assert(invoices.member(id), "Unknown invoice");
+  const inv = invoices.lookup(id);
+  assert(inv.status == InvoiceStatus.OPEN, "Only open invoices can be cancelled");
+  assert(tagFor(merchantPubKey(merchantSecret()), invoiceId) == inv.ownerTag, "Not the invoice owner");
+
+  invoices.insert(
+    id,
+    InvoiceRecord {
+      ownerTag: inv.ownerTag,
+      commitment: inv.commitment,
+      status: InvoiceStatus.CANCELLED,
+      expiresAt: inv.expiresAt,
+      payerTag: inv.payerTag
+    }
+  );
 }
