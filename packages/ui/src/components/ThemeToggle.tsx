@@ -1,20 +1,19 @@
-import { Monitor, Moon, Sun1 } from 'iconsax-reactjs';
+import { Moon, Sun1 } from 'iconsax-reactjs';
 
 import { cn } from '@/lib/utils';
 import { nextTheme, type ThemeChoice, useTheme } from '@/lib/theme';
 
-// One button that cycles system → light → dark. The icon shows the state it is
-// currently in, and the label says both that and what pressing it will do, so
-// the control is legible to a screen reader without a visible caption.
+// One button that switches dark ↔ light; dark is the default. The icon shows
+// the state it is currently in, and the label says both that and what pressing
+// it will do, so the control is legible to a screen reader without a visible
+// caption. The old third "system" state is gone with the dark-first default.
 
-const ICONS: Record<ThemeChoice, typeof Monitor> = {
-  system: Monitor,
+const ICONS: Record<ThemeChoice, typeof Moon> = {
   light: Sun1,
   dark: Moon,
 };
 
 const NAMES: Record<ThemeChoice, string> = {
-  system: 'follows your system',
   light: 'light',
   dark: 'dark',
 };

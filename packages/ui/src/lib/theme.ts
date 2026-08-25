@@ -1,16 +1,17 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
 /**
- * The visitor has three states, not two. "System" is the default and stores
- * nothing at all — the media query in index.css owns that case — so an explicit
- * choice is the only thing that ever reaches localStorage, and clearing it is
- * how you go back to following the OS.
+ * Dark is the house default: a first visit renders dark no matter what the OS
+ * prefers, and the toggle switches between exactly two states. Only an explicit
+ * choice reaches localStorage, and it survives reloads. The old third state —
+ * "follow the system" — was removed deliberately when dark became the default;
+ * the media query in index.css now only covers the no-JS fallback.
  *
  * Kept as a module-level store rather than a context so both shells can read it
  * without a provider, and so the pre-paint stamp in index.html and this file
- * agree on exactly one key.
+ * agree on exactly one key and one default.
  */
-export type ThemeChoice = 'system' | 'light' | 'dark';
+export type ThemeChoice = 'light' | 'dark';
 
 export const THEME_STORAGE_KEY = 'tacitpay:theme';
 
@@ -18,28 +19,28 @@ const listeners = new Set<() => void>();
 
 const readStored = (): ThemeChoice => {
   try {
-    const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    return stored === 'light' || stored === 'dark' ? stored : 'system';
+    return localStorage.getItem(THEME_STORAGE_KEY) === 'light' ? 'light' : 'dark';
   } catch {
-    // Private windows and blocked site data both throw here. Following the
-    // system is the correct answer when we cannot remember a choice.
-    return 'system';
+    // Private windows and blocked site data both throw here. The dark default
+    // is the correct answer when we cannot remember a choice.
+    return 'dark';
   }
 };
 
-let choice: ThemeChoice = typeof window === 'undefined' ? 'system' : readStored();
+let choice: ThemeChoice = typeof window === 'undefined' ? 'dark' : readStored();
 
 const stamp = (next: ThemeChoice) => {
-  const root = document.documentElement;
-  if (next === 'system') delete root.dataset.theme;
-  else root.dataset.theme = next;
+  document.documentElement.dataset.theme = next;
+  // Keep the browser chrome (the mobile address bar) on the page's own ground.
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', next === 'light' ? '#fafafa' : '#09090b');
 };
 
 export const setTheme = (next: ThemeChoice) => {
   choice = next;
   try {
-    if (next === 'system') localStorage.removeItem(THEME_STORAGE_KEY);
-    else localStorage.setItem(THEME_STORAGE_KEY, next);
+    localStorage.setItem(THEME_STORAGE_KEY, next);
   } catch {
     // A theme we cannot persist still applies for this visit.
   }
@@ -50,9 +51,9 @@ export const setTheme = (next: ThemeChoice) => {
 /** The choice in effect right now, independent of any render. */
 export const getTheme = (): ThemeChoice => choice;
 
-/** system → light → dark → system. */
+/** dark ↔ light. */
 export const nextTheme = (current: ThemeChoice): ThemeChoice =>
-  current === 'system' ? 'light' : current === 'light' ? 'dark' : 'system';
+  current === 'dark' ? 'light' : 'dark';
 
 const subscribe = (notify: () => void) => {
   listeners.add(notify);
@@ -65,7 +66,7 @@ export const useTheme = () => {
   const theme = useSyncExternalStore(
     subscribe,
     () => choice,
-    () => 'system' as ThemeChoice,
+    () => 'dark' as ThemeChoice,
   );
   // Deliberately reads the store rather than the rendered value: a click that
   // lands before React has re-rendered would otherwise advance from a stale

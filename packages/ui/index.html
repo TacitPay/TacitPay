@@ -12,24 +12,29 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
+    <!-- Dark is the default; the pre-paint script below flips this to the light
+         value only when a stored explicit choice says so. -->
+    <meta name="theme-color" content="#09090b" />
     <!-- Fonts are bundled from @fontsource and served from this origin. The page
          makes no third-party request at all, so visiting an invoice link tells
          nobody but the host that it happened. See src/index.css. -->
     <title>TacitPay — private invoicing on Midnight</title>
     <script>
-      // Stamp an explicit theme choice before first paint, or the page renders
-      // light for a frame and then flips. "system" stores nothing, so there is
-      // nothing to stamp and the media query in index.css owns it. Keep the key
-      // in step with src/lib/theme.ts.
+      // Dark is the default. Stamp it before first paint so the page never
+      // renders light for a frame and then flips. Only a stored explicit
+      // 'light' choice overrides it — a first visit, a private window and
+      // blocked site data all land on dark. Keep the key and the default in
+      // step with src/lib/theme.ts.
+      var tpTheme = null;
       try {
-        var tpTheme = localStorage.getItem('tacitpay:theme');
-        if (tpTheme === 'light' || tpTheme === 'dark')
-          document.documentElement.dataset.theme = tpTheme;
+        tpTheme = localStorage.getItem('tacitpay:theme');
       } catch (tpError) {
-        // Blocked site data: follow the system, which needs no stamp.
+        // Blocked site data: fall through to the dark default.
       }
+      var tpDark = tpTheme !== 'light';
+      document.documentElement.dataset.theme = tpDark ? 'dark' : 'light';
+      var tpMeta = document.querySelector('meta[name="theme-color"]');
+      if (tpMeta) tpMeta.setAttribute('content', tpDark ? '#09090b' : '#fafafa');
     </script>
   </head>
   <body>
