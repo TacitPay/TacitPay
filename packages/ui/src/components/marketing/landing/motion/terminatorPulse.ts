@@ -4,34 +4,33 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { MotionCleanup } from './liveLoop';
 
 /* TERMINATOR PULSE STORYBOARD
- *  0.00s  the private end of the line ticks: a commitment is being drafted
- *  0.45s  it fires from the private end toward the settlement node
- *  0.80s  the lockup blooms as it crosses — the only moment both sides touch
+ *  0.45s  a commitment fires from the private end toward the settlement node
+ *  0.80s  it slips behind the lockup — the crossing itself shows NOTHING: the
+ *         centre is deliberately effect-free, identity never reacts
  *  1.35s  it re-emerges on the public side, carrying nothing but a status
- *  1.75s  the public end of the line ticks to receive it
+ *
+ * (The annotated line ends this used to tick are gone — the pulse is now the
+ * packet alone, and the lead-in beat before 0.45 is deliberate breath.)
  *
  * The whole product is this one gesture: private data goes in, a public fact
  * comes out, and the numbers never make the crossing. Two things keep it from
  * reading as a loop: the gap between crossings is random, and so is the pace of
  * each one (see `PACE` below), so no two are the same length or the same speed.
+ *
+ * The idle gaps are short on purpose — a crossing lands every ~3-4s. At the
+ * original 1.1-2.6s idle the line sat inert long enough that the gesture read
+ * as an occasional glitch rather than as the line's own activity.
  */
 export const PULSE = {
-  firstDelay: 1.1,
-  idleMin: 1.1,
-  idleMax: 2.6,
-  draftAt: 0,
-  draftDuration: 0.34,
+  firstDelay: 0.6,
+  idleMin: 0.35,
+  idleMax: 1.2,
   fireAt: 0.45,
   fireDuration: 0.46,
-  bloomAt: 0.8,
-  bloomHalf: 0.26,
-  bloomOpacity: 0.4,
   emergeAt: 1.35,
   emergeDuration: 0.5,
-  tickAt: 1.75,
-  tickHalf: 0.2,
-  settleAt: 2.5,
-  settleDuration: 0.4,
+  /* Unchanged from when the tick-and-settle tail existed, so the measured
+     cadence (a crossing every ~3-4s) stays exactly what it was. */
   cycleEnd: 2.95,
 } as const;
 
@@ -51,14 +50,8 @@ const PUBLIC_END = -0.9;
 export const animateTerminatorPulse = (root: HTMLElement): MotionCleanup => {
   const splash = root.querySelector<HTMLElement>('[data-tp-splash]');
   const packet = root.querySelector<HTMLElement>('[data-tp-beam-packet]');
-  const bloom = root.querySelector<HTMLElement>('[data-tp-lockup-bloom]');
 
-  if (!splash || !packet || !bloom) return () => undefined;
-
-  // The annotated line ends are optional furniture — below `xl` they are not
-  // rendered at all, and the pulse still has to run without them.
-  const draft = root.querySelector<HTMLElement>('[data-tp-flank-draft]');
-  const tick = root.querySelector<HTMLElement>('[data-tp-flank-tick]');
+  if (!splash || !packet) return () => undefined;
 
   // Half the splash width, read fresh on every cycle so a resize mid-visit does
   // not leave the packet travelling to a stale coordinate.
@@ -113,13 +106,6 @@ export const animateTerminatorPulse = (root: HTMLElement): MotionCleanup => {
   }
 
   timeline
-    // The private end ticks: something is being drafted over there.
-    .fromTo(
-      draft ? [draft] : [],
-      { scaleY: 0.15, opacity: 0.35, transformOrigin: 'bottom center' },
-      { scaleY: 1, opacity: 1, duration: PULSE.draftDuration, ease: 'power2.out' },
-      PULSE.draftAt,
-    )
     // The commitment crosses from the private end into the masked gate.
     .fromTo(
       packet,
@@ -132,18 +118,8 @@ export const animateTerminatorPulse = (root: HTMLElement): MotionCleanup => {
       },
       PULSE.fireAt,
     )
-    // Both sides touch for exactly one moment, and it is the mark that shows it.
-    .fromTo(
-      bloom,
-      { opacity: 0, scale: 0.97 },
-      { opacity: PULSE.bloomOpacity, scale: 1, duration: PULSE.bloomHalf, ease: 'power2.out' },
-      PULSE.bloomAt,
-    )
-    .to(
-      bloom,
-      { opacity: 0, scale: 1.04, duration: PULSE.bloomHalf, ease: 'power2.in' },
-      PULSE.bloomAt + PULSE.bloomHalf,
-    )
+    // The crossing itself is silent: the packet slips behind the lockup with
+    // no bloom and no glow. The centre never reacts — see SplashLockup.
     // What comes out the public side is a status and nothing else.
     .fromTo(
       packet,
@@ -156,18 +132,7 @@ export const animateTerminatorPulse = (root: HTMLElement): MotionCleanup => {
       },
       PULSE.emergeAt,
     )
-    .fromTo(
-      tick ? [tick] : [],
-      { scaleY: 0.15, opacity: 0.35, transformOrigin: 'bottom center' },
-      { scaleY: 1, opacity: 1, duration: PULSE.tickHalf, ease: 'power3.out' },
-      PULSE.tickAt,
-    )
-    .to(
-      [tick, draft].filter(Boolean),
-      { opacity: 0.55, duration: PULSE.settleDuration, ease: 'sine.inOut' },
-      PULSE.settleAt,
-    )
-    // A hard endpoint keeps `onComplete` honest even when every flank is absent.
+    // A hard endpoint keeps `onComplete` honest with nothing after the emerge.
     .set({}, {}, PULSE.cycleEnd);
 
   const visibility = ScrollTrigger.create({

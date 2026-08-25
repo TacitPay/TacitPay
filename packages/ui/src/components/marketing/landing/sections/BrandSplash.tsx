@@ -20,8 +20,8 @@ import { SplashLockup } from '../SplashLockup';
  * a resolved theme read in React would flash on first paint and would duplicate
  * what the media query already knows.
  *
- * The GROUNDS turn over, and so do the two line ends and the field treatments,
- * because a "public ledger" label on the private ground would simply be wrong.
+ * The GROUNDS turn over, and so do the field treatments,
+ * because a public-side texture on the private ground would simply be wrong.
  * The LOCKUP does not: identity is the one thing here that must not move when
  * the theme changes. That also keeps it in the page's own register, since the
  * left half is always the half matching `--tp-surface`.
@@ -46,74 +46,11 @@ import { SplashLockup } from '../SplashLockup';
  * The terminator itself still crosses, and should: it is a line, and a line
  * that changes tone as it passes the eclipse edge is the point of it.
  *
- * The line is annotated at both ends the way EclipseMark annotates the mark:
- * what the public side holds, and what the private side keeps. These are the
- * real field names from the contract, not invented rows — an earlier version
- * put a fake ledger tape and fake redaction bars out here, which read as
- * decoration pretending to be data and told the visitor nothing.
+ * The line used to be annotated at both ends — PUBLIC LEDGER / PRIVATE STATE
+ * with the contract's field names. Removed on request: the grounds, the field
+ * textures and the promise clauses already say which side is which, so the
+ * labels were captioning an argument the paper was already making.
  */
-
-/**
- * One end of the line: a label, a rule bleeding in from the page edge, and a
- * drop onto the terminator.
- *
- * The L-shaped leader is EclipseMark's own annotation grammar — the same shape
- * it uses to point at the disc and the ring — so the splash reads as the same
- * technical drawing rather than as floating text.
- *
- * Placed with LOGICAL properties, never `left`/`right`. Outward is the inline
- * start for the public end and the inline end for the private one; the row's
- * `direction` decides which physical side that actually is, so both annotations
- * turn over with the theme without a single conditional in here.
- */
-function LineEnd({
-  side,
-  title,
-  holds,
-}: {
-  side: 'public' | 'private';
-  title: string;
-  holds: string;
-}) {
-  const isPublic = side === 'public';
-  return (
-    <div
-      data-tp-flank={side}
-      className={`flex flex-col ${isPublic ? 'items-start' : 'items-end'}`}
-      // The scroll scrub pushes these off the page, and off is a different
-      // direction on each side AND in each theme. It animates this variable
-      // rather than `x` so the mirror can be applied here, in CSS, where the
-      // theme is actually known — and so GSAP never owns this transform.
-      style={{ transform: 'translateX(calc(var(--tp-flank-x, 0px) * var(--tp-split-flip)))' }}
-    >
-      <p className="text-[0.625rem] font-medium tracking-[0.16em] text-tp-ink-faint uppercase">
-        {title}
-      </p>
-      {/* Mono earns its place here: these are the ledger's own field names. */}
-      <p className="mt-2 font-mono text-xs text-tp-ink-muted">{holds}</p>
-
-      <div className="relative mt-4 h-9 w-full">
-        {/* Runs out past the page edge; the section clips it. A rule that
-            stops short reads as a box around the label. */}
-        <span
-          className={`absolute top-0 h-px bg-tp-rule-strong ${
-            isPublic
-              ? '[inset-inline-end:0] [inset-inline-start:-50vw]'
-              : '[inset-inline-end:-50vw] [inset-inline-start:0]'
-          }`}
-        />
-        {/* Drops onto the terminator at the inner end, so the label reads as
-            measured off the line. Lit by the pulse. */}
-        <span
-          {...(isPublic ? { 'data-tp-flank-tick': true } : { 'data-tp-flank-draft': true })}
-          className={`absolute top-0 h-9 w-px bg-tp-rule-strong ${
-            isPublic ? '[inset-inline-end:0]' : '[inset-inline-start:0]'
-          }`}
-        />
-      </div>
-    </div>
-  );
-}
 
 export function BrandSplash() {
   return (
@@ -133,6 +70,7 @@ export function BrandSplash() {
           then resolves to exactly the register the rest of the page uses — so
           the fallback costs nothing and needs no second set of colours. */}
       <div
+        data-tp-grounds
         aria-hidden="true"
         className="tp-split pointer-events-none absolute inset-0 -z-30 hidden sm:block"
       />
@@ -228,23 +166,14 @@ export function BrandSplash() {
                   hairline core sitting exactly on the rail. Neither takes a
                   transform of its own — GSAP owns the wrapper's. */}
               <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center">
-                <div data-tp-beam-packet className="relative h-3 w-44 opacity-0">
+                {/* Sized to be an event, not a glint: at h-3/w-44 the crossing
+                    was easy to miss entirely on a 1512px line. */}
+                <div data-tp-beam-packet className="relative h-5 w-72 opacity-0">
                   <div className="tp-flash-halo absolute inset-0" />
                   <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-[linear-gradient(to_right,transparent,rgb(var(--tp-glow))_50%,transparent)]" />
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Both line ends in one row, so they swap sides with the grounds
-              they annotate. `direction` is what does it: it reverses the row
-              AND flips every logical property inside each end. */}
-          <div
-            aria-hidden="true"
-            className="tp-split-ink pointer-events-none absolute inset-x-0 top-1/2 hidden -translate-y-full justify-between [direction:var(--tp-split-rtl)] xl:flex"
-          >
-            <LineEnd side="public" title="Public ledger" holds="status · commitment" />
-            <LineEnd side="private" title="Private state" holds="amount · memo · parties" />
           </div>
 
           <SplashLockup className="tp-split-ink" />
@@ -307,11 +236,16 @@ export function BrandSplash() {
 
           A direct child of the SECTION rather than the content column: the
           halves belong to the viewport, and the column caps at 92rem, so
-          centring inside it would drift off the halves on a wide screen. The
-          bottom offset keeps the text above the ground's bottom fade (solid
-          until 84% of the section's height). */}
+          centring inside it would drift off the halves on a wide screen.
+
+          `data-tp-promise` puts it in the scroll scrub with an EARLY exit:
+          the grounds now dissolve on scroll, and a half-faded dark ground
+          passes through exactly the mid-grey where difference ink returns
+          mid-grey — so this text must already be gone by then, or it ghosts
+          out mid-scroll instead of fading. */}
       <p
         data-tp-splash-detail
+        data-tp-promise
         className="tp-split-ink pointer-events-none absolute inset-x-0 bottom-[clamp(6rem,17vh,10.5rem)] hidden text-tp-ink sm:flex sm:[flex-direction:var(--tp-split-flow)]"
       >
         <span className="flex-1 basis-0 px-[clamp(1.5rem,4vw,3rem)] text-center text-[clamp(1.2rem,1.85vw,1.8rem)] leading-snug font-medium tracking-[-0.01em] text-balance">

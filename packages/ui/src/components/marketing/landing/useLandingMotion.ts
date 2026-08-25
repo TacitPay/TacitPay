@@ -37,9 +37,9 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
     const splash = root.querySelector<HTMLElement>('[data-tp-splash]');
     const beam = root.querySelector<HTMLElement>('[data-tp-beam]');
     const lockup = root.querySelector<HTMLElement>('[data-tp-lockup]');
-    const publicFlank = root.querySelector<HTMLElement>('[data-tp-flank="public"]');
-    const privateFlank = root.querySelector<HTMLElement>('[data-tp-flank="private"]');
     const fields = gsap.utils.toArray<HTMLElement>('[data-tp-field]', root);
+    const grounds = root.querySelector<HTMLElement>('[data-tp-grounds]');
+    const promise = root.querySelector<HTMLElement>('[data-tp-promise]');
 
     // ---------------------------------------------------------- load resolve
     if (splash && beam && lockup) {
@@ -75,11 +75,6 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
           '[data-tp-splash-detail]',
           { y: 14, opacity: 0, duration: 0.7, ease: 'power3.out', stagger: 0.08 },
           RESOLVE.details,
-        )
-        .from(
-          [publicFlank, privateFlank].filter(Boolean),
-          { opacity: 0, duration: 0.9, ease: 'power2.out' },
-          RESOLVE.details,
         );
 
       // ------------------------------------------------------- scroll scrub
@@ -113,26 +108,6 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
           { opacity: 0.72, scale: 0.965, yPercent: -6, ...held },
           0,
         );
-      // The line ends leave the way they came in — outward, off the page. Which
-      // way that physically is depends on the theme, because the splash mirrors
-      // its two grounds, so the distance is animated as a CSS variable and the
-      // element's own `transform` applies `--tp-split-flip` to it. Animating
-      // `x` here would hardcode a direction at setup time and then be wrong for
-      // the rest of the session the moment anyone touched the theme toggle.
-      if (publicFlank)
-        scrub.fromTo(
-          publicFlank,
-          { '--tp-flank-x': '0px', autoAlpha: 1 },
-          { '--tp-flank-x': '-44px', autoAlpha: 0, ...held },
-          0,
-        );
-      if (privateFlank)
-        scrub.fromTo(
-          privateFlank,
-          { '--tp-flank-x': '0px', autoAlpha: 1 },
-          { '--tp-flank-x': '44px', autoAlpha: 0, ...held },
-          0,
-        );
       // The field drifts slower than the page, which reads as depth rather
       // than as movement — about one grid square across the whole splash.
       if (fields.length)
@@ -142,6 +117,29 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
           { yPercent: -4, opacity: 0.35, ...held },
           0,
         );
+      // The grounds dissolve as the splash leaves. At rest they carry no fade
+      // at all — the static bottom fade read as a grey band under the promise
+      // lines — so this scrub IS the dissolve, and with motion off the halves
+      // simply stay solid. Short duration, gentle ease-in: underway within the
+      // first fifth of the scroll and FULLY dissolved just past halfway, so
+      // the gesture reads as the fade rather than as a long hold — one full
+      // linear fade parked a half-dissolved grey slab mid-viewport, and one
+      // full-length ease-in made the visitor scroll most of a screen before
+      // anything appeared to happen.
+      if (grounds)
+        scrub.fromTo(
+          grounds,
+          { opacity: 1 },
+          { opacity: 0, duration: 0.28, ease: 'power1.in', immediateRender: false },
+          0,
+        );
+      // The promise exits first (0.16 against the grounds' 0.28): its ink is
+      // composited in `difference`, and a half-dissolved dark ground passes
+      // through exactly the mid-grey where difference returns mid-grey — the
+      // words must be gone before the ground gets there, or they ghost out
+      // instead of fading.
+      if (promise)
+        scrub.fromTo(promise, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.16, ...held }, 0);
     }
 
     // ------------------------------------------------------ closing eclipse

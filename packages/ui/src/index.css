@@ -89,10 +89,11 @@
      share one value, because they are not the same phenomenon: on a dark ground
      the flash is light blooming through the line and a little carries a long
      way, while on white the identical alpha is ink and reads as a smudge next
-     to a rail that is already dark. 0.9 here and 0.5 there were matched by eye
-     until both land as the same event. */
-  --tp-flash: 0.9;
-  --tp-flash-mid: 0.36;
+     to a rail that is already dark. 1.0 here and 0.64 there were matched by
+     eye until both land as the same event (raised together from 0.9/0.5 when
+     the crossing was asked to carry more weight). */
+  --tp-flash: 1;
+  --tp-flash-mid: 0.46;
 
   /* THE SPLASH SPLIT.
 
@@ -103,25 +104,22 @@
      on paper the dark private panel is the half that departs from the page,
      and on the void it is the light public one.
 
-     The two grounds are theme-invariant for the same reason. Only the four
+     The two grounds are theme-invariant for the same reason. Only the three
      orientation tokens below flip. */
   --tp-public-ground: var(--color-zinc-50);
   --tp-private-ground: var(--color-zinc-950);
   /* Light: public reads first, on the left. `dir` points public-ward and
      `back` private-ward, because a gradient direction cannot be negated the
-     way a flex direction can. `flip` is the ±1 the line ends multiply their
-     scroll travel by, so "outward" stays outward once the sides swap.
+     way a flex direction can.
 
      The LOCKUP is deliberately absent from this list. Identity does not move
      with the theme — and because the light half is on the left on paper and on
      the right on the void, the left half is always the one matching
      `--tp-surface`, so a lockup pinned there also stays in the page's own
      register and keeps agreeing with the header logo. */
-  --tp-split-rtl: ltr;
   --tp-split-flow: row;
   --tp-split-dir: to right;
   --tp-split-back: to left;
-  --tp-split-flip: 1;
   /* Ink for the split hero, and the reason it needs its own set.
 
      Every mark on the splash lands on one ground or the other, and the layout
@@ -227,17 +225,15 @@
     --tp-warn: var(--color-amber-500);
     --tp-mark-ring: var(--color-zinc-500);
     --tp-glow: 250 250 250;
-    --tp-flash: 0.5;
-    --tp-flash-mid: 0.16;
+    --tp-flash: 0.64;
+    --tp-flash-mid: 0.21;
 
-    /* Mirrored: the light public half moves to the right, and the lockup,
-       the two field treatments and the line ends all turn over with it. The
-       grounds themselves do not change — see the light register. */
-    --tp-split-rtl: rtl;
+    /* Mirrored: the light public half moves to the right, and the two field
+       treatments turn over with it. The grounds themselves do not change —
+       see the light register. */
     --tp-split-flow: row-reverse;
     --tp-split-dir: to left;
     --tp-split-back: to right;
-    --tp-split-flip: -1;
   }
 }
 
@@ -290,17 +286,15 @@
   --tp-warn: var(--color-amber-500);
   --tp-mark-ring: var(--color-zinc-500);
   --tp-glow: 250 250 250;
-  --tp-flash: 0.5;
-  --tp-flash-mid: 0.16;
+  --tp-flash: 0.64;
+  --tp-flash-mid: 0.21;
 
-  /* Mirrored: the light public half moves to the right, and the lockup, the
-     two field treatments and the line ends all turn over with it. The grounds
-     themselves do not change — see the light register. */
-  --tp-split-rtl: rtl;
+  /* Mirrored: the light public half moves to the right, and the two field
+     treatments turn over with it. The grounds themselves do not change — see
+     the light register. */
   --tp-split-flow: row-reverse;
   --tp-split-dir: to left;
   --tp-split-back: to right;
-  --tp-split-flip: -1;
 }
 
 @theme inline {
@@ -411,19 +405,20 @@
      The seam sits at 50%: a true half, and also the 0.8% gap BETWEEN the two
      actions at every width from 640 up, so the terminator never cuts a button.
 
-     The bottom fades out to nothing over the last eighth, which reveals the
-     section's own `bg-tp-surface` underneath — that is what dissolves the odd
-     half back into the page rather than butting it against the next section's
-     ground. Short on purpose: taken over a quarter of the height it stops
-     reading as a falloff and starts reading as fog. */
+     The grounds run SOLID to the section's bottom edge — no static fade. A
+     baked-in bottom fade sat directly under the promise lines and read as a
+     grey band hanging off each half rather than as a falloff. The dissolve is
+     scroll-driven instead: useLandingMotion fades this whole layer out as the
+     splash leaves the viewport, so at rest the halves are committed all the
+     way down and the section's border is the one clean edge against the next
+     ground. With motion off the halves simply stay solid, which is the
+     resting state anyway. */
   .tp-split {
     background-image: linear-gradient(
       var(--tp-split-dir),
       var(--tp-public-ground) 0 49%,
       var(--tp-private-ground) 51% 100%
     );
-    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 96%);
-    mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 96%);
   }
 
   /* Everything drawn ON the split, composited as a departure from whichever
@@ -445,8 +440,8 @@
     --tp-surface: var(--tp-split-hole);
     --tp-mark-ring: var(--tp-split-mark-ring);
     --tp-glow: 255 255 255;
-    --tp-flash: 0.9;
-    --tp-flash-mid: 0.36;
+    --tp-flash: 1;
+    --tp-flash-mid: 0.46;
 
     /* The actions are pills with their own ground, so they invert whole: a
        near-white pill with knockout text on the void, near-black on paper. */

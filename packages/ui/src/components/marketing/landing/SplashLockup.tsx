@@ -33,13 +33,9 @@ export function SplashLockup({ className = '' }: { className?: string }) {
       // hold a mark and a name side by side.
       className={`relative isolate inline-flex items-center justify-center gap-[clamp(0.9rem,2.2vw,1.6rem)] sm:grid sm:w-full sm:grid-cols-2 sm:gap-[clamp(1.4rem,3vw,2.6rem)] ${className}`}
     >
-      {/* Lit only while a commitment crosses the terminator, by the pulse. */}
-      <div
-        data-tp-lockup-bloom
-        aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-1/2 -z-10 h-[clamp(9rem,20vw,17rem)] w-[clamp(20rem,42vw,42rem)] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgb(var(--tp-glow)/0.3)_0%,transparent_70%)] opacity-0"
-      />
-
+      {/* No bloom, no glow: the centre is deliberately still. The pulse's whole
+          effect lives out on the line — the identity it passes behind does not
+          light up, because identity is the one thing here that never reacts. */}
       <svg
         viewBox="112 82 256 176"
         fill="none"
