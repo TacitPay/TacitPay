@@ -256,25 +256,18 @@ export function BrandSplash() {
           <h1 id="splash-title" className="sr-only">
             TacitPay — private invoicing and settlement on Midnight
           </h1>
-          {/* The promise was always two sentences, and they turn out to be the
-              public claim and the private one. So it breaks at its own full
-              stop and each clause takes the ground it is describing: "anyone
-              can verify" on the public side, "only you can read" on the
-              private one. The clauses swap with the grounds — they make a
-              claim about a side, so leaving them pinned would put "anyone can
-              verify" under a label reading PRIVATE STATE in one theme.
-
-              Below `sm` the two spans simply run together as one sentence. */}
+          {/* The promise, below `sm` only: the split is off on a phone, so the
+              two sentences run together as one centred line here in the stack.
+              From `sm` up each clause moves to the bottom centre of its own
+              ground — that copy lives at the END of the section, because it
+              must centre on the VIEWPORT's halves and this column caps at
+              92rem. Only one of the two copies is ever displayed, so screen
+              readers never hear the promise twice. */}
           <p
             data-tp-splash-detail
-            className="tp-split-ink max-w-lg text-base leading-7 text-balance text-tp-ink-muted sm:flex sm:w-full sm:max-w-none sm:gap-[clamp(1.4rem,3vw,2.6rem)] sm:text-wrap sm:[flex-direction:var(--tp-split-flow)]"
+            className="tp-split-ink max-w-lg text-lg leading-8 text-balance text-tp-ink-muted sm:hidden"
           >
-            <span className="sm:flex-1 sm:[text-align:var(--tp-seam-a)]">
-              Settlement anyone can verify.
-            </span>{' '}
-            <span className="sm:flex-1 sm:[text-align:var(--tp-seam-b)]">
-              Numbers only you can read.
-            </span>
+            <span>Settlement anyone can verify.</span> <span>Numbers only you can read.</span>
           </p>
 
           {/* One action, centred — so it is the only thing on the splash that
@@ -303,6 +296,31 @@ export function BrandSplash() {
           </div>
         </div>
       </div>
+
+      {/* The promise, from `sm` up. The two clauses were always the public
+          claim and the private one, so each sits at the BOTTOM CENTRE of the
+          ground it describes — "anyone can verify" on the public half, "only
+          you can read" on the private half — set larger than body copy so the
+          pairing reads as the splash's argument, not a caption. They swap with
+          the grounds via `--tp-split-flow`, because pinning them would put
+          "anyone can verify" under PRIVATE STATE in one theme.
+
+          A direct child of the SECTION rather than the content column: the
+          halves belong to the viewport, and the column caps at 92rem, so
+          centring inside it would drift off the halves on a wide screen. The
+          bottom offset keeps the text above the ground's bottom fade (solid
+          until 84% of the section's height). */}
+      <p
+        data-tp-splash-detail
+        className="tp-split-ink pointer-events-none absolute inset-x-0 bottom-[clamp(6rem,17vh,10.5rem)] hidden text-tp-ink sm:flex sm:[flex-direction:var(--tp-split-flow)]"
+      >
+        <span className="flex-1 basis-0 px-[clamp(1.5rem,4vw,3rem)] text-center text-[clamp(1.2rem,1.85vw,1.8rem)] leading-snug font-medium tracking-[-0.01em] text-balance">
+          Settlement anyone can verify.
+        </span>
+        <span className="flex-1 basis-0 px-[clamp(1.5rem,4vw,3rem)] text-center text-[clamp(1.2rem,1.85vw,1.8rem)] leading-snug font-medium tracking-[-0.01em] text-balance">
+          Numbers only you can read.
+        </span>
+      </p>
     </section>
   );
 }

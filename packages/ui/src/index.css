@@ -123,17 +123,6 @@
   --tp-split-dir: to right;
   --tp-split-back: to left;
   --tp-split-flip: 1;
-  /* The promise breaks at its own full stop, one clause per ground, so each
-     half sits on the side it is describing. The clauses therefore turn over
-     with the grounds exactly as the line ends do, and these are the two
-     alignments that swap with them — each clause hugs the terminator.
-
-     Alignment cannot come from `direction` here, which was the obvious reach:
-     bidi moves a trailing full stop to the FRONT of an LTR clause inside an
-     RTL box, and both sentences came out reading ".Numbers only you can read". */
-  --tp-seam-a: right;
-  --tp-seam-b: left;
-
   /* Ink for the split hero, and the reason it needs its own set.
 
      Every mark on the splash lands on one ground or the other, and the layout
@@ -250,8 +239,6 @@
     --tp-split-dir: to left;
     --tp-split-back: to right;
     --tp-split-flip: -1;
-    --tp-seam-a: left;
-    --tp-seam-b: right;
   }
 }
 
@@ -315,8 +302,6 @@
   --tp-split-dir: to left;
   --tp-split-back: to right;
   --tp-split-flip: -1;
-  --tp-seam-a: left;
-  --tp-seam-b: right;
 }
 
 @theme inline {
