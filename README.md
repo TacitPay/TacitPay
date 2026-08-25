@@ -8,11 +8,12 @@
 **Private invoicing & settlement on Midnight — private by default, provable on demand.**
 
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
-![Status](https://img.shields.io/badge/status-pre--Wave%201%20scaffold-orange)
+![Status](https://img.shields.io/badge/status-Wave%201%20in%20progress-yellow)
+![Tests](https://img.shields.io/badge/unit%20tests-27%20passing-brightgreen)
 
-> **Status:** repository scaffold for the [Midnight Buildathon 2026](https://docs.midnight.network) (AKINDO WaveHack, Waves 1–3, Aug 27 – Nov 27).
+> **Status:** Wave 1 of the [Midnight Buildathon 2026](https://docs.midnight.network) (AKINDO WaveHack, Waves 1–3, Aug 27 – Nov 27).
+> The contract and its unit matrix are complete; the API, CLI and UI are landing, and the Preview deployment address appears here once deployed.
 > The full product spec is in [`PRD.md`](./PRD.md) — the single source of truth for this project.
-> Wave 1 implementation starts Aug 27; this README's placeholder sections fill in as it ships.
 
 TacitPay lets a merchant issue an invoice and get paid in a stablecoin on Midnight so that _anyone_ can verify the invoice was settled, while the amount, the counterparties, and the invoice contents stay private — and the merchant can later prove facts about their revenue (e.g. "I received ≥ X this quarter") to an auditor without revealing the underlying invoices.
 
@@ -30,7 +31,7 @@ TacitPay uses Midnight's dual-ledger model to hold both ends:
 | Payer identity          | Hidden (shielded payment, per-invoice tag) | —                       | Not learned from chain | Only if payer proves it    |
 | Invoice exists + status | **Public by design**                       | Public                  | Public                 | Public                     |
 
-The only values ever `disclose()`d are on the allowed-public list in PRD §4.3. The eight privacy invariants (INV-1…INV-8) each get a test — see [`docs/PRIVACY.md`](./docs/PRIVACY.md).
+The only values ever `disclose()`d are on the allowed-public list in PRD §4.3. The eleven privacy invariants (INV-1…INV-11) each get a test — see [`docs/PRIVACY.md`](./docs/PRIVACY.md).
 
 ## Dual-ledger design
 
@@ -45,24 +46,57 @@ More in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 ## Contract
 
-`contracts/tacitpay.compact` currently holds a **compiling placeholder**, verified locally with compact compiler 0.31.1. The Wave 1 circuits — `createInvoice`, `payInvoice`, `withdraw`, `cancelInvoice` with Variant A escrow — are specified in PRD §6 and land Days 1–2 of the wave.
+`contracts/tacitpay.compact` implements the four Wave 1 circuits — `createInvoice`, `payInvoice`, `withdraw`, `cancelInvoice` — with Variant A escrow, compiled by compact compiler 0.31.1 against `@midnight-ntwrk/compact-runtime` 0.16.0.
 
-## How to test (current scaffold)
+| Circuit         | Asserts                                                                           | Ever made public                             |
+| --------------- | --------------------------------------------------------------------------------- | -------------------------------------------- |
+| `createInvoice` | id unused, amount > 0                                                             | invoice id, owner tag, expiry, commitment    |
+| `payInvoice`    | invoice OPEN, not expired, commitment matches the preimage, coin colour and value | payer tag, status, escrowed coin (Variant A) |
+| `withdraw`      | invoice PAID, caller's secret derives the stored owner tag                        | status                                       |
+| `cancelInvoice` | invoice OPEN, caller's secret derives the stored owner tag                        | status                                       |
+
+The amount, memo and both parties' secrets are never disclosed — only a `persistentCommit` of the invoice body reaches the ledger. Ownership is proven from the witness secret, never from `ownPublicKey()` (which is prover-supplied and so is not an authorization check).
+
+## How to test
 
 ```bash
 corepack enable         # yarn 4.18.0 via packageManager field
 yarn install
 yarn compile            # requires the compact CLI — see PRD §0.2
 yarn typecheck
-yarn test               # unit tests (no network, no Docker)
-yarn dev                # (inside packages/ui) landing page placeholder
+yarn test               # full unit suite — no network, no Docker, no wallet
+yarn workspace @tacitpay/ui run dev    # the app on http://localhost:5173
 ```
 
-Judge paths (a) unit-only, (b) local devnet integration, (c) Preview with Lace — including wallet setup, faucets and proof-server steps — are a Wave 1 deliverable (PRD §17.1).
+Local devnet (only needed for integration tests and the judge sandbox):
+
+```bash
+git clone https://github.com/midnightntwrk/midnight-local-dev.git ../midnight-local-dev
+yarn env:up             # node :9944 · indexer :8088 · proof server :6300
+yarn env:status         # container state + live endpoint probes
+yarn env:down
+```
+
+### Proving: you choose who generates the proof
+
+Generating a ZK proof requires the private invoice data, so whoever proves it sees it. TacitPay never operates a prover — instead it feature-detects, in this order:
+
+1. **In your wallet** — 1AM proves in-browser (WASM). No Docker, nothing leaves the tab.
+2. **A local proof server** — `localhost:6300` via Docker. Required by Lace today; your data stays on your machine.
+3. **A prover you host** — your own server over TLS, set in `/settings`.
+
+The active tier is shown in the app. Full reasoning: PRD §4.1 and decision D-010.
 
 ## Test inventory
 
-The unit matrix **U-01…U-28** (PRD §11.2) — the Wave 1 core plus the Wave 2/3 circuits (milestone escrow, refunds, series derivation, audit proofs) — is pre-registered as vitest todos and converts to real simulation tests as the circuits land. Current live tests: scaffold sanity + network-config guards.
+The unit matrix is **U-01…U-28** (PRD §11.2). Wave 1's rows are live; the Wave 2/3 rows stay pre-registered as vitest todos so progress is visible in every run.
+
+| Suite          | Result                                                                  |
+| -------------- | ----------------------------------------------------------------------- |
+| `contracts`    | **20 passed**, 10 todo — U-01…U-17 plus U-17b, all real; 2 sanity tests |
+| `packages/api` | **7 passed**, 1 todo — network-config guards vs PRD §12.2               |
+
+Every Wave 1 row runs offline in the pure-JS runtime — including the coin circuits (`receiveShielded`, `insertCoin`, `sendShielded`), so **nothing is deferred to the integration layer**. U-17 sweeps the serialized public state after a full lifecycle and asserts the amount (in four encodings), the memo hash, the salt and both secrets are absent. U-17b pins the Variant A exposure window below, so it stays a tested limitation rather than an assumption.
 
 ## Repository layout
 
@@ -92,7 +126,12 @@ Progress per wave: [`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md).
 
 ## Known limitations
 
-Stated openly per PRD §4.5: payment timing is correlatable ("some invoice got paid at time T"); anonymity sets are small on a young network; the merchant learns the payer's identity off-chain (normal commerce); Variant A escrow exposes the escrowed value until withdrawal (fixed by Variant B in Wave 2).
+Stated openly per PRD §4.5:
+
+- **Payment timing is correlatable** — an observer learns "some invoice was paid at time T", never the amount or the parties.
+- **Anonymity sets are small on a young network** — inherent to any new chain.
+- **The merchant learns who the payer is** — off-chain, because they sent them the link. Normal commerce, not a chain leak.
+- **Variant A escrow leaks while it holds the coin** — and more than value: the escrowed coin's nonce is public, so after a withdrawal an observer who guesses the merchant's Zswap key can confirm it against the withdrawal's coin commitment, linking that merchant's withdrawals in transaction history. Withdrawing does not undo it. Wave 2's Variant B escrow removes the exposure; test U-17b pins the current behaviour meanwhile.
 
 ---
 
