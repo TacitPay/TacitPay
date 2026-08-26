@@ -31,3 +31,4 @@ deployments/undeployed*.json
 # Tooling scratch
 .vite/
 .firecrawl/
+.serena/
