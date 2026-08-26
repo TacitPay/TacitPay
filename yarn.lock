@@ -192,6 +192,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource/ibm-plex-mono@npm:5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource/ibm-plex-mono@npm:5.3.0"
+  checksum: 10c0/4aaf5a3c9efc7c32de4fa46ff3187ac63720904beab825f331ac01800038899761da23270f09d3fb5cff22f7cdc366904834854e2107229ad60833bba71c223d
+  languageName: node
+  linkType: hard
+
+"@fontsource/instrument-sans@npm:5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource/instrument-sans@npm:5.3.0"
+  checksum: 10c0/6dcaa879f3412d3a74e43e463056731f329267c7283f6bb8236aac01f73b3aa4e378762d60b5082c95e6473c8368385091f0c12124a587aad02add4668750ddb
+  languageName: node
+  linkType: hard
+
+"@fontsource/instrument-serif@npm:5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource/instrument-serif@npm:5.3.0"
+  checksum: 10c0/4b04757b67e17b00b631d6ecc9897fbe3129bff2a4320d222827be54f5685565b055ed7b656885da32c3cc05827b080513705d92aa746c666b5a785b3c9f30a2
+  languageName: node
+  linkType: hard
+
 "@graphql-typed-document-node/core@npm:^3.1.1, @graphql-typed-document-node/core@npm:^3.2.0":
   version: 3.2.0
   resolution: "@graphql-typed-document-node/core@npm:3.2.0"
@@ -320,6 +341,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@midnight-ntwrk/dapp-connector-api@npm:4.0.1":
+  version: 4.0.1
+  resolution: "@midnight-ntwrk/dapp-connector-api@npm:4.0.1"
+  checksum: 10c0/4578035a8752d4138da70d56e89f29026943a361ef6c9edbebd2a1baf15b10057a4b65827afd494f0adc75555aa1f9e0727b269920dde9aacea7d9dedb036b70
+  languageName: node
+  linkType: hard
+
 "@midnight-ntwrk/ledger-v8@npm:8.1.0, @midnight-ntwrk/ledger-v8@npm:^8.0.3, @midnight-ntwrk/ledger-v8@npm:^8.1.0":
   version: 8.1.0
   resolution: "@midnight-ntwrk/ledger-v8@npm:8.1.0"
@@ -336,6 +364,17 @@ __metadata:
     "@midnight-ntwrk/midnight-js-types": "npm:4.1.1"
     "@midnight-ntwrk/midnight-js-utils": "npm:4.1.1"
   checksum: 10c0/a920ed82343b2b164961e97b5f1980f81d7a4a564305940ffa879f2083ecfa36e00228540207424c6a73bd5c43a5ee699b1938c48a9b3b6dea09565457d05c4a
+  languageName: node
+  linkType: hard
+
+"@midnight-ntwrk/midnight-js-dapp-connector-proof-provider@npm:4.1.1":
+  version: 4.1.1
+  resolution: "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider@npm:4.1.1"
+  dependencies:
+    "@midnight-ntwrk/dapp-connector-api": "npm:4.0.1"
+    "@midnight-ntwrk/midnight-js-protocol": "npm:4.1.1"
+    "@midnight-ntwrk/midnight-js-types": "npm:4.1.1"
+  checksum: 10c0/bf33176856952d8b75b9d196ba8bf80b03348d1e8d6bdf0ed002a6dfd7bfe17dc55bd0551b8b4d453247107d3c522a398b190da20ba8fef2a8fc380a34abed5c
   languageName: node
   linkType: hard
 
@@ -2824,7 +2863,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@tacitpay/api@workspace:packages/api"
   dependencies:
+    "@midnight-ntwrk/dapp-connector-api": "npm:4.0.1"
     "@midnight-ntwrk/midnight-js-contracts": "npm:4.1.1"
+    "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider": "npm:4.1.1"
     "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "npm:4.1.1"
     "@midnight-ntwrk/midnight-js-http-client-proof-provider": "npm:4.1.1"
     "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "npm:4.1.1"
@@ -2872,10 +2913,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@tacitpay/ui@workspace:packages/ui"
   dependencies:
+    "@fontsource/ibm-plex-mono": "npm:5.3.0"
+    "@fontsource/instrument-sans": "npm:5.3.0"
+    "@fontsource/instrument-serif": "npm:5.3.0"
+    "@tacitpay/api": "workspace:*"
     "@tailwindcss/vite": "npm:4.3.3"
     "@types/react": "npm:18.3.31"
     "@types/react-dom": "npm:18.3.7"
     "@vitejs/plugin-react": "npm:6.1.0"
+    buffer: "npm:6.0.3"
     class-variance-authority: "npm:0.7.1"
     clsx: "npm:2.1.1"
     iconsax-reactjs: "npm:0.0.8"
@@ -3551,7 +3597,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:^6.0.3":
+"buffer@npm:6.0.3, buffer@npm:^6.0.3":
   version: 6.0.3
   resolution: "buffer@npm:6.0.3"
   dependencies:
