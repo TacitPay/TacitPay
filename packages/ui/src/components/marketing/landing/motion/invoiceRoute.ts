@@ -73,7 +73,7 @@ export const animateInvoiceRoute = (asset: SVGSVGElement): MotionCleanup => {
   // Rest state: the rail is drawn but nothing has travelled it yet.
   timeline
     .set(packet, { attr: { x: ROUTE.railStart - 7 }, opacity: 0 })
-    .set(progress, { scaleX: 0, transformOrigin: 'left center' })
+    .set(progress, { scaleX: 0, opacity: 1, transformOrigin: 'left center' })
     .set(nodes.filter(Boolean), {
       opacity: PENDING.bay,
       scale: 1,
@@ -123,15 +123,24 @@ export const animateInvoiceRoute = (asset: SVGSVGElement): MotionCleanup => {
       .to({}, { duration: TIMING.dwell });
   });
 
-  // Fade out rather than snapping back: the invoice is done, not rewound.
+  // The cycle ends by COMPLETING THE RAIL, not with one more trip: after the
+  // stranger's check the line runs on alone to the end of the track — the
+  // record stands on its own from here — while the packet stays put. Sending
+  // the circle off again past the last station read as a fifth, phantom stop.
+  timeline
+    .to(progress, { scaleX: 1, duration: TIMING.hop, ease: 'power1.inOut' })
+    .to({}, { duration: TIMING.dwell });
+
+  // The outro is a dissolve and NOTHING ELSE: every piece fades where it
+  // stands, opacity only, all together. Anything that still moves here reads
+  // as one more event after the story is over — a marker that shrank as it
+  // faded was read as exactly that — while no outro at all read as a dropped
+  // frame. Hold the finished picture, dissolve it evenly, start fresh; the
+  // rest-state sets do their work under an empty stage.
   timeline
     .to(packet, { opacity: 0, duration: TIMING.reset, ease: 'power2.in' })
-    .to(marker, { opacity: 0, scale: 0.72, duration: TIMING.reset, ease: 'power2.in' }, '<')
-    .to(
-      lits.filter(Boolean),
-      { opacity: 0, scale: 0.86, duration: TIMING.reset, ease: 'power2.in' },
-      '<',
-    )
+    .to(marker, { opacity: 0, duration: TIMING.reset, ease: 'power2.in' }, '<')
+    .to(lits.filter(Boolean), { opacity: 0, duration: TIMING.reset, ease: 'power2.in' }, '<')
     .to(
       nodes.filter(Boolean),
       { opacity: PENDING.bay, duration: TIMING.reset, ease: 'power2.in' },
@@ -142,7 +151,8 @@ export const animateInvoiceRoute = (asset: SVGSVGElement): MotionCleanup => {
       { opacity: PENDING.glyph, duration: TIMING.reset, ease: 'power2.in' },
       '<',
     )
-    .to(values.filter(Boolean), { opacity: 0, duration: TIMING.reset, ease: 'power2.in' }, '<');
+    .to(values.filter(Boolean), { opacity: 0, duration: TIMING.reset, ease: 'power2.in' }, '<')
+    .to(progress, { opacity: 0, duration: TIMING.reset, ease: 'power2.in' }, '<');
 
   return connectLoop(asset, timeline, ui, 'route ready', 'illustrative sequence');
 };
