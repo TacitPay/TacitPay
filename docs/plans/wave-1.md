@@ -21,8 +21,13 @@ the devnet is up). No CI by owner decision (D-008).
       the Variant A exposure window). Coin circuits fully simulable in
       compact-runtime 0.16.0 — NOTHING deferred to integration. Gate:
       20 passed | 10 todo (Wave 2/3 block intact).
-- [ ] 3. Integration test on local devnet: create → pay → withdraw with two wallets,
-      balances asserted (needs `midnight-local-dev` wired into `yarn env:up`).
+- [x] 3. Integration test on local devnet — DONE 2026-08-24. Full create → pay
+      → withdraw with two wallets against real proofs, gated behind
+      `TACITPAY_INT=1` so `yarn test` stays offline. Asserts the whole state
+      machine plus the merchant's shielded NIGHT balance actually increasing,
+      and repeats the privacy sweep against real indexer data using both
+      parties' real secret keys. Verified independently: **60 passed, exit 0,
+      117s**. Surfaced and fixed a WASM dual-instance bug (D-012).
 - [x] 4. `packages/api`: Wave 1 `TacitPayApi` (§8) — link codec, private state,
       circuit calls, ledger reads, Node six-provider wiring, browser skeleton,
       §8.4 error mapping. DONE 2026-08-24; verified independently: **59 passed,
@@ -67,8 +72,13 @@ the devnet is up). No CI by owner decision (D-008).
       WAVE-CHANGELOG "Wave 1".
 - [ ] 9. Repo topics (`midnightntwrk`) + Apache-2.0 + **flip repo public** (D-003)
       before submission.
-- [ ] 10. Judge sandbox: `tacitpay demo seed` — seeded local devnet, two wallets,
-      three invoices in known states.
+- [x] 10. Judge sandbox — DONE 2026-08-24. `tacitpay demo seed` /
+      `yarn demo:seed` funds two wallets (NIGHT + DUST, polling for a spendable
+      coin), deploys a contract and leaves three invoices OPEN / PAID /
+      WITHDRAWN, printing the address, the ids and a ready `/pay#` link.
+      Re-runs reuse the sandbox in seconds; `--reset` starts over. Seeds are
+      never printed. `wallet fund-local` is real, and chain commands now fail
+      with "Run yarn env:up, then retry" instead of a connection stack trace.
 
 ## Day-0 prerequisites (user-side, long lead times — PRD §14.1 Day 0)
 
