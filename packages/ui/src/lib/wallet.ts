@@ -66,6 +66,9 @@ function safeText(value: unknown, maxLength: number): string | undefined {
 function safeIcon(value: unknown): string | undefined {
   if (typeof value !== 'string' || value.length > 200_000) return undefined;
   if (/^data:image\/(?:png|jpe?g|gif|webp);base64,/iu.test(value)) return value;
+  // SVG data URIs are what most connector wallets (Lace included) inject; an
+  // <img> src never executes scripts, so they are safe to render.
+  if (/^data:image\/svg\+xml[;,]/iu.test(value)) return value;
 
   try {
     const url = new URL(value);

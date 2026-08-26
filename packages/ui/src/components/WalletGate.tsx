@@ -152,8 +152,8 @@ export function WalletGate({
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2">
+      <CardContent className="@container space-y-4">
+        <div className="grid gap-3 @md:grid-cols-2">
           {wallets.map((wallet) => (
             <button
               key={`${wallet.id}:${wallet.injectionKey}`}
@@ -168,11 +168,14 @@ export function WalletGate({
                   alt=""
                   width={40}
                   height={40}
-                  className="size-10 rounded-md"
+                  className="size-10 shrink-0 rounded-md"
                 />
               ) : (
-                <span className="flex size-10 items-center justify-center rounded-md bg-muted">
-                  <Wallet3 size={20} variant="Linear" aria-hidden="true" />
+                <span
+                  aria-hidden="true"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-base font-semibold text-muted-foreground"
+                >
+                  {wallet.name.charAt(0).toUpperCase()}
                 </span>
               )}
               <span className="min-w-0 flex-1">
