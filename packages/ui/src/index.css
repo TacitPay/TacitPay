@@ -257,6 +257,19 @@
   html {
     min-width: 320px;
     background: var(--background);
+    /* Anchors land under the sticky header without this, hiding the heading
+       they were supposed to bring into view. Matches the header's h-16. */
+    scroll-padding-top: 4rem;
+  }
+
+  /* Native smooth scroll, not a hijacked one. A scroll library would take over
+     the wheel, the scrollbar and keyboard paging to add inertia the platform
+     already tunes per device — and the landing's own motion is built as
+     enhancement over the real scroll position, not a replacement for it. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
   body {
@@ -395,26 +408,60 @@
     animation: tp-field-outward 24s linear infinite;
   }
 
-  /* Probes circling the mark in the "cannot see" chapter. They orbit the
-     shielded ring and never cross it, which is the chapter's whole point, so
-     the motion is an argument rather than an ambient flourish.
+  /* The "cannot see" chapter: three things try to reach the mark and stop dead
+     at the boundary. Each has its own keyframe because each approaches from a
+     different angle, and three explicit sets read better than rotating a group
+     and counter-rotating its label back.
 
-     transform-box is pinned to the view-box so the origin below is in the same
-     user units as the mark's own geometry — the orbit centre is the settlement
-     node, not the middle of the artboard. */
-  @keyframes tp-orbit {
-    from {
-      transform: rotate(0deg);
+     They take turns via animation-delay, so the picture is one attempt failing
+     at a time rather than a busy ring of movement. */
+  @keyframes tp-probe-left {
+    0%,
+    35%,
+    100% {
+      transform: none;
+      opacity: 0.35;
     }
-    to {
-      transform: rotate(360deg);
+    14%,
+    24% {
+      transform: translate(8.5px, 3.1px);
+      opacity: 1;
     }
   }
 
-  .tp-orbit {
-    animation: tp-orbit linear infinite;
+  @keyframes tp-probe-right {
+    0%,
+    35%,
+    100% {
+      transform: none;
+      opacity: 0.35;
+    }
+    14%,
+    24% {
+      transform: translate(-8.5px, 3.1px);
+      opacity: 1;
+    }
+  }
+
+  @keyframes tp-probe-foot {
+    0%,
+    35%,
+    100% {
+      transform: none;
+      opacity: 0.35;
+    }
+    14%,
+    24% {
+      transform: translate(0, -9px);
+      opacity: 1;
+    }
+  }
+
+  .tp-probe {
     transform-box: view-box;
-    transform-origin: 240px 170px;
+    animation-duration: 9s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-iteration-count: infinite;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -422,7 +469,7 @@
     .tp-eclipse,
     .tp-field-inward,
     .tp-field-outward,
-    .tp-orbit {
+    .tp-probe {
       animation: none;
     }
   }
