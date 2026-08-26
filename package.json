@@ -17,6 +17,7 @@
     "build": "yarn workspaces foreach -A --topological run build",
     "test": "yarn workspaces foreach -A run test",
     "test:int": "yarn workspaces foreach -A run test:int",
+    "demo:seed": "yarn workspace @tacitpay/cli run build && node packages/cli/dist/index.js demo seed",
     "env:up": "./scripts/devnet.sh up",
     "env:down": "./scripts/devnet.sh down",
     "env:status": "./scripts/devnet.sh status",

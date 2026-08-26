@@ -36,7 +36,7 @@ const requireReachable = async (label: string, url: string, init?: RequestInit):
     const detail = error instanceof Error ? error.message : 'connection failed';
     throw new Error(`Cannot reach ${label} at ${url}: ${detail}`, { cause: error });
   }
-  if (response.status >= 500) {
+  if (!response.ok) {
     throw new Error(`${label} at ${url} is unavailable (HTTP ${response.status})`);
   }
 };
@@ -52,10 +52,31 @@ const checkLiveServices = async (
       body: JSON.stringify({ query: 'query TacitPayHealth { __typename }' }),
     }),
   ];
+  if (config.networkId === 'undeployed') {
+    const nodeHealthUrl = new URL(config.nodeUrl);
+    nodeHealthUrl.protocol = nodeHealthUrl.protocol === 'wss:' ? 'https:' : 'http:';
+    nodeHealthUrl.pathname = '/health';
+    checks.push(requireReachable('Midnight node', nodeHealthUrl.href));
+  }
   if (requireProof) {
-    checks.push(requireReachable('proof server', new URL('/ready', config.proofServerUrl).href));
+    checks.push(requireReachable('proof server', new URL('/', config.proofServerUrl).href));
   }
   await Promise.all(checks);
+};
+
+export const requireLocalDevnet = async (): Promise<void> => {
+  const config = await loadNetworkConfig('local');
+  try {
+    await checkLiveServices(config, true);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Local Midnight devnet is not reachable. Run yarn env:up, then retry. ${detail}`,
+      {
+        cause: error,
+      },
+    );
+  }
 };
 
 const openWallet = async (
