@@ -5,6 +5,7 @@ import {
 } from '@midnight-ntwrk/midnight-js-contracts';
 import { getNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/compact-js';
+import { MidnightBech32m, UnshieldedAddress } from '@midnight-ntwrk/wallet-sdk-address-format';
 import {
   Contract,
   InvoiceStatus,
@@ -26,7 +27,7 @@ import { MAX_UINT64 } from './constants.js';
 import { memoHash } from './crypto.js';
 import { toTacitPayError } from './errors.js';
 import { decodeLink, encodeLink } from './link.js';
-import { observeInvoiceStatus, queryPublicLedger, readInvoiceStatus } from './observer.js';
+import { observeInvoiceStatus, queryPublicLedger } from './observer.js';
 import {
   createMerchantPrivateState,
   createPayerPrivateState,
@@ -40,6 +41,7 @@ import type {
   InvoiceView,
   MerchantPrivateState,
   NetworkId,
+  PaidPool,
   PayerPrivateState,
   ReceiptView,
   TacitPayApi,
@@ -110,6 +112,24 @@ const requireNetworkId = (): NetworkId => {
     throw new Error(`Unsupported Midnight network id "${network}"`);
   }
   return network as NetworkId;
+};
+
+const HEX_BYTES_32 = /^[0-9a-f]{64}$/iu;
+
+const unshieldedAddressBytes = (address: string, network: NetworkId): Uint8Array => {
+  if (HEX_BYTES_32.test(address)) return bytes32FromHex(address, 'to');
+  const parsed = MidnightBech32m.parse(address);
+  return Uint8Array.from(UnshieldedAddress.codec.decode(network, parsed).data);
+};
+
+const paidPoolForInvoice = (
+  publicLedger: ReturnType<typeof ledger>,
+  invoiceId: Uint8Array,
+): PaidPool => {
+  if (publicLedger.unshieldedOwed.member(invoiceId)) return 'unshielded';
+  if (publicLedger.escrow.member(invoiceId)) return 'shielded';
+  // OPEN/CANCELLED invoices have no custody entry; withdrawal removes either pool entry.
+  return null;
 };
 
 const statusName = (status: InvoiceStatus): InvoiceStatusName => {
@@ -333,6 +353,36 @@ class TacitPayApiImplementation implements TacitPayApi {
     }
   }
 
+  async withdrawUnshielded(invoiceId: string, to: string): Promise<{ readonly txId: string }> {
+    this.requireRole('merchant');
+    const id = parseHexBytes32(invoiceId, 'invoiceId');
+    const destination = unshieldedAddressBytes(to, this.network);
+    try {
+      const call = await this.contract.callTx.withdrawUnshielded(bytes32FromHex(id, 'invoiceId'), {
+        bytes: destination,
+      });
+      const txId = call.public.txId;
+      const state = await this.merchantState();
+      const record = state.invoices[id];
+      if (record !== undefined) {
+        await this.providers.privateStateProvider.set('tacitpay-merchant', {
+          ...state,
+          invoices: {
+            ...state.invoices,
+            [id]: {
+              ...record,
+              status: 'WITHDRAWN',
+              txIds: { ...record.txIds, withdrawn: txId },
+            },
+          },
+        });
+      }
+      return { txId };
+    } catch (error) {
+      throw toTacitPayError(error);
+    }
+  }
+
   async cancelInvoice(invoiceId: string): Promise<{ readonly txId: string }> {
     this.requireRole('merchant');
     const id = parseHexBytes32(invoiceId, 'invoiceId');
@@ -373,7 +423,13 @@ class TacitPayApiImplementation implements TacitPayApi {
         : statusFromName(record.status);
       const updatedRecord = { ...record, status: statusName(onChainStatus) };
       invoices[invoiceId] = updatedRecord;
-      return { ...updatedRecord, invoiceId, exists, onChainStatus };
+      return {
+        ...updatedRecord,
+        invoiceId,
+        exists,
+        onChainStatus,
+        paidPool: paidPoolForInvoice(publicLedger, id),
+      };
     });
     await this.providers.privateStateProvider.set('tacitpay-merchant', { ...state, invoices });
     return views;
@@ -424,6 +480,41 @@ class TacitPayApiImplementation implements TacitPayApi {
     }
   }
 
+  async payInvoiceUnshielded(payload: InvoiceLinkPayload): Promise<{ readonly txId: string }> {
+    this.requireRole('payer');
+    const validated = this.decodeLink(encodeLink(payload));
+    const amount = BigInt(validated.amount);
+    const memoHashBytes = await memoHash(validated.memo);
+    try {
+      const call = await this.contract.callTx.payInvoiceUnshielded(
+        bytes32FromHex(validated.id, 'invoiceId'),
+        amount,
+        memoHashBytes,
+        bytes32FromHex(validated.salt, 'salt'),
+      );
+      const txId = call.public.txId;
+      const state = await this.payerState();
+      await this.providers.privateStateProvider.set('tacitpay-payer', {
+        ...state,
+        receipts: {
+          ...state.receipts,
+          [validated.id]: {
+            contractAddress: this.contractAddress,
+            amount,
+            memoHash: bytes32ToHex(memoHashBytes, 'memoHash'),
+            salt: validated.salt,
+            memo: validated.memo,
+            paidAt: unixSeconds(),
+            txId,
+          },
+        },
+      });
+      return { txId };
+    } catch (error) {
+      throw toTacitPayError(error);
+    }
+  }
+
   async listMyReceipts(): Promise<ReceiptView[]> {
     this.requireRole('payer');
     const state = await this.payerState();
@@ -438,17 +529,31 @@ class TacitPayApiImplementation implements TacitPayApi {
         exists,
         status: record?.status ?? InvoiceStatus.OPEN,
         expiresAt: record === undefined ? 0 : expiryAsNumber(record.expiresAt),
+        paidPool: paidPoolForInvoice(publicLedger, id),
       };
     });
   }
 
-  // Public reads need no wallet, so they share the observer's implementation.
-  getInvoiceStatus(invoiceId: string): Promise<{
+  // Public reads need no wallet; they only query the observer's public ledger helper.
+  async getInvoiceStatus(invoiceId: string): Promise<{
     readonly status: InvoiceStatus;
     readonly expiresAt: number;
     readonly exists: boolean;
+    readonly paidPool: PaidPool;
   }> {
-    return readInvoiceStatus(this.providers, this.contractAddress, invoiceId);
+    const id = bytes32FromHex(parseHexBytes32(invoiceId, 'invoiceId'), 'invoiceId');
+    const publicLedger = await this.queryLedger();
+    const paidPool = paidPoolForInvoice(publicLedger, id);
+    if (!publicLedger.invoices.member(id)) {
+      return { status: InvoiceStatus.OPEN, expiresAt: 0, exists: false, paidPool };
+    }
+    const record = publicLedger.invoices.lookup(id);
+    return {
+      status: record.status,
+      expiresAt: expiryAsNumber(record.expiresAt),
+      exists: true,
+      paidPool,
+    };
   }
 
   watchInvoice(invoiceId: string): Observable<InvoiceStatus> {

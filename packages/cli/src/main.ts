@@ -25,8 +25,8 @@ const HELP = `TacitPay Wave 1 CLI
 Usage:
   tacitpay deploy --network local|preview --token NIGHT|USDM|<64-byte-hex>
   tacitpay invoice create --amount <decimal> --memo <text> [--expires <ISO-date>]
-  tacitpay invoice pay --link <url-or-fragment>
-  tacitpay invoice withdraw --id <64-byte-hex>
+  tacitpay invoice pay --link <url-or-fragment> [--lane shielded|unshielded]
+  tacitpay invoice withdraw --id <64-byte-hex> [--lane shielded|unshielded] [--to <address>]
   tacitpay invoice cancel --id <64-byte-hex>
   tacitpay invoice status --id <64-byte-hex>
   tacitpay wallet dust-status
@@ -34,11 +34,20 @@ Usage:
   tacitpay wallet fund-local
 
 Invoice and wallet commands use TACITPAY_NETWORK=local|preview (default: preview).
+Unshielded withdrawals default --to to the current wallet's unshielded address.
 Wallet seeds come from TACITPAY_SEED or .env.<network> and are never printed.`;
+
+type SettlementLane = 'shielded' | 'unshielded';
 
 const requireOption = (value: string | undefined, option: string): string => {
   if (value === undefined || value.length === 0) throw new Error(`Missing required --${option}`);
   return value;
+};
+
+const parseLane = (value: string | undefined): SettlementLane => {
+  if (value === undefined || value === 'shielded') return 'shielded';
+  if (value === 'unshielded') return 'unshielded';
+  throw new Error('--lane must be shielded or unshielded');
 };
 
 const parseExpiry = (value: string | undefined): number | undefined => {
@@ -69,11 +78,11 @@ const invoiceStatusName = (status: InvoiceStatus): string => {
 const withApi = async <T>(
   network: CliNetwork,
   role: TacitPayRole,
-  operation: (api: TacitPayApi) => Promise<T>,
+  operation: (api: TacitPayApi, walletUnshieldedAddress: string) => Promise<T>,
 ): Promise<T> => {
   const context = await openLiveApi({ network, role });
   try {
-    return await operation(context.api);
+    return await operation(context.api, context.wallet.accountId);
   } finally {
     await context.close();
   }
@@ -132,13 +141,18 @@ const runInvoiceCreate = async (args: string[]): Promise<number> => {
 const runInvoicePay = async (args: string[]): Promise<number> => {
   const { values } = parseArgs({
     args,
-    options: { link: { type: 'string' } },
+    options: {
+      link: { type: 'string' },
+      lane: { type: 'string', default: 'shielded' },
+    },
     strict: true,
   });
   const link = requireOption(values.link, 'link');
-  const result = await withApi(selectedNetwork(), 'payer', async (api) =>
-    api.payInvoice(api.decodeLink(link)),
-  );
+  const lane = parseLane(values.lane);
+  const result = await withApi(selectedNetwork(), 'payer', async (api) => {
+    const payload = api.decodeLink(link);
+    return lane === 'unshielded' ? api.payInvoiceUnshielded(payload) : api.payInvoice(payload);
+  });
   console.log(result.txId);
   return 0;
 };
@@ -152,13 +166,31 @@ const parseInvoiceId = (args: string[]): string => {
   return parseHexBytes32(requireOption(values.id, 'id'), 'invoice id');
 };
 
-const runInvoiceMutation = async (
-  action: 'withdraw' | 'cancel',
-  args: string[],
-): Promise<number> => {
+const runInvoiceWithdraw = async (args: string[]): Promise<number> => {
+  const { values } = parseArgs({
+    args,
+    options: {
+      id: { type: 'string' },
+      lane: { type: 'string', default: 'shielded' },
+      to: { type: 'string' },
+    },
+    strict: true,
+  });
+  const invoiceId = parseHexBytes32(requireOption(values.id, 'id'), 'invoice id');
+  const lane = parseLane(values.lane);
+  const result = await withApi(selectedNetwork(), 'merchant', (api, walletUnshieldedAddress) =>
+    lane === 'unshielded'
+      ? api.withdrawUnshielded(invoiceId, values.to ?? walletUnshieldedAddress)
+      : api.withdraw(invoiceId),
+  );
+  console.log(result.txId);
+  return 0;
+};
+
+const runInvoiceCancel = async (args: string[]): Promise<number> => {
   const invoiceId = parseInvoiceId(args);
   const result = await withApi(selectedNetwork(), 'merchant', (api) =>
-    action === 'withdraw' ? api.withdraw(invoiceId) : api.cancelInvoice(invoiceId),
+    api.cancelInvoice(invoiceId),
   );
   console.log(result.txId);
   return 0;
@@ -181,8 +213,9 @@ const runInvoice = async (args: string[]): Promise<number> => {
     case 'pay':
       return runInvoicePay(rest);
     case 'withdraw':
+      return runInvoiceWithdraw(rest);
     case 'cancel':
-      return runInvoiceMutation(action, rest);
+      return runInvoiceCancel(rest);
     case 'status':
       return runInvoiceStatus(rest);
     default:

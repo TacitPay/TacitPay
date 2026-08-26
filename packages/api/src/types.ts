@@ -9,7 +9,13 @@ import type { Observable } from 'rxjs';
 export { InvoiceStatus };
 export type { Ledger, Witnesses };
 
-export type CircuitIds = 'createInvoice' | 'payInvoice' | 'withdraw' | 'cancelInvoice';
+export type CircuitIds =
+  | 'createInvoice'
+  | 'payInvoice'
+  | 'payInvoiceUnshielded'
+  | 'withdraw'
+  | 'withdrawUnshielded'
+  | 'cancelInvoice';
 export type TacitPayPrivateStateId = 'tacitpay-merchant' | 'tacitpay-payer';
 export type TacitPayRole = 'merchant' | 'payer' | 'observer';
 export type NetworkId = 'undeployed' | 'preview' | 'preprod' | 'mainnet';
@@ -18,6 +24,7 @@ export type HexBytes32 = string;
 export type HexInvoiceId = HexBytes32;
 export type HexSeriesId = HexBytes32;
 export type InvoiceStatusName = 'OPEN' | 'PAID' | 'WITHDRAWN' | 'CANCELLED';
+export type PaidPool = 'shielded' | 'unshielded' | null;
 
 export type MerchantInvoiceRecord = {
   readonly amount: bigint;
@@ -85,6 +92,7 @@ export type InvoiceView = MerchantInvoiceRecord & {
   readonly invoiceId: HexInvoiceId;
   readonly exists: boolean;
   readonly onChainStatus: InvoiceStatus;
+  readonly paidPool: PaidPool;
 };
 
 export type ReceiptView = PayerReceiptRecord & {
@@ -92,6 +100,7 @@ export type ReceiptView = PayerReceiptRecord & {
   readonly exists: boolean;
   readonly status: InvoiceStatus;
   readonly expiresAt: number;
+  readonly paidPool: PaidPool;
 };
 
 /** The serialized amount stays decimal text so JSON never loses bigint precision. */
@@ -125,17 +134,20 @@ export interface TacitPayApi {
     readonly expiresAt?: number;
   }): Promise<{ readonly invoiceId: string; readonly link: string; readonly txId: string }>;
   withdraw(invoiceId: string): Promise<{ readonly txId: string }>;
+  withdrawUnshielded(invoiceId: string, to: string): Promise<{ readonly txId: string }>;
   cancelInvoice(invoiceId: string): Promise<{ readonly txId: string }>;
   listMyInvoices(): Promise<InvoiceView[]>;
 
   decodeLink(link: string): InvoiceLinkPayload;
   payInvoice(payload: InvoiceLinkPayload): Promise<{ readonly txId: string }>;
+  payInvoiceUnshielded(payload: InvoiceLinkPayload): Promise<{ readonly txId: string }>;
   listMyReceipts(): Promise<ReceiptView[]>;
 
   getInvoiceStatus(invoiceId: string): Promise<{
     readonly status: InvoiceStatus;
     readonly expiresAt: number;
     readonly exists: boolean;
+    readonly paidPool: PaidPool;
   }>;
   watchInvoice(invoiceId: string): Observable<InvoiceStatus>;
 }
