@@ -71,3 +71,12 @@ notes). Wave 1 items are marked; the rest is Wave 2 planning input:
   "WebSocket" appears in polkadot-js stack traces, so genuine node rejections
   (error 192 tonight) masquerade as connectivity failures. Match on the
   message, not the stack.
+- **[Wave 1 polish] Connections should survive a refresh** — a hard reload
+  drops the wallet connection and the unlocked contract session, forcing the
+  unlock → connect → passphrase dance again (hit live mid-demo on Aug 27).
+  Persist the chosen wallet and auto-reconnect on load; keep the passphrase in
+  sessionStorage so it lives exactly as long as the tab.
+- **[Wave 1 polish] The pay button must refuse the sandbox** — with a live
+  network's invoice open and the contract session locked, Pay runs against
+  the mock and reports "Unknown invoice"; the banner warns but should not be
+  the only guard. Disable Pay and point at Settings until the session is live.
