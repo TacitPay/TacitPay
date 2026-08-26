@@ -104,6 +104,31 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     SDK and the hyphenated scope for everything else. Easy to "correct" by
     mistake — don't.
   - `@midnight-ntwrk/onchain-runtime-v3` floats to `3.1.0` via compact-runtime
-    and works; deliberately **not pinned**. An early research pass wrongly
-    reported 3.1.0 as broken; that came from hand-rolled coin encodings in a
-    probe, not from compiler-generated code.
+    and works at the unit layer; deliberately **not pinned** at the time. An
+    early research pass wrongly reported 3.1.0 as broken; that came from
+    hand-rolled coin encodings in a probe, not from compiler-generated code.
+    **Superseded by D-012** once Midnight.js entered the same process.
+
+- **D-012 (2026-08-24) — `onchain-runtime-v3` is pinned to `3.0.0` by a yarn
+  `resolutions` entry, so exactly one WASM instance exists per process.**
+  Amends the D-011 sub-decision above.
+  - **Symptom:** the first live integration run failed with
+    `expected instance of StateValue`, which is misleading — the state was
+    fine. compact-runtime 0.16 accepts `^3.0.0` and yarn floated it to
+    `3.1.0`, while Midnight.js 4.1.1 nests an exact `3.0.0`. Two copies of a
+    WASM-backed module then coexist and their classes fail `instanceof`
+    against each other despite being structurally identical.
+  - **Why it did not show earlier:** the unit layer loads only
+    compact-runtime, so there is no second instance to clash with. Thirty
+    contract tests passed precisely because Midnight.js was absent. The
+    conflict is an integration-layer property, which is a good argument for
+    the integration layer existing at all.
+  - **Why a resolution rather than a runtime hook:** the first fix was a
+    `registerHooks` resolver forcing the nested copy. It worked, but only
+    where a caller remembered to install it before the first import — every
+    future consumer (Wave 2's SDK and MCP server) was one forgotten line from
+    rediscovering the same failure. A lockfile entry cannot be forgotten, and
+    `yarn install` verifiably yields a single copy.
+  - **Verified** with the shim deleted, not bypassed: 60 integration tests
+    green against the live devnet, offline suites unchanged, sandbox seeding
+    working.
