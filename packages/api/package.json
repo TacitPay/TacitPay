@@ -17,6 +17,10 @@
     "./node": {
       "types": "./src/providers/node.ts",
       "import": "./dist/providers/node.js"
+    },
+    "./public": {
+      "types": "./src/providers/public.ts",
+      "import": "./dist/providers/public.js"
     }
   },
   "scripts": {
