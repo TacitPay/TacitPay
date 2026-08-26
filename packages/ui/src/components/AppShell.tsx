@@ -1,12 +1,14 @@
-import { Global, ShieldTick } from 'iconsax-reactjs';
+import { Book1, ExportSquare, Global, ShieldTick } from 'iconsax-reactjs';
 import type { ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
+import { SiteLink } from '@/components/marketing/AppLink';
 import { useTacitPay } from '@/lib/api';
 import { getProvingDisplayLabel } from '@/lib/proving';
 import { useProving } from '@/lib/proving-context';
 import { cn } from '@/lib/utils';
 
+import { GithubMark } from './GithubMark';
 import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -17,10 +19,77 @@ const navigation = [
   { label: 'Settings', to: '/settings' },
 ];
 
+// The landing's own measure, carried into the app so the two surfaces line up:
+// the mark sits at the same inset on both, and the page under it keeps the same
+// left edge as the mark. One constant rather than three copies, because these
+// three have to agree or the chrome stops framing the content.
+const MEASURE = 'mx-auto w-full max-w-[92rem] px-5 sm:px-8';
+
+// The round icon buttons in the header and footer are the landing's, verbatim —
+// the docs door and the theme toggle are a matched pair on both surfaces.
+const ICON_BUTTON =
+  'grid place-items-center rounded-full border border-tp-rule-strong text-tp-ink-faint transition-colors hover:border-tp-ink-faint hover:text-tp-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
+
+// Where the app can send you. In-app routes stay SPA-routed, `site` hops back
+// to the marketing apex (see SiteLink), and the rest live on other hosts.
+type FooterLink =
+  { label: string; to: string } | { label: string; site: string } | { label: string; href: string };
+
+const FOOTER_SECTIONS: { title: string; links: FooterLink[] }[] = [
+  {
+    title: 'App',
+    links: [
+      { label: 'Merchant', to: '/merchant' },
+      { label: 'Receipts', to: '/receipts' },
+      { label: 'Verify', to: '/app#verify-invoice' },
+      { label: 'Settings', to: '/settings' },
+    ],
+  },
+  {
+    title: 'Learn',
+    links: [
+      { label: 'Docs', href: 'https://docs.tacitpay.xyz' },
+      { label: 'Whitepaper', href: 'https://docs.tacitpay.xyz/whitepaper/' },
+      { label: 'FAQ', href: 'https://docs.tacitpay.xyz/reference/faq/' },
+    ],
+  },
+  {
+    title: 'Project',
+    links: [
+      { label: 'Website', site: '/' },
+      { label: 'Source', href: 'https://github.com/TacitPay/TacitPay' },
+      { label: 'Midnight', href: 'https://midnight.network' },
+    ],
+  },
+];
+
 function navigationClass(isActive: boolean) {
   return cn(
     'inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
     isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground',
+  );
+}
+
+function FooterLink({ link }: { link: FooterLink }) {
+  const className = 'block transition-colors hover:text-foreground';
+  if ('to' in link) {
+    return (
+      <Link to={link.to} className={className}>
+        {link.label}
+      </Link>
+    );
+  }
+  if ('site' in link) {
+    return (
+      <SiteLink to={link.site} className={className}>
+        {link.label}
+      </SiteLink>
+    );
+  }
+  return (
+    <a href={link.href} target="_blank" rel="noreferrer" className={className}>
+      {link.label}
+    </a>
   );
 }
 
@@ -32,16 +101,31 @@ export function AppShell({ children }: { children: ReactNode }) {
   const provingLabel = resolving ? 'Checking…' : getProvingDisplayLabel(resolution);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    // `isolate` is load-bearing: it gives the shell its own stacking context so
+    // the ground below can sit at a negative z INSIDE it. Without it the layer
+    // would fall behind the body's own background and never be seen.
+    <div className="relative isolate flex min-h-screen flex-col bg-background">
+      {/* THE GROUND — the landing's measuring field, carried through so the two
+          surfaces read as one product: paper is ruled into a grid, the void is
+          a field of dots. Fixed rather than scrolled, because a work surface
+          should hold still under the work, and faded out down the viewport so
+          the footer keeps a clean ground to sit on. */}
+      <div
+        aria-hidden="true"
+        className="tp-field pointer-events-none fixed inset-0 -z-10 [-webkit-mask-image:linear-gradient(to_bottom,#000_0%,#000_45%,transparent_95%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_45%,transparent_95%)]"
+      />
+
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6 lg:px-8">
+        <div className={cn(MEASURE, 'flex h-16 items-center justify-between')}>
           <div className="flex min-w-0 items-center gap-3">
             {/* In-app the mark returns to the app's own home, not the marketing
-                page — leaving mid-task should take a deliberate click. */}
+                page — leaving mid-task should take a deliberate click. Same
+                size and same inset as the landing's, so the identity does not
+                shift when you cross between them. */}
             <Link
               to="/app"
               aria-label="TacitPay app home"
-              className="rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="-m-1 rounded-md p-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <Logo size={34} />
             </Link>
@@ -79,8 +163,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               />
             </Link>
           </div>
-          <div className="flex items-center gap-2">
-            <nav aria-label="Primary navigation" className="hidden items-center gap-1 md:flex">
+          {/* Routes first, then the two round controls as their own cluster —
+              the gap between the groups is wider than the gap inside either, so
+              the nav does not read as a third button. */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <nav aria-label="Primary navigation" className="mr-1 hidden items-center gap-1 md:flex">
               {navigation.map((item) => (
                 <NavLink
                   key={item.to}
@@ -91,12 +178,24 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </NavLink>
               ))}
             </nav>
+            {/* Stands down below `sm`: the phone header already carries a logo,
+                two state pills and the toggle, and a second round button there
+                pushes the wordmark into them. Docs keeps its place in the
+                footer, which is where a phone goes looking anyway. */}
+            <a
+              href="https://docs.tacitpay.xyz"
+              aria-label="Documentation"
+              title="Docs"
+              className={cn(ICON_BUTTON, 'size-9 max-sm:hidden')}
+            >
+              <Book1 size={15} variant="Linear" aria-hidden="true" />
+            </a>
             <ThemeToggle />
           </div>
         </div>
         <nav
           aria-label="Mobile navigation"
-          className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 pb-2 md:hidden"
+          className={cn(MEASURE, 'flex gap-1 overflow-x-auto pb-2 md:hidden')}
         >
           {navigation.map((item) => (
             <NavLink
@@ -110,17 +209,79 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
       </header>
 
-      <main
-        id="main-content"
-        className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 md:px-6 md:py-14 lg:px-8"
-      >
+      {/* Roomier than it was at both ends, and deliberately asymmetric: the
+          bottom carries more than the top, because the work should finish and
+          be let go of well before the footer rule arrives. A symmetric gap read
+          as the page running straight from the header into the links. */}
+      <main id="main-content" className={cn(MEASURE, 'flex-1 pt-14 pb-24 md:pt-20 md:pb-36')}>
         {children}
       </main>
 
-      <footer className="border-t">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between md:px-6 lg:px-8">
-          <p>Private by default. Provable on demand.</p>
-          <p>Wave 1 demo · {networkLabel} network</p>
+      {/* The app's own doors, in the landing's grammar: three short columns of
+          words, then a rule, then the legal line against the icon cluster. */}
+      {/* Opaque, like the landing's: the ground stops at the footer rule rather
+          than drifting on behind the links. A block's own background paints
+          after the negative-z layer below, so this alone covers the field. */}
+      <footer className="border-t bg-background">
+        <div className={cn(MEASURE, 'py-12')}>
+          <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+            <div className="max-w-xs space-y-3">
+              <SiteLink
+                to="/"
+                aria-label="TacitPay website"
+                className="-m-1 inline-block rounded-md p-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                <Logo size={28} />
+              </SiteLink>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Private by default. Provable on demand.
+              </p>
+              <p className="text-xs text-muted-foreground">Wave 1 demo · {networkLabel} network</p>
+            </div>
+
+            <div className="flex flex-wrap gap-x-14 gap-y-6 text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
+              {FOOTER_SECTIONS.map((section) => (
+                <div key={section.title} className="space-y-2.5">
+                  <p className="text-foreground">{section.title}</p>
+                  {section.links.map((link) => (
+                    <FooterLink key={link.label} link={link} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+            <p className="text-xs text-muted-foreground">© 2026 TacitPay · Apache-2.0</p>
+            <div className="flex items-center gap-2">
+              <a
+                href="https://github.com/TacitPay/TacitPay"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="TacitPay on GitHub"
+                title="GitHub"
+                className={cn(ICON_BUTTON, 'size-8')}
+              >
+                <GithubMark />
+              </a>
+              <a
+                href="https://docs.tacitpay.xyz"
+                aria-label="Documentation"
+                title="Docs"
+                className={cn(ICON_BUTTON, 'size-8')}
+              >
+                <Book1 size={14} variant="Linear" aria-hidden="true" />
+              </a>
+              <SiteLink
+                to="/"
+                aria-label="TacitPay website"
+                title="Website"
+                className={cn(ICON_BUTTON, 'size-8')}
+              >
+                <ExportSquare size={14} variant="Linear" aria-hidden="true" />
+              </SiteLink>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

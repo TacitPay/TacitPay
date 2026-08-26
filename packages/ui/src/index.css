@@ -529,6 +529,45 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
+  /* The measuring field, lifted off the splash so the app stands on the same
+     ground as the landing. One class, two treatments — and they are the
+     splash's own pair: the public half is ruled into a GRID, the private half
+     is a field of DOTS. Paper therefore gets the grid and the void gets the
+     dots, which means a visitor crossing from the landing into the app lands
+     on the register they were already reading.
+
+     Same three theme states as the palette above, so a visitor on `system`
+     gets the right one rather than the light-mode default. The two alphas
+     differ on purpose and are the splash's own, unchanged: a hairline on paper
+     carries further than a dot on the void, so equal numbers would not read as
+     equal weight. Cell size is shared (44px), so the two never feel like
+     different rooms. */
+  .tp-field {
+    background-image:
+      repeating-linear-gradient(to right, rgb(var(--tp-glow) / 0.055) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(to bottom, rgb(var(--tp-glow) / 0.055) 0 1px, transparent 1px 44px);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .tp-field {
+      background-image: radial-gradient(
+        circle at center,
+        rgb(var(--tp-glow) / 0.13) 1px,
+        transparent 1.5px
+      );
+      background-size: 44px 44px;
+    }
+  }
+
+  :root[data-theme='dark'] .tp-field {
+    background-image: radial-gradient(
+      circle at center,
+      rgb(var(--tp-glow) / 0.13) 1px,
+      transparent 1.5px
+    );
+    background-size: 44px 44px;
+  }
+
   /* The halo of the flash that crosses the terminator. It lives here rather
      than in an arbitrary class so the per-ground weighting stays with the rest
      of the token layer — see `--tp-flash`. */
