@@ -159,3 +159,26 @@ took, in order:
   "DUST SPONSORED / ProofStation — zero gas fees" feature is the official
   dust-sponsorship pattern productized: live validation of the Wave 2 fee
   story in D-022.
+
+### Field notes — Aug 27, 2026, 01:20 (the full browser lifecycle lands on Preview)
+
+- **The complete invoice lifecycle ran browser-to-browser on public Preview,
+  denominated in a stablecoin.** Invoice
+  `084318a7ad082b57935e1070142775f6ae109e0b349d1cfe5ed6c861988f0342`
+  ("design retainer - august", 2 tUSDM) on contract `0847de8a…326d24`:
+  created from the merchant's Lace (tx `00f4bb85…`), paid from the payer's
+  Lace through the unshielded lane (tx `003b8a25…`), withdrawn by the
+  merchant (tx `00f0f626…`) — the merchant wallet's USDM balance rose by
+  exactly the invoice amount. Every stage passed the truth gate's own
+  indexer confirmation; the explorer shows only circuit names and sealed
+  commitments throughout. Evidence frames:
+  `~/Downloads/tacitpay-wave1-e2e-evidence-20260827/`.
+- Found-and-fixed during the run: invoice links carry the raw token type,
+  which rendered as a 64-hex "currency symbol" (now mapped to the network's
+  display symbol, with hex fallbacks shortened); the amount-privacy tooltip
+  now tells the lane-specific truth; wallet tiles follow container width and
+  accept the SVG icons wallets actually inject (Lace's icon finally shows).
+- Known UX debt, queued: a hard refresh drops the wallet + contract session
+  (reconnect dance required), and the pay button will run against the
+  sandbox when the invoice belongs to a live network — the banner warns but
+  should not be the only guard.
