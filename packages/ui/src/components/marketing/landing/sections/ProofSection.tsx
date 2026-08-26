@@ -1,14 +1,15 @@
 import { Reveal, MicroLabel } from '../shared';
 
-// Numbers, and only numbers that are true today. `yarn test` is the source for
-// the first one — update it here when the suite grows, or it becomes a claim
-// rather than a fact.
+// Structural guarantees, not build evidence. Each one is a thing the product
+// cannot do rather than a thing it promises not to — which is the only kind of
+// privacy claim worth printing. Test counts and the licence live in the README
+// and currentstate.md, where someone auditing the work will look for them.
 
 const FACTS = [
-  { value: '86', label: 'tests passing' },
-  { value: '4', label: 'circuits, zero disclosures' },
   { value: '0', label: 'servers in the payment path' },
-  { value: 'Apache-2.0', label: 'read every line' },
+  { value: '0', label: 'keys held on your behalf' },
+  { value: '0', label: 'disclosures across four circuits' },
+  { value: 'Open', label: 'source, auditable end to end' },
 ];
 
 export function ProofSection() {

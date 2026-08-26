@@ -22,8 +22,12 @@ export function MarketingShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-tp-surface text-tp-ink">
       <header className="sticky top-0 z-40 border-b border-tp-rule/80 bg-tp-surface/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[92rem] items-center justify-between px-5 sm:px-8">
-          <Link to="/" aria-label="TacitPay home" className="-m-1 rounded-md p-1">
+        <div className="mx-auto grid h-16 max-w-[92rem] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-5 sm:px-8">
+          <Link
+            to="/"
+            aria-label="TacitPay home"
+            className="-m-1 justify-self-start rounded-md p-1"
+          >
             <Logo size={30} />
           </Link>
 
@@ -32,18 +36,18 @@ export function MarketingShell({ children }: { children: ReactNode }) {
               <a
                 key={item.href}
                 href={item.href}
-                className="font-mono text-[0.6875rem] tracking-[0.14em] text-tp-ink-faint uppercase transition-colors hover:text-tp-ink"
+                className="text-[0.6875rem] font-medium tracking-[0.14em] text-tp-ink-faint uppercase transition-colors hover:text-tp-ink"
               >
                 {item.label}
               </a>
             ))}
           </nav>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 justify-self-end">
             <ThemeToggle />
             <Link
               to="/app"
-              className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 font-mono text-[0.6875rem] font-semibold tracking-[0.12em] text-primary-foreground uppercase transition-colors hover:bg-primary/85"
+              className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-[0.6875rem] font-semibold tracking-[0.12em] text-primary-foreground uppercase transition-colors hover:bg-primary/85"
             >
               Launch app
               <ArrowRight
@@ -70,7 +74,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-x-14 gap-y-6 font-mono text-xs tracking-wider text-tp-ink-faint uppercase">
+            <div className="flex flex-wrap gap-x-14 gap-y-6 text-xs font-medium tracking-[0.12em] text-tp-ink-faint uppercase">
               <div className="space-y-2.5">
                 <p className="text-tp-ink">Product</p>
                 <Link to="/app" className="block transition-colors hover:text-tp-ink">
@@ -79,6 +83,14 @@ export function MarketingShell({ children }: { children: ReactNode }) {
                 <Link to="/app#verify" className="block transition-colors hover:text-tp-ink">
                   Verify an invoice
                 </Link>
+                <a
+                  href="https://github.com/Marcussy34/tacitpay"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block transition-colors hover:text-tp-ink"
+                >
+                  Source
+                </a>
               </div>
               <div className="space-y-2.5">
                 <p className="text-tp-ink">Built on</p>
@@ -102,8 +114,11 @@ export function MarketingShell({ children }: { children: ReactNode }) {
             </div>
           </div>
 
-          <p className="mt-10 border-t border-zinc-200 pt-6 font-mono text-xs text-zinc-400">
-            Apache-2.0 · Midnight Buildathon 2026
+          {/* A quiet legal line, not a badge. Being open source is a real trust
+              signal for a privacy product, so it stays — as a link in the
+              columns above rather than a banner across the bottom. */}
+          <p className="mt-10 border-t border-tp-rule pt-6 text-xs text-tp-ink-faint">
+            © 2026 TacitPay · Apache-2.0
           </p>
         </div>
       </footer>
