@@ -6,7 +6,8 @@ interface LogoProps extends React.SVGProps<SVGSVGElement> {
   badge?: string;
 }
 
-// `badge` has no default on purpose. It used to default to 'Preview', which meant
+// Every colour is a token, so the mark turns over with the theme wherever it is
+// used. `badge` has no default on purpose. It used to default to 'Preview', which meant
 // omitting it — or passing undefined — silently stamped a network name on the mark
 // that had nothing to do with the network in use. A logo should not assert state.
 export function Logo({
@@ -35,24 +36,25 @@ export function Logo({
           r="9"
           stroke="currentColor"
           strokeWidth="2.25"
-          className="text-zinc-400"
+          className="text-tp-mark-ring"
         />
 
         {/* 2. Public Ledger Disc (Foreground Solid Dark Fill) */}
-        <circle cx="16" cy="20" r="9" fill="currentColor" className="text-zinc-950" />
+        <circle cx="16" cy="20" r="9" fill="currentColor" className="text-foreground" />
 
         {/* 3. Verified Settlement Node (Contrasting Inner Anchor) */}
-        <circle cx="20" cy="20" r="2.25" fill="#FFFFFF" />
+        <circle cx="20" cy="20" r="2.25" fill="var(--background)" />
       </svg>
 
       {/* Brand Lockup */}
       {showWordmark && (
         <div className="flex items-center gap-2">
-          <span className="text-base font-semibold tracking-tight text-zinc-950">
-            Tacit<span className="font-normal text-zinc-500">Pay</span>
+          <span className="text-base font-semibold tracking-tight text-foreground">
+            Tacit
+            <span className="font-normal text-muted-foreground">Pay</span>
           </span>
           {badge && (
-            <span className="rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-mono font-medium text-zinc-600 border border-zinc-200">
+            <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground">
               {badge}
             </span>
           )}
