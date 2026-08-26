@@ -9,7 +9,7 @@
 
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Status](https://img.shields.io/badge/status-Wave%201%20in%20progress-yellow)
-![Tests](https://img.shields.io/badge/unit%20tests-27%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-79%20unit%20%C2%B7%2060%20integration-brightgreen)
 
 > **Status:** Wave 1 of the [Midnight Buildathon 2026](https://docs.midnight.network) (AKINDO WaveHack, Waves 1–3, Aug 27 – Nov 27).
 > The contract and its unit matrix are complete; the API, CLI and UI are landing, and the Preview deployment address appears here once deployed.
@@ -74,8 +74,14 @@ Local devnet (only needed for integration tests and the judge sandbox):
 git clone https://github.com/midnightntwrk/midnight-local-dev.git ../midnight-local-dev
 yarn env:up             # node :9944 · indexer :8088 · proof server :6300
 yarn env:status         # container state + live endpoint probes
+yarn demo:seed          # judge sandbox — see below
+TACITPAY_INT=1 yarn workspace @tacitpay/api run test   # live lifecycle, ~2 min
 yarn env:down
 ```
+
+### Judge sandbox
+
+`yarn demo:seed` funds two wallets (including DUST, waiting until they can actually transact), deploys a contract, and leaves three invoices in known states — one OPEN, one PAID, one WITHDRAWN. It prints the contract address, the invoice IDs, and a ready-to-open `/pay#…` link, so the whole product is explorable in minutes without hand-driving a wallet. Re-running reuses the sandbox in seconds; `--reset` starts fresh.
 
 ### Proving: you choose who generates the proof
 
@@ -91,12 +97,15 @@ The active tier is shown in the app. Full reasoning: PRD §4.1 and decision D-01
 
 The unit matrix is **U-01…U-28** (PRD §11.2). Wave 1's rows are live; the Wave 2/3 rows stay pre-registered as vitest todos so progress is visible in every run.
 
-| Suite          | Result                                                                  |
-| -------------- | ----------------------------------------------------------------------- |
-| `contracts`    | **20 passed**, 10 todo — U-01…U-17 plus U-17b, all real; 2 sanity tests |
-| `packages/api` | **7 passed**, 1 todo — network-config guards vs PRD §12.2               |
+| Suite                        | Result                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| `contracts` (unit)           | **20 passed**, 10 todo — U-01…U-17 plus U-17b, all real; 2 sanity tests |
+| `packages/api` (unit)        | **59 passed**, 1 todo — link codec, amounts, errors, private state      |
+| `packages/api` (integration) | **60 passed** against a live devnet in 117s — `TACITPAY_INT=1`          |
 
 Every Wave 1 row runs offline in the pure-JS runtime — including the coin circuits (`receiveShielded`, `insertCoin`, `sendShielded`), so **nothing is deferred to the integration layer**. U-17 sweeps the serialized public state after a full lifecycle and asserts the amount (in four encodings), the memo hash, the salt and both secrets are absent. U-17b pins the Variant A exposure window below, so it stays a tested limitation rather than an assumption.
+
+The integration suite runs the same lifecycle against a real chain with real proofs and two separate wallets. Its load-bearing assertion is that the merchant's shielded NIGHT balance **increases** after withdrawal: a status flipping to `WITHDRAWN` only proves state changed, not that value moved. It repeats the privacy sweep against live indexer data, using both parties' actual secret keys read from their private-state providers.
 
 ## Repository layout
 
