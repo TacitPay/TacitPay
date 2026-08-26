@@ -132,19 +132,22 @@ Preview (block 587,108) — confirmed independently by the CLI's ledger read and
 the public explorer. Two things that first contact taught, worth knowing before
 you test:
 
-- **Paying needs _shielded_ tNIGHT — and no self-shielding operation exists
-  in the current protocol design (D-020).** The faucet dispenses transparent
-  tNIGHT; the `payInvoice` circuit consumes a shielded coin. A docs audit
-  settled the why: the Wallet SDK offers no shield/convert primitive —
+- **Public-network payments settle in a stablecoin through the unshielded
+  lane — by design, not compromise (D-020 → D-022).** No self-shielding
+  operation exists in the protocol's current design: the faucet dispenses
+  transparent tNIGHT, the Wallet SDK offers no shield/convert primitive —
   `transferTransaction` sources each output from its own pool, and `initSwap`
   is documented as a two-party atomic exchange, so a single-sided "shielding
   swap" is correctly rejected by the node. Shielded tokens are their own
   category, minted by contracts; the devnet's shielded native funds are a
-  genesis artifact. Until a shielded on-ramp exists, Preview browser payments
-  take PRD §16.2's `receiveUnshielded` path (in progress), the full shielded
-  flow is demonstrated on the local devnet, and a contract-minted shielded
-  wrapper is the Wave 2 candidate for true private settlement on public
-  networks.
+  genesis artifact. So Preview invoices are denominated in bridged USDM and
+  settle through the contract's unshielded lane — and the **complete browser
+  lifecycle ran live on Aug 27 2026**: invoice `084318a7…f0342`
+  ("design retainer - august", 2 tUSDM) was created, paid and withdrawn
+  between two Lace wallets on contract `0847de8a…326d24`, every stage
+  confirmed on-chain by the truth gate. The full shielded flow stays live on
+  the local devnet, and a contract-minted shielded wrapper is the Wave 2 road
+  to private settlement on public networks.
 - **The app only reports success the ledger can confirm.** Every mutation polls
   the contract's public state through the app's own indexer connection and
   fails loudly if the transaction never lands — a wallet's optimistic "submitted"
@@ -210,13 +213,13 @@ The active tier is shown in the app. Full reasoning: PRD §4.1 and decision D-01
 
 ## Test inventory
 
-The unit matrix is **U-01…U-28** (PRD §11.2). Wave 1's rows are live; the Wave 2/3 rows stay pre-registered as vitest todos so progress is visible in every run.
+The unit matrix is **U-01…U-36** (PRD §11.2). Wave 1's rows are live; the Wave 2/3 rows stay pre-registered as vitest todos so progress is visible in every run.
 
-| Suite                        | Result                                                                                        |
-| ---------------------------- | --------------------------------------------------------------------------------------------- |
-| `contracts` (unit)           | **20 passed**, 10 todo — U-01…U-17 plus U-17b, all real; 2 sanity tests                       |
-| `packages/api` (unit)        | **66 passed**, 1 todo — link codec, amounts, errors, private state, the DApp Connector bridge |
-| `packages/api` (integration) | **67 passed** against a live devnet in 120s — `TACITPAY_INT=1`                                |
+| Suite                        | Result                                                                                                                        |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `contracts` (unit)           | **28 passed**, 10 todo — U-01…U-17 plus U-17b and the unshielded lane U-29…U-36; 2 sanity tests                               |
+| `packages/api` (unit)        | **70 passed**, 4 skipped, 1 todo — link codec, amounts, errors, private state, the DApp Connector bridge, the unshielded lane |
+| `packages/api` (integration) | **67 passed** against a live devnet in 120s — `TACITPAY_INT=1`                                                                |
 
 Every Wave 1 row runs offline in the pure-JS runtime — including the coin circuits (`receiveShielded`, `insertCoin`, `sendShielded`), so **nothing is deferred to the integration layer**. U-17 sweeps the serialized public state after a full lifecycle and asserts the amount (in four encodings), the memo hash, the salt and both secrets are absent. U-17b pins the Variant A exposure window below, so it stays a tested limitation rather than an assumption.
 
