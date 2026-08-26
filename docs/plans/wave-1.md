@@ -33,9 +33,9 @@ the devnet is up). No CI by owner decision (D-008).
       §8.4 error mapping. DONE 2026-08-24; verified independently: **59 passed,
       6 todo**, typecheck clean. Forced a version correction (D-011): the PRD's
       Midnight.js 4.0.4 never existed — pinned 4.1.1, wallet SDK from the
-      un-hyphenated `@midnightntwrk` scope. Still open: the browser
-      DApp-connector wallet/proof slots are typed stubs pending the §8.3 Day-3
-      VERIFY (mirror example-bboard).
+      un-hyphenated `@midnightntwrk` scope. Was open at the time: the browser
+      DApp-connector wallet/proof slots were typed stubs pending the §8.3 Day-3
+      VERIFY. **Closed by 6c below** — they are real providers now.
 - [x] 5. `packages/cli`: real `parseArgs` CLI — deploy, invoice lifecycle,
       dust-status, `.env.<network>` seeds, deployment files. DONE 2026-08-24;
       typecheck clean, help output real. `demo seed` / `wallet fund-local` exit 2
@@ -129,7 +129,7 @@ the devnet is up). No CI by owner decision (D-008).
 - [x] Fonts self-hosted from `@fontsource`; the app makes no automatic
       third-party request at all. The `TODO(pre-submission)` in `index.html` is
       gone and PRIVACY.md's who-sees-what table has no CDN row.
-- [x] Marketing page code-split from the app. Entry chunk 525 kB → **24.8 kB**;
+- [x] Marketing page code-split from the app. Entry chunk 525 kB → **23.1 kB**;
       the Midnight stack is an 866 kB chunk fetched only on connect.
 - [x] `vercel.json` — build command, `packages/ui/dist`, the SPA rewrite that
       keeps `/verify/<id>` alive through a refresh, and security headers.
