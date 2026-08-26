@@ -56,6 +56,9 @@ export type NodeWalletContext = {
   readonly zswapSecretKeys: ZswapSecretKeys;
   readonly dustSecretKey: DustSecretKey;
   readonly accountId: string;
+  /** Signs unshielded inputs during balancing; without it the node rejects
+   *  unshielded spends with `1010: Custom error: 192` (unsigned offer). */
+  signData(payload: Uint8Array): ReturnType<ReturnType<typeof createKeystore>['signData']>;
   dustBalance(): Promise<bigint>;
   close(): Promise<void>;
 };
@@ -133,6 +136,7 @@ export const createNodeWallet = async (config: NodeWalletConfig): Promise<NodeWa
     zswapSecretKeys,
     dustSecretKey,
     accountId: unshieldedKeystore.getBech32Address().asString(),
+    signData: (payload) => unshieldedKeystore.signData(payload),
     async dustBalance(): Promise<bigint> {
       const state = await firstValueFrom(wallet.state());
       return state.dust.balance(new Date());
@@ -167,7 +171,13 @@ export class WalletAndMidnightProvider implements WalletProvider, MidnightProvid
       },
       { ttl },
     );
-    return this.context.wallet.finalizeRecipe(recipe);
+    // Unshielded inputs (the receiveUnshielded lane) authenticate by
+    // signature, not proof — sign before finalizing or the node rejects the
+    // offer with Custom error 192. No-op when the recipe spends none.
+    const signed = await this.context.wallet.signRecipe(recipe, (payload) =>
+      this.context.signData(payload),
+    );
+    return this.context.wallet.finalizeRecipe(signed);
   }
 
   submitTx(transaction: FinalizedTransaction): Promise<string> {
