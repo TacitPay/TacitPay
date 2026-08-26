@@ -133,3 +133,29 @@ took, in order:
   re-seeds on network switch, the proof stepper and wallet card lay out by
   container width instead of viewport, and `/pay` without a fragment offers a
   paste-a-link box instead of an error.
+
+### Field notes — Aug 27, 2026 (the unshielded lane ships end-to-end)
+
+- **The unshielded settlement lane is live at every layer.** Contract v2 on
+  Preview — [`0847de8a…326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24),
+  block 591,018, indexer-verified — is denominated in bridged USDM (D-022).
+  Circuits, API, CLI flags and invisible UI lane-routing all landed in one
+  night, and both lanes' complete lifecycles were proven on a fresh devnet
+  deploy before any Preview token was spent (unshielded pay `0087b9c5…`,
+  withdraw `000a8556…`; the shielded flagship regression stayed green on the
+  same contract).
+- **The night's one real bug was ours, and it was subtle**: unshielded inputs
+  authenticate by _signature_, not proof. The node-wallet balancer proved and
+  finalized but never signed, so the node rejected the lane with
+  `1010: Custom error: 192` — masked at first by a CLI connectivity message
+  whose regex matches "WebSocket" inside stack traces. One `signRecipe`
+  between balancing and finalizing fixed it. Every pool has its own
+  authentication currency.
+- **1AM wallet, hands-on + site docs**: the most shielded-native wallet on
+  the network hands out four addresses (shielded / unshielded / DUST /
+  Cardano) and strictly segregates pools in its send flow — no
+  unshielded→shielded conversion there either. That closes the last "maybe a
+  wallet can shield" hope for Wave 1 from a second, independent angle. Its
+  "DUST SPONSORED / ProofStation — zero gas fees" feature is the official
+  dust-sponsorship pattern productized: live validation of the Wave 2 fee
+  story in D-022.

@@ -63,3 +63,11 @@ notes). Wave 1 items are marked; the rest is Wave 2 planning input:
   the sandbox store).
 - **Password-field accessibility nit** — the passphrase form triggers the
   Chrome "password forms should have username fields" advisory.
+- **[Wave 2] UI smoke tests** — packages/ui ships with no test runner at all;
+  Wave 1 rode on typecheck, review, and the hands-on browser E2E. Wire up a
+  minimal vitest + happy-path smoke before the UI grows another lane.
+- **[Wave 1 polish] CLI connectivity regex over-matches** — the friendly
+  "Cannot reach the network" mapper regexes the whole error text, and
+  "WebSocket" appears in polkadot-js stack traces, so genuine node rejections
+  (error 192 tonight) masquerade as connectivity failures. Match on the
+  message, not the stack.
