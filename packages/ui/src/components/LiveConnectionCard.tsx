@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useTacitPay } from '@/lib/api';
 import {
   clearStoredContractAddress,
+  getContractAddress,
   getStoredContractAddress,
   isContractAddress,
   storeContractAddress,
@@ -33,10 +34,13 @@ const BLOCKER_TEXT = {
  */
 export function LiveConnectionCard() {
   const { network, live } = useTacitPay();
-  const { state, blocker, connect, disconnect } = useLive();
-  const [address, setAddress] = useState(() => getStoredContractAddress(network) ?? '');
+  const { state, blocker, connect, disconnect, observer } = useLive();
+  // Prefilled from whatever is actually in effect — a stored address or one baked in at
+  // build time. Showing an empty box while the app reads a real chain is a lie.
+  const [address, setAddress] = useState(() => getContractAddress(network) ?? '');
   const [passphrase, setPassphrase] = useState('');
   const [touched, setTouched] = useState(false);
+  const fromBuild = !getStoredContractAddress(network) && Boolean(getContractAddress(network));
 
   const addressValid = isContractAddress(address);
   const showAddressError = touched && address.length > 0 && !addressValid;
@@ -86,10 +90,16 @@ export function LiveConnectionCard() {
             <CardDescription className="mt-2">
               {live
                 ? 'This app is talking to a real contract. Amounts and memos stay on this device.'
-                : 'Without a contract address the app runs on an in-memory mock — nothing reaches a chain.'}
+                : observer
+                  ? 'Public verification already reads this contract. Connect a wallet to create, pay or withdraw.'
+                  : 'Without a contract address the app runs on an in-memory mock — nothing reaches a chain.'}
             </CardDescription>
           </div>
-          <Badge variant={live ? 'default' : 'secondary'}>{live ? 'Live' : 'Mock data'}</Badge>
+          {/* Three states, not two. Public reads go live as soon as an address exists,
+              long before anyone connects a wallet — saying "Mock data" then is wrong. */}
+          <Badge variant={live || observer ? 'default' : 'secondary'}>
+            {live ? 'Live' : observer ? 'Public reads live' : 'Mock data'}
+          </Badge>
         </div>
       </CardHeader>
 
@@ -123,8 +133,17 @@ export function LiveConnectionCard() {
             </p>
           ) : (
             <p className="text-sm text-muted-foreground">
-              <code className="font-mono text-xs">yarn demo:seed</code> prints one for a local
-              devnet. Saved per network, in this browser only.
+              {fromBuild ? (
+                <>
+                  Built into this bundle for <strong>{network}</strong>. Saving a different one
+                  overrides it in this browser.
+                </>
+              ) : (
+                <>
+                  <code className="font-mono text-xs">yarn demo:seed</code> prints one for a local
+                  devnet. Saved per network, in this browser only.
+                </>
+              )}
             </p>
           )}
         </div>
