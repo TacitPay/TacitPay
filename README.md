@@ -73,9 +73,14 @@ The whole system on one canvas — the link as the transport, every caller
 funnelling through one API, the six providers, and what actually reaches the
 chain:
 
-[![TacitPay architecture](./docs/tacitpay-architecture-dark.png)](./docs/tacitpay-architecture-dark.png)
+<a href="./docs/tacitpay-architecture-dark.png">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/tacitpay-architecture-dark.png">
+    <img src="./docs/tacitpay-architecture.png" alt="TacitPay architecture">
+  </picture>
+</a>
 
-<sub>Editable source: [`docs/tacitpay-architecture-dark.excalidraw`](./docs/tacitpay-architecture-dark.excalidraw) · light variant: [`docs/tacitpay-architecture.png`](./docs/tacitpay-architecture.png) — open the source at [excalidraw.com](https://excalidraw.com).</sub>
+<sub>Follows your color scheme · editable sources: [`dark`](./docs/tacitpay-architecture-dark.excalidraw) · [`light`](./docs/tacitpay-architecture.excalidraw) — open them at [excalidraw.com](https://excalidraw.com).</sub>
 
 More in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md), which expands each
 circuit into its own diagram derived from the code.
