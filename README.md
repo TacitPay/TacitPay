@@ -12,7 +12,7 @@
 ![Tests](https://img.shields.io/badge/tests-86%20unit%20%C2%B7%2067%20integration-brightgreen)
 
 > **Status:** Wave 1 of the [Midnight Buildathon 2026](https://docs.midnight.network) (AKINDO WaveHack, Waves 1–3, Aug 27 – Nov 27).
-> The contract, its unit matrix, the client library, the CLI and the web app are all built and tested — and **live on Preview** since Aug 26 2026: contract [`1f37835dd1…21bc547`](https://preview.midnightexplorer.com/contracts/1f37835dd1f3ba29cfa912385ff6f0059f66aad9cad6b5dc8686b8a3e21bc547) (`deployments/preview.json`), where a Lace wallet has connected, proved in-wallet, and created the first real invoice from the browser.
+> The contract, its unit matrix, the client library, the CLI and the web app are all built and tested — and **live on Preview** since Aug 26 2026. Current contract: [`0847de8a…326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24) (`deployments/preview.json`) — v2, carrying both settlement lanes and denominated in bridged USDM (D-022). Its v1 predecessor (`1f3783…bc547`) hosted the first real in-browser invoice, created and proved from a Lace wallet on day one.
 > The full product spec is in [`PRD.md`](./PRD.md) — the single source of truth for this project.
 
 TacitPay is a **protocol for private invoicing and settlement** on Midnight.
