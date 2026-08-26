@@ -6,10 +6,13 @@ interface LogoProps extends React.SVGProps<SVGSVGElement> {
   badge?: string;
 }
 
+// `badge` has no default on purpose. It used to default to 'Preview', which meant
+// omitting it — or passing undefined — silently stamped a network name on the mark
+// that had nothing to do with the network in use. A logo should not assert state.
 export function Logo({
   size = 32,
   showWordmark = true,
-  badge = 'Preview',
+  badge,
   className = '',
   ...props
 }: LogoProps) {

@@ -1,4 +1,4 @@
-import { ShieldTick } from 'iconsax-reactjs';
+import { Global, ShieldTick } from 'iconsax-reactjs';
 import type { ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
@@ -42,7 +42,19 @@ export function AppShell({ children }: { children: ReactNode }) {
               aria-label="TacitPay app home"
               className="rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             >
-              <Logo size={34} badge={networkLabel} />
+              <Logo size={34} />
+            </Link>
+            {/* Network and proving are two different settings, so they get the same
+                shape and both carry their own label. An unlabelled "Preview" beside
+                the wordmark reads as part of the logo. */}
+            <Link
+              to="/settings"
+              aria-label={`Network: ${networkLabel}`}
+              className="inline-flex min-h-10 min-w-0 items-center gap-1.5 rounded-full border bg-card px-2.5 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+            >
+              <Global size={14} variant="Linear" aria-hidden="true" />
+              <span className="hidden sm:inline">Network:</span>
+              <span className="max-w-32 truncate">{networkLabel}</span>
             </Link>
             <Link
               to="/settings"
