@@ -1,5 +1,5 @@
 import { Reveal, SectionIntro } from '../shared';
-import { CannotSeeProbes } from './CannotSeeProbes';
+import { CannotSeeDial } from './CannotSeeDial';
 
 // This chapter used to be set on the opposite ground — the inversion was meant
 // to carry the argument, since it is about absence. In practice it read as a
@@ -48,8 +48,8 @@ export function CannotSeeSection() {
             </div>
           </div>
 
-          <Reveal className="w-full max-w-lg justify-self-center lg:justify-self-end">
-            <CannotSeeProbes className="w-full" />
+          <Reveal className="w-full max-w-xl justify-self-center lg:justify-self-end">
+            <CannotSeeDial className="w-full" />
           </Reveal>
         </div>
       </div>

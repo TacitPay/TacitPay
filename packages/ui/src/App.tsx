@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/AppLayout';
 import { AppShell } from '@/components/AppShell';
 import { ErrorState } from '@/components/DataStates';
 import { Button } from '@/components/ui/button';
+import { getSmoothScroll } from '@/lib/smoothScroll';
 import { HomePage } from '@/pages/HomePage';
 
 // The marketing page at / is the one a stranger hits first, and it needs none of
@@ -38,11 +39,24 @@ function ScrollManager() {
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
+      // Where momentum scrolling is running it owns the viewport position, and
+      // a native scroll here would animate the same value Lenis writes every
+      // frame. Ask the instance instead; fall back on the app routes, which
+      // have none.
+      const smooth = getSmoothScroll();
+
       if (ANCHOR_ROUTES.has(pathname) && hash) {
-        document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+        const target = document.getElementById(hash.slice(1));
+        if (!target) return;
+        // Both paths honour the root's `scroll-padding-top`, so neither needs
+        // to know how tall the header is.
+        if (smooth) smooth.scrollTo(target);
+        else target.scrollIntoView({ behavior: 'smooth' });
         return;
       }
-      window.scrollTo({ top: 0, behavior: 'auto' });
+
+      if (smooth) smooth.scrollTo(0, { immediate: true });
+      else window.scrollTo({ top: 0, behavior: 'auto' });
     });
     return () => window.cancelAnimationFrame(frame);
   }, [hash, pathname]);

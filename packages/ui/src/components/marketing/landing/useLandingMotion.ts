@@ -88,18 +88,44 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
       const scrub = gsap.timeline({
         scrollTrigger: { trigger: splash, start: 'top top', end: 'bottom top', scrub: 0.4 },
       });
+      // Every leg is a `fromTo` that renders nothing until it is scrolled, and
+      // that is a correctness fix rather than a style. A plain `to` samples the
+      // DOM for its start values the first time it renders — and the resolve
+      // above has these same elements pinned at ITS `from` state right then. On
+      // a first visit the sampling happens to land after the resolve has
+      // finished, so the scrub records the resting state and the hero looks
+      // right. On a remount — browser Back onto the landing, or an HMR update —
+      // it samples mid-resolve and records `scaleX: 0.4, opacity: 0` as the
+      // terminator's "top of page" state. Scrolling back up then restores an
+      // invisible line, and only a reload clears it. Authoring both ends means
+      // the scrub never reads the DOM at all, so it cannot inherit that.
+      const held = { ease: 'none', immediateRender: false };
       scrub
-        .to(
+        .fromTo(
           beam,
-          { opacity: 0.34, scaleX: 0.18, transformOrigin: 'center center', ease: 'none' },
+          { opacity: 1, scaleX: 1 },
+          { opacity: 0.34, scaleX: 0.18, transformOrigin: 'center center', ...held },
           0,
         )
-        .to(lockup, { opacity: 0.72, scale: 0.965, yPercent: -6, ease: 'none' }, 0);
-      if (publicFlank) scrub.to(publicFlank, { x: -44, autoAlpha: 0, ease: 'none' }, 0);
-      if (privateFlank) scrub.to(privateFlank, { x: 44, autoAlpha: 0, ease: 'none' }, 0);
+        .fromTo(
+          lockup,
+          { opacity: 1, scale: 1, yPercent: 0 },
+          { opacity: 0.72, scale: 0.965, yPercent: -6, ...held },
+          0,
+        );
+      if (publicFlank)
+        scrub.fromTo(publicFlank, { x: 0, autoAlpha: 1 }, { x: -44, autoAlpha: 0, ...held }, 0);
+      if (privateFlank)
+        scrub.fromTo(privateFlank, { x: 0, autoAlpha: 1 }, { x: 44, autoAlpha: 0, ...held }, 0);
       // The field drifts slower than the page, which reads as depth rather
       // than as movement — about one grid square across the whole splash.
-      if (fields.length) scrub.to(fields, { yPercent: -4, opacity: 0.35, ease: 'none' }, 0);
+      if (fields.length)
+        scrub.fromTo(
+          fields,
+          { yPercent: 0, opacity: 1 },
+          { yPercent: -4, opacity: 0.35, ...held },
+          0,
+        );
     }
 
     // --------------------------------------------------------------- reveals

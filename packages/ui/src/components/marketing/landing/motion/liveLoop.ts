@@ -11,7 +11,12 @@ export type MotionCleanup = () => void;
 export type LoopTimeline = ReturnType<typeof gsap.timeline>;
 
 /** Matches the `data-tp-loop` value on the panel wrapping each instrument. */
-export type LoopName = 'invoice-route' | 'disclosure-corridor' | 'circuit-interlock';
+export type LoopName =
+  | 'invoice-route'
+  | 'disclosure-corridor'
+  | 'circuit-interlock'
+  // Has no panel and no pause control; `getLoopUi` returns nulls for all of it.
+  | 'cannot-see-dial';
 
 export interface LoopUi {
   readonly panel: HTMLElement | null;

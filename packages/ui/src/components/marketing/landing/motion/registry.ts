@@ -1,3 +1,4 @@
+import { animateCannotSeeDial } from './cannotSeeDial';
 import { animateCircuitInterlock } from './circuitInterlock';
 import { animateDisclosureCorridor } from './disclosureCorridor';
 import { animateInvoiceRoute } from './invoiceRoute';
@@ -8,4 +9,5 @@ export const ASSETS: Record<string, (asset: SVGSVGElement) => MotionCleanup> = {
   'invoice-route': animateInvoiceRoute,
   'disclosure-corridor': animateDisclosureCorridor,
   'circuit-interlock': animateCircuitInterlock,
+  'cannot-see-dial': animateCannotSeeDial,
 };

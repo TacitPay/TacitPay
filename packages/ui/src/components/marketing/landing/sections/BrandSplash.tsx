@@ -161,12 +161,18 @@ export function BrandSplash() {
               <div className="absolute inset-x-0 top-1/2 h-[clamp(1.75rem,3.5vw,3.5rem)] -translate-y-1/2 bg-[linear-gradient(to_bottom,transparent_0%,rgb(var(--tp-glow)/0.16)_50%,transparent_100%)]" />
               <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-[rgb(var(--tp-glow)/0.7)] shadow-[0_0_18px_4px_rgb(var(--tp-glow)/0.35)]" />
 
-              {/* Same rule again: the wrapper centres, the packet translates. */}
+              {/* Same rule again: the wrapper centres, the packet translates.
+
+                  Two layers, because a single 3px bar reads as a dash being
+                  slid along a line rather than as light moving through one: a
+                  soft elliptical halo that falls off in both axes, and a
+                  hairline core sitting exactly on the rail. Neither takes a
+                  transform of its own — GSAP owns the wrapper's. */}
               <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center">
-                <div
-                  data-tp-beam-packet
-                  className="h-[3px] w-24 bg-[linear-gradient(to_right,transparent,rgb(var(--tp-glow)),transparent)] opacity-0"
-                />
+                <div data-tp-beam-packet className="relative h-3 w-44 opacity-0">
+                  <div className="tp-flash-halo absolute inset-0" />
+                  <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-[linear-gradient(to_right,transparent,rgb(var(--tp-glow))_50%,transparent)]" />
+                </div>
               </div>
             </div>
           </div>

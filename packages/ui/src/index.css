@@ -86,6 +86,14 @@
   /* The terminator is one colour at a dozen alphas, so it needs raw channels
      rather than a colour token. It is the ink of whichever ground it is on. */
   --tp-glow: 9 9 11;
+  /* Weight of the flash that travels the terminator. Light and dark cannot
+     share one value, because they are not the same phenomenon: on a dark ground
+     the flash is light blooming through the line and a little carries a long
+     way, while on white the identical alpha is ink and reads as a smudge next
+     to a rail that is already dark. 0.9 here and 0.5 there were matched by eye
+     until both land as the same event. */
+  --tp-flash: 0.9;
+  --tp-flash-mid: 0.36;
 }
 
 /* ---------------------------------------------------------------------------
@@ -149,6 +157,8 @@
     --tp-warn: var(--color-amber-500);
     --tp-mark-ring: var(--color-zinc-500);
     --tp-glow: 250 250 250;
+    --tp-flash: 0.5;
+    --tp-flash-mid: 0.16;
   }
 }
 
@@ -201,6 +211,8 @@
   --tp-warn: var(--color-amber-500);
   --tp-mark-ring: var(--color-zinc-500);
   --tp-glow: 250 250 250;
+  --tp-flash: 0.5;
+  --tp-flash-mid: 0.16;
 }
 
 @theme inline {
@@ -258,19 +270,19 @@
     min-width: 320px;
     background: var(--background);
     /* Anchors land under the sticky header without this, hiding the heading
-       they were supposed to bring into view. Matches the header's h-16. */
+       they were supposed to bring into view. Matches the header's h-16, and
+       Lenis subtracts it too, so both scroll paths clear the header from this
+       one declaration. */
     scroll-padding-top: 4rem;
   }
 
-  /* Native smooth scroll, not a hijacked one. A scroll library would take over
-     the wheel, the scrollbar and keyboard paging to add inertia the platform
-     already tunes per device — and the landing's own motion is built as
-     enhancement over the real scroll position, not a replacement for it. */
-  @media (prefers-reduced-motion: no-preference) {
-    html {
-      scroll-behavior: smooth;
-    }
-  }
+  /* Deliberately no `scroll-behavior: smooth` here. Nothing read it — both
+     scroll calls in App.tsx pass an explicit behaviour — but ScrollTrigger did:
+     it records the property at init and restores it afterwards as an INLINE
+     style, which no author rule can then override. That inline `smooth` made
+     the browser re-animate its way toward every position Lenis wrote, so the
+     landing scrolled through treacle. Leaving the property unset keeps the
+     platform default and lets each call say what it wants. */
 
   body {
     @apply min-h-screen bg-background font-sans text-foreground antialiased;
@@ -302,6 +314,18 @@
     pointer-events: none;
     opacity: 0.035;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* The halo of the flash that crosses the terminator. It lives here rather
+     than in an arbitrary class so the per-ground weighting stays with the rest
+     of the token layer — see `--tp-flash`. */
+  .tp-flash-halo {
+    background: radial-gradient(
+      ellipse at center,
+      rgb(var(--tp-glow) / var(--tp-flash)) 0%,
+      rgb(var(--tp-glow) / var(--tp-flash-mid)) 40%,
+      transparent 72%
+    );
   }
 
   /* Hairline rules, the technical-drawing register the mark implies. */
@@ -408,69 +432,25 @@
     animation: tp-field-outward 24s linear infinite;
   }
 
-  /* The "cannot see" chapter: three things try to reach the mark and stop dead
-     at the boundary. Each has its own keyframe because each approaches from a
-     different angle, and three explicit sets read better than rotating a group
-     and counter-rotating its label back.
-
-     They take turns via animation-delay, so the picture is one attempt failing
-     at a time rather than a busy ring of movement. */
-  @keyframes tp-probe-left {
-    0%,
-    35%,
-    100% {
-      transform: none;
-      opacity: 0.35;
-    }
-    14%,
-    24% {
-      transform: translate(8.5px, 3.1px);
-      opacity: 1;
-    }
-  }
-
-  @keyframes tp-probe-right {
-    0%,
-    35%,
-    100% {
-      transform: none;
-      opacity: 0.35;
-    }
-    14%,
-    24% {
-      transform: translate(-8.5px, 3.1px);
-      opacity: 1;
-    }
-  }
-
-  @keyframes tp-probe-foot {
-    0%,
-    35%,
-    100% {
-      transform: none;
-      opacity: 0.35;
-    }
-    14%,
-    24% {
-      transform: translate(0, -9px);
-      opacity: 1;
-    }
-  }
-
-  .tp-probe {
-    transform-box: view-box;
-    animation-duration: 9s;
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    animation-iteration-count: infinite;
-  }
+  /* The "cannot see" chapter runs on a GSAP timeline, not on CSS animations —
+     see motion/cannotSeeDial.ts. Three CSS animations kept in step by matching
+     `animation-delay` share a phase but not a clock, and anything that restarts
+     one and not the others desyncs them for good; the readout then announces a
+     station the index is nowhere near. Only the wake keeps a rule here, and
+     only so reduced motion can take it away. */
 
   @media (prefers-reduced-motion: reduce) {
     .tp-rise,
     .tp-eclipse,
     .tp-field-inward,
-    .tp-field-outward,
-    .tp-probe {
+    .tp-field-outward {
       animation: none;
+    }
+
+    /* A wake with nothing moving in front of it is just a smear. The index
+       still reads as an index without one. */
+    .tp-dial-wake {
+      display: none;
     }
   }
 }

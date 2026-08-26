@@ -11,14 +11,14 @@ import type { MotionCleanup } from './liveLoop';
  *  1.75s  the public end of the line ticks to receive it
  *
  * The whole product is this one gesture: private data goes in, a public fact
- * comes out, and the numbers never make the crossing. It runs on a lazy,
- * randomised cadence so it reads as something the system does rather than
- * something the page loops at you.
+ * comes out, and the numbers never make the crossing. Two things keep it from
+ * reading as a loop: the gap between crossings is random, and so is the pace of
+ * each one (see `PACE` below), so no two are the same length or the same speed.
  */
 export const PULSE = {
-  firstDelay: 1.6,
-  idleMin: 2.4,
-  idleMax: 4.2,
+  firstDelay: 1.1,
+  idleMin: 1.1,
+  idleMax: 2.6,
   draftAt: 0,
   draftDuration: 0.34,
   fireAt: 0.45,
@@ -34,6 +34,11 @@ export const PULSE = {
   settleDuration: 0.4,
   cycleEnd: 2.95,
 } as const;
+
+/** How much each crossing's pace may vary from the storyboard above. Cheaper
+ *  and more convincing than randomising nine durations independently: the whole
+ *  gesture speeds up or slows down together, the way a real one would. */
+const PACE = { min: 0.82, max: 1.24 };
 
 /** Where the packet sits, as a fraction of half the splash width, measured out
  *  from the centre. The mask owns the middle, so the packet is only ever seen
@@ -80,6 +85,9 @@ export const animateTerminatorPulse = (root: HTMLElement): MotionCleanup => {
   function runCycle() {
     if (!canPlay()) return;
     pending = null;
+    // `invalidate` re-reads the function-based coordinates so a resize mid-visit
+    // is picked up; the timeScale is what stops the cadence sounding metronomic.
+    timeline.timeScale(gsap.utils.random(PACE.min, PACE.max));
     timeline.invalidate().restart();
   }
 

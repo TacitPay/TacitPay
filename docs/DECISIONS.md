@@ -344,3 +344,107 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     txBet landing page. The geometry is not: txBet's furniture is a vertical
     gate because its thesis is a timing window; TacitPay's is a horizontal
     terminator because its thesis is a boundary.
+
+- **D-017 (2026-08-24) — Momentum scroll on the marketing surface only, driven
+  off GSAP's ticker.** `lenis@1.3.26` is started by `MarketingShell`, not at the
+  root, so it begins and ends with `/` and never reaches the app routes: a tool
+  full of forms, dropdowns and long tables should move exactly as much as the
+  input device says it did. `src/lib/smoothScroll.ts` wires it the way the Lenis
+  README specifies — `lenis.on('scroll', ScrollTrigger.update)`, `lenis.raf` on
+  `gsap.ticker`, `lagSmoothing(0)` — so scroll position and every scrubbed
+  timeline resolve once per frame instead of racing across two loops. Teardown
+  restores `lagSmoothing(500, 33)`, GSAP's own defaults read out of
+  `gsap-core.js` rather than remembered, because the ticker is global. Lenis
+  reads `prefers-reduced-motion` itself and drops to 1:1 tracking, so there is
+  no branch to write. Measured: one 400 px wheel tick eases to exactly 400 over
+  ~1.2 s on a decaying curve.
+  - **The trap that cost the most.** `html { scroll-behavior: smooth }` is gone
+    from `index.css`, and must not come back. Nothing read it — both scroll
+    calls in `App.tsx` pass an explicit behaviour — but ScrollTrigger did:
+    `ScrollTrigger.js:502/549` records the property at init and restores it
+    afterwards as an **inline** style, which no author rule can then override.
+    Because the landing's ScrollTriggers are created by a child effect before
+    `MarketingShell`'s effect adds the `lenis` class, ScrollTrigger always
+    latched `smooth` and wrote it back, and the browser then re-animated its way
+    toward every position Lenis wrote. A `html.lenis { scroll-behavior: auto }`
+    rule looks like the fix and loses to the inline style.
+  - **No anchor offset.** `Lenis.scrollTo` already subtracts the root's
+    `scroll-padding-top` (`lenis.mjs:786`), so the existing `4rem` clears the
+    sticky header for both scroll paths. Passing `offset: -64` as well landed
+    every anchor a header-height too low — 127 px instead of 64 — which only
+    showed up by measuring where the section came to rest.
+  - **Cost:** roughly 8 kB gzip on the first-visit chunk.
+
+- **D-018 (2026-08-24) — The "cannot see" chapter is a dial, not a wall.**
+  `CannotSeeDial.tsx` rings the mark with a graduated bezel and a travelling
+  index that passes a socket for `server`, `prover` and `keys`. Every socket is
+  drawn empty, and each flash is timed off its own bearing as a fraction of one
+  turn, so the flash is welded to the pointer arriving rather than staggered by
+  hand. Two reasons for the change. The prose claim is _absence_ — these
+  components are not guarded, they do not exist — and the previous graphic
+  (probes creeping at a dashed boundary) argued the opposite, that attackers are
+  held at a wall. And radial was the one register the page did not already own:
+  every other instrument is a rail with something moving along it. A dot field
+  behind the dial was tried and cut — there is no radius in this frame where it
+  can fade out before meeting a box edge, so it always read as a rectangle of
+  noise. Under reduced motion the wake is `display: none`, because a motion
+  trail with nothing moving in front of it is a smear.
+  - **Corrected same day — the arrival beat said the opposite thing.** The first
+    version brightened a station as the index reached it. In every scanner idiom
+    anyone has seen, a contact lighting up under a sweep means it was _detected_,
+    so the graphic was claiming the reverse of the chapter it sits beside. The
+    station now dims and shrinks under interrogation, and a `not fitted` readout
+    appears beside its label — because a negative result is the one thing a
+    diagram cannot state on its own, and words are the only unambiguous way to
+    say it. The readouts rest at zero and rise, so switching the animation off
+    leaves all three standing, which is the correct still reading and the one a
+    deck slide would capture.
+  - **Corrected again — the dial runs on one GSAP timeline, not on CSS.** The
+    first attempt gave the index and each station its own CSS animation, held in
+    step only by matching `animation-delay`. That shares a phase but not a
+    clock: anything that restarts one and not the others — an HMR update in dev,
+    an element being recreated — desyncs them permanently, and the readout ends
+    up announcing a station the index is nowhere near. It now goes through the
+    page's existing instrument contract (`ASSETS` + `connectLoop`), where a
+    single timeline drives the rotation and every station cue, and each cue time
+    is derived from that station's own bearing. Sync is then structural rather
+    than maintained. It also inherits the contract's visibility gating, so the
+    dial stops turning when it is off screen or the tab is hidden.
+  - **The revolution slowed from 9s to 15s.** At 9s the index had travelled 80°
+    past a station before its answer was legible, which is what made the two
+    look unrelated even while they were technically in phase. At 15s an answer
+    stands from roughly 3° to 45° past its station — measured, not estimated.
+    A station near the end of the sweep is still answering when the loop comes
+    round, so its clearing cue wraps to the top of the next pass.
+
+- **D-019 (2026-08-24) — The splash scrub authors both of its endpoints; it must
+  never sample the DOM.** Every leg of the scroll scrub in `useLandingMotion.ts`
+  is a `fromTo` carrying `immediateRender: false`, and that is a correctness
+  requirement rather than a preference. A plain `to` records its start values
+  the first time it renders, and the load resolve directly above it holds those
+  same elements at ITS `from` state at that moment. On a first visit the
+  sampling happens to land after the resolve has finished, so the scrub records
+  the resting state and the hero looks right — which is exactly why this passed
+  every gate and every fresh-load check. On a remount it samples mid-resolve and
+  records `scaleX: 0.4, opacity: 0` as the terminator's top-of-page state, so
+  scrolling back up restores an invisible line and only a reload clears it.
+  Reproduced deterministically: load `/`, click **See the line**, click **Launch
+  app**, press Back, then scroll to the top.
+  - **How it presented:** intermittently missing terminator and both line ends,
+    on a page sitting at `scrollY: 0`. The tell was the measured transform —
+    `scaleX 0.4` is not the scrub's end state (`0.18`), it is the resolve's
+    `from`, which is what named the culprit.
+
+- **D-020 (2026-08-24) — The terminator flash is weighted per ground.** Light
+  and dark cannot share one alpha because they are not the same phenomenon: on
+  the dark ground the flash is light blooming through the line and a little
+  carries a long way, while on white the identical value is ink and reads as a
+  smudge beside a rail that is already dark. `--tp-flash` / `--tp-flash-mid`
+  carry the weighting (0.9/0.36 light, 0.5/0.16 dark), matched by eye against a
+  density ladder rendered on both grounds until each read as the same event.
+  The packet itself is now two layers — a soft elliptical halo plus a hairline
+  core on the rail — because a single 3 px bar reads as a dash being slid along
+  a line rather than as something moving through one. Cadence: the gap between
+  crossings dropped to 1.1–2.6 s and each crossing takes a random `timeScale`
+  between 0.82 and 1.24, so no two are the same speed. Measured at roughly one
+  crossing every 4.2–5.5 s, against 5.4–7.2 s before.

@@ -1,9 +1,10 @@
 import { ArrowRight } from 'iconsax-reactjs';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Logo } from '@/components/Logo';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { startSmoothScroll } from '@/lib/smoothScroll';
 
 // Chrome for the public marketing surface at `/`. Deliberately not AppShell:
 // the app chrome carries wallet, network and proving state, none of which
@@ -17,6 +18,10 @@ const NAV = [
 ];
 
 export function MarketingShell({ children }: { children: ReactNode }) {
+  // Momentum scroll lives with this shell rather than at the root, so it starts
+  // and stops with the marketing surface and never reaches the app routes.
+  useEffect(() => startSmoothScroll(), []);
+
   // The splash follows the theme like every other surface, so the header sits
   // over one ground the whole way down and needs no tone tracking of its own.
   return (
