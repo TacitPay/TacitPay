@@ -44,7 +44,17 @@ the devnet is up). No CI by owner decision (D-008).
       enumerates `window.midnight` generically with safe icon handling.
       Remaining before Preview: swap mock → real api, then §8.3 browser
       providers (Day-3 VERIFY: mirror example-bboard).
-- [ ] 6b. **Multi-wallet + three-tier proving (D-010)** — queued as a follow-up
+- [x] 6b. **Multi-wallet + three-tier proving (D-010)** — DONE 2026-08-24.
+      Wallet discovery by `rdns`/name over `window.midnight` (Lace + 1AM),
+      runtime feature detection of `getProvingProvider`, local + user-supplied
+      prover tiers with health checks, active tier surfaced in the header and
+      explained in `/settings`. Verified independently: typecheck, build,
+      eslint, prettier all clean; copy rules clean. Still open: the Day-3
+      VERIFY on whether the shipping Lace build implements the method.
+      Also landed: a marketing page at `/` with the app behind `/app`, built
+      from the logo's geometry and palette.
+      _(original scope note below)_
+- [x] 6b-scope. Queued as a follow-up
       to 6 so it does not collide with the in-flight UI lane. Discover wallets by
       scanning `Object.values(window.midnight)` on `rdns`/`name` (Lace + 1AM),
       feature-detect `getProvingProvider`, fall back to `localhost:6300`, allow a
