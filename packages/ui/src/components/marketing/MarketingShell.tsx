@@ -10,6 +10,35 @@ import { startSmoothScroll } from '@/lib/smoothScroll';
 // the app chrome carries wallet, network and proving state, none of which
 // belongs on a page you can read without connecting anything.
 
+// tacitpay.xyz is the marketing apex; the product lives on app.tacitpay.xyz.
+// Every other host (previews, localhost, the subdomain itself) stays SPA-routed.
+const APP_ORIGIN = 'https://app.tacitpay.xyz';
+const onMarketingApex = () =>
+  typeof window !== 'undefined' && window.location.hostname === 'tacitpay.xyz';
+
+function AppLink({
+  to,
+  className,
+  children,
+}: {
+  to: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  if (onMarketingApex()) {
+    return (
+      <a href={`${APP_ORIGIN}${to}`} className={className}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link to={to} className={className}>
+      {children}
+    </Link>
+  );
+}
+
 const NAV = [
   { href: '#record', label: 'The line' },
   { href: '#route', label: 'The route' },
@@ -59,7 +88,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
               from 640 up keeps the roomier spacing. */}
           <div className="flex items-center gap-2 justify-self-end sm:gap-2.5">
             <ThemeToggle />
-            <Link
+            <AppLink
               to="/app"
               className="group inline-flex h-9 items-center gap-1 rounded-full bg-primary px-3 text-[0.6875rem] font-semibold tracking-[0.12em] text-primary-foreground uppercase transition-colors hover:bg-primary/85 sm:gap-1.5 sm:px-4"
             >
@@ -70,7 +99,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
                 aria-hidden="true"
                 className="transition-transform group-hover:translate-x-0.5"
               />
-            </Link>
+            </AppLink>
           </div>
         </div>
       </header>
@@ -91,14 +120,14 @@ export function MarketingShell({ children }: { children: ReactNode }) {
             <div className="flex flex-wrap gap-x-14 gap-y-6 text-xs font-medium tracking-[0.12em] text-tp-ink-faint uppercase">
               <div className="space-y-2.5">
                 <p className="text-tp-ink">Product</p>
-                <Link to="/app" className="block transition-colors hover:text-tp-ink">
+                <AppLink to="/app" className="block transition-colors hover:text-tp-ink">
                   Launch app
-                </Link>
-                <Link to="/app#verify" className="block transition-colors hover:text-tp-ink">
+                </AppLink>
+                <AppLink to="/app#verify" className="block transition-colors hover:text-tp-ink">
                   Verify an invoice
-                </Link>
+                </AppLink>
                 <a
-                  href="https://github.com/Marcussy34/tacitpay"
+                  href="https://github.com/TacitPay/TacitPay"
                   target="_blank"
                   rel="noreferrer"
                   className="block transition-colors hover:text-tp-ink"
