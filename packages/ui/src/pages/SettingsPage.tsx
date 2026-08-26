@@ -12,6 +12,7 @@ import {
 import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { LiveConnectionCard } from '@/components/LiveConnectionCard';
 import { PageHeader } from '@/components/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -455,6 +456,8 @@ export function SettingsPage() {
         </TabsList>
 
         <TabsContent value="network" className="space-y-6">
+          <LiveConnectionCard />
+
           <Card>
             <CardHeader>
               <CardTitle>Network display</CardTitle>
