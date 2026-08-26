@@ -7,8 +7,10 @@ import { truncateHash } from '@/lib/format';
 import { getWalletProvingCapability } from '@/lib/proving';
 import { useProving } from '@/lib/proving-context';
 import {
+  clearStoredWalletIdentity,
   connectInjectedWallet,
   listInjectedWallets,
+  storeWalletIdentity,
   type DetectedWallet,
   type WalletConnection,
 } from '@/lib/wallet';
@@ -48,6 +50,7 @@ export function WalletGate({
     setError(null);
     try {
       setConnection(await connectInjectedWallet(wallet, network));
+      storeWalletIdentity(network, wallet.injectionKey);
     } catch (connectionError) {
       setError(getErrorMessage(connectionError));
     } finally {
@@ -91,7 +94,15 @@ export function WalletGate({
           </div>
           <div className="flex flex-wrap gap-2">
             <CopyButton value={connection.address} label="Copy address" />
-            <Button type="button" variant="outline" size="sm" onClick={() => setConnection(null)}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                clearStoredWalletIdentity(network);
+                setConnection(null);
+              }}
+            >
               Change wallet
             </Button>
           </div>

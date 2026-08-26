@@ -44,6 +44,37 @@ declare global {
 }
 
 const SUPPORTED_API_VERSION = /^4\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/u;
+const STORAGE_KEY = 'tacitpay.wallet';
+
+const storageKeyFor = (network: InvoiceNetwork): string => `${STORAGE_KEY}:${network}`;
+
+export function getStoredWalletIdentity(network: InvoiceNetwork): string | undefined {
+  try {
+    const saved = localStorage.getItem(storageKeyFor(network))?.trim();
+    return saved || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function storeWalletIdentity(network: InvoiceNetwork, value: string): boolean {
+  const identity = value.trim();
+  if (!identity) return false;
+  try {
+    localStorage.setItem(storageKeyFor(network), identity);
+  } catch {
+    // The identity stays session-only when browser storage is unavailable.
+  }
+  return true;
+}
+
+export function clearStoredWalletIdentity(network: InvoiceNetwork): void {
+  try {
+    localStorage.removeItem(storageKeyFor(network));
+  } catch {
+    // Nothing to clear when storage is unavailable.
+  }
+}
 
 function isRecord(value: unknown): value is ConnectedWalletApi {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);

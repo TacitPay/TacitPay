@@ -5,13 +5,20 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
 import { useProving } from '../proving-context';
+import {
+  connectInjectedWallet,
+  getStoredWalletIdentity,
+  listInjectedWallets,
+  type WalletConnection,
+} from '../wallet';
 import { useTacitPay } from './index';
 import { endpointsFor, getContractAddress, NETWORK_IDS } from './deployment';
-import type { InvoiceStatus, Observable, TacitPayApi } from './types';
+import type { InvoiceNetwork, InvoiceStatus, Observable, TacitPayApi } from './types';
 
 /** The read-only surface `/verify/<id>` needs. No wallet, no proving, no private state. */
 export interface LiveObserver {
@@ -62,6 +69,11 @@ interface LiveContextValue {
   observer: LiveObserver | null;
 }
 
+interface WalletReconnectAttempt {
+  readonly identity: string;
+  readonly result: Promise<WalletConnection | null>;
+}
+
 const LiveContext = createContext<LiveContextValue | null>(null);
 
 /**
@@ -70,15 +82,17 @@ const LiveContext = createContext<LiveContextValue | null>(null);
  * their private state.
  *
  * It sits inside `ProvingSessionProvider` because that is where the connected wallet lives,
- * and installs the result back into `TacitPayProvider` through `setLiveApi`. Nothing is
- * attempted automatically: connecting reads private state and costs a wallet prompt, so it
- * is always a deliberate action.
+ * and installs the result back into `TacitPayProvider` through `setLiveApi`. After a reload
+ * the previously authorized WALLET reconnects silently, but the passphrase is deliberately
+ * memory-only — it never touches browser storage (D-023) — so unlocking private state
+ * always costs one fresh prompt.
  */
 export function LiveApiProvider({ children }: { children: ReactNode }) {
   const { network, setLiveApi, setProofStage } = useTacitPay();
-  const { connection, resolution } = useProving();
+  const { connection, resolution, setConnection } = useProving();
   const [state, setState] = useState<LiveState>({ status: 'unconfigured' });
   const [observer, setObserver] = useState<LiveObserver | null>(null);
+  const reconnectAttempts = useRef(new Map<InvoiceNetwork, WalletReconnectAttempt | null>());
 
   const contractAddress = getContractAddress(network);
 
@@ -199,6 +213,52 @@ export function LiveApiProvider({ children }: { children: ReactNode }) {
     },
     [connection, contractAddress, network, resolution, setLiveApi, setProofStage],
   );
+
+  useEffect(() => {
+    if (connection) return;
+
+    const attempts = reconnectAttempts.current;
+    let attempt = attempts.get(network);
+    if (!attempts.has(network)) {
+      const identity = getStoredWalletIdentity(network);
+      if (!identity) {
+        attempts.set(network, null);
+        return;
+      }
+      const wallet = listInjectedWallets().find(
+        (candidate) =>
+          candidate.supported && (candidate.injectionKey === identity || candidate.id === identity),
+      );
+      if (!wallet?.supported) {
+        attempts.set(network, null);
+        return;
+      }
+      attempt = {
+        identity,
+        // A rejected background wallet request stays silent so the tile remains actionable.
+        result: connectInjectedWallet(wallet, network).catch(() => null),
+      };
+      attempts.set(network, attempt);
+    }
+    if (!attempt) return;
+
+    const activeAttempt = attempt;
+    let cancelled = false;
+    void activeAttempt.result.then((restoredConnection) => {
+      if (
+        cancelled ||
+        !restoredConnection ||
+        getStoredWalletIdentity(network) !== activeAttempt.identity
+      ) {
+        return;
+      }
+      setConnection(restoredConnection);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [connection, network, setConnection]);
 
   const disconnect = useCallback(() => {
     setLiveApi(null);
