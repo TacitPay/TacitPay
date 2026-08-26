@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
+import wasm from 'vite-plugin-wasm';
 
 const REPO_ROOT = new URL('../../', import.meta.url);
 const MANAGED_DIR = new URL('contracts/managed/tacitpay/', REPO_ROOT);
@@ -52,7 +53,18 @@ function midnightZkAssets(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), midnightZkAssets()],
+  // wasm() must run before the app plugins. The Midnight runtime and ledger ship
+  // wasm-bindgen's bundler target, whose entry does
+  // `import * as wasm from "./…_bg.wasm"; wasm.__wbindgen_start()` — WebAssembly ESM
+  // integration, which Vite does not implement. Without this plugin the bundle builds
+  // and the .wasm files are emitted, but the first chain read throws
+  // "Cannot access '__wbindgen_start' before initialization" at runtime. Building is
+  // not evidence that it runs.
+  //
+  // vite-plugin-top-level-await is deliberately NOT paired with it: that plugin
+  // requires Rollup, and Vite 8 bundles with Rolldown. It is only needed for targets
+  // without native top-level await, and `build.target` below is set past that.
+  plugins: [wasm(), react(), tailwindcss(), midnightZkAssets()],
   resolve: {
     alias: {
       '@': new URL('./src', import.meta.url).pathname,
@@ -67,6 +79,8 @@ export default defineConfig({
     'process.env': '{}',
   },
   build: {
+    // wasm-bindgen's ESM output uses top-level await; do not lower the target below this.
+    target: 'esnext',
     // The ledger and proving code is genuinely large; the marketing entry chunk is
     // what matters and it is split out separately.
     chunkSizeWarningLimit: 1_500,
