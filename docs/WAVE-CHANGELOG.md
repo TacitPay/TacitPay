@@ -115,16 +115,17 @@ took, in order:
   yet unlocked (passphrase + "Connect to contract"), writes silently run on
   the in-memory mock with plausible-looking ids. A loud sandbox banner and
   obviously-fake stub ids are queued.
-- **Paying needs shielded tNIGHT, and shielding is platform-blocked on
-  Preview (D-020)** — the faucet dispenses transparent tNIGHT; `payInvoice`
-  consumes a shielded coin. Lace refuses the crossing, `transferTransaction`
-  correctly reports insufficient shielded funds, and the designed conversion —
-  `WalletFacade.initSwap` — builds, signs, proves, and is then rejected by the
-  node: `1010: Custom error: 199`, the `AllCommitmentsSubsetCheckFailure`
-  signature of midnight-node #1206, reproduced through both the local and
-  hosted preview provers. PRD §16.2's `receiveUnshielded` fallback is now the
-  Wave 1 road for Preview browser payments; the shielded path stays the
-  flagship on the local devnet, where genesis holds pre-shielded funds.
+- **Paying needs shielded tNIGHT, and the protocol offers no self-shield
+  operation (D-020, corrected after a docs audit)** — the faucet dispenses
+  transparent tNIGHT; `payInvoice` consumes a shielded coin. Lace has no
+  conversion, `transferTransaction` sources per-pool, and `initSwap` — which
+  we first mistook for the shield method, alongside community sources — is
+  documented as a two-party atomic exchange, so our single-sided swap was
+  rejected by the node as expected (`1010: Custom error: 199`). No shield
+  primitive exists in the SDK's surface; shielded tokens are contract-minted;
+  devnet shielded native is genesis-only. `receiveUnshielded` (PRD §16.2) is
+  the design-intended Wave 1 road; a contract-minted shielded wrapper token
+  is the Wave 2 candidate for private settlement on public networks.
 - **Identifiers ≠ hashes** — wallets report the ledger transaction
   _identifier_; explorers index the _hash_. Both resolve via the indexer's
   `transactions(offset: {identifier|hash})`.

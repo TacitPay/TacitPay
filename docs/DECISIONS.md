@@ -575,6 +575,20 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     shielded funds) and lights up on Preview the moment the node accepts
     shielding mints.
   - `transferTransaction` is NOT a substitute — it sources each output from
-    its own pool and correctly reports insufficient shielded funds; `initSwap`
-    is the right API, confirmed by community field notes (nightforge.jp error
-    decoder, YAMORI wallet's error-199 handling).
+    its own pool and correctly reports insufficient shielded funds.
+  - **Correction (same evening, after a docs audit):** the official Wallet SDK
+    reference documents `initSwap` as a TWO-PARTY atomic exchange ("trustless
+    token exchanges between parties" — one side initiates, the counterparty
+    completes with `balanceFinalizedTransaction`). Our single-sided submission
+    was half of a swap with no counterparty, and a validation rejection is the
+    EXPECTED outcome — so our attribution of the failure to midnight-node
+    #1206 was premature (community sources making the same "initSwap is the
+    shield method" assumption appear to share the misuse). The deeper finding
+    stands and strengthens: the SDK's method surface contains NO self-shield
+    primitive at all, the docs frame NIGHT as the unshielded token with
+    shielded tokens as a separate, contract-minted category, and shielded
+    native-colour coins appear obtainable only from devnet genesis. The
+    conclusion is unchanged but better-founded: `receiveUnshielded` is the
+    design-intended route for public-network payments, and a contract-minted
+    shielded wrapper token is the design-intended way to "shield" — a Wave 2
+    candidate.
