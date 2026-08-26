@@ -1,0 +1,152 @@
+import { useGSAP } from '@gsap/react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import type { RefObject } from 'react';
+
+import { ASSETS } from './motion/registry';
+import type { MotionCleanup } from './motion/liveLoop';
+import { animateTerminatorPulse } from './motion/terminatorPulse';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
+
+/* SPLASH RESOLVE STORYBOARD
+ *   0ms  the shell, the lockup and the actions are already in the DOM
+ * 120ms  the terminator opens across the full width
+ * 300ms  the shielded ring travels in and comes to rest over the public disc
+ * 460ms  the settlement node lights — the one point both sides agree on
+ * 560ms  the promise and the actions settle
+ *
+ * Motion never owns visibility here: every tween is a `from`, so the resting
+ * state is what the markup already says. Turning on reduced motion tears the
+ * whole thing down and leaves the page exactly as it reads without JavaScript.
+ */
+const RESOLVE = {
+  terminator: 0.12,
+  ring: 0.3,
+  node: 0.46,
+  details: 0.56,
+} as const;
+
+const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
+  let loops: MotionCleanup[] = [];
+
+  const context = gsap.context(() => {
+    const splash = root.querySelector<HTMLElement>('[data-tp-splash]');
+    const beam = root.querySelector<HTMLElement>('[data-tp-beam]');
+    const lockup = root.querySelector<HTMLElement>('[data-tp-lockup]');
+    const publicFlank = root.querySelector<HTMLElement>('[data-tp-flank="public"]');
+    const privateFlank = root.querySelector<HTMLElement>('[data-tp-flank="private"]');
+
+    // ---------------------------------------------------------- load resolve
+    if (splash && beam && lockup) {
+      const resolve = gsap.timeline();
+      resolve
+        .from(
+          beam,
+          { scaleX: 0.4, opacity: 0, duration: 0.9, ease: 'power3.out' },
+          RESOLVE.terminator,
+        )
+        .from(
+          '[data-tp-mark-disc]',
+          { scale: 0.86, opacity: 0, duration: 0.5, ease: 'power3.out' },
+          RESOLVE.terminator,
+        )
+        // The eclipse itself: the shielded ring travels in over the public disc.
+        .from(
+          '[data-tp-mark-ring]',
+          { x: 34, opacity: 0, duration: 0.85, ease: 'power3.out' },
+          RESOLVE.ring,
+        )
+        .from(
+          '[data-tp-wordmark]',
+          { x: -18, opacity: 0, duration: 0.7, ease: 'power3.out' },
+          RESOLVE.ring,
+        )
+        .from(
+          '[data-tp-mark-node]',
+          { scale: 0, opacity: 0, duration: 0.4, ease: 'back.out(2.4)' },
+          RESOLVE.node,
+        )
+        .from(
+          '[data-tp-splash-detail]',
+          { y: 14, opacity: 0, duration: 0.7, ease: 'power3.out', stagger: 0.08 },
+          RESOLVE.details,
+        )
+        .from(
+          [publicFlank, privateFlank].filter(Boolean),
+          { opacity: 0, duration: 0.9, ease: 'power2.out' },
+          RESOLVE.details,
+        );
+
+      // ------------------------------------------------------- scroll scrub
+      // Scrolling does not merely move the splash away — it compresses the
+      // terminator down into the hairline that rules the sections below.
+      const scrub = gsap.timeline({
+        scrollTrigger: { trigger: splash, start: 'top top', end: 'bottom top', scrub: 0.4 },
+      });
+      scrub
+        .to(
+          beam,
+          { opacity: 0.34, scaleX: 0.18, transformOrigin: 'center center', ease: 'none' },
+          0,
+        )
+        .to(lockup, { opacity: 0.72, scale: 0.965, yPercent: -6, ease: 'none' }, 0);
+      if (publicFlank) scrub.to(publicFlank, { x: -44, autoAlpha: 0, ease: 'none' }, 0);
+      if (privateFlank) scrub.to(privateFlank, { x: 44, autoAlpha: 0, ease: 'none' }, 0);
+    }
+
+    // --------------------------------------------------------------- reveals
+    gsap.utils.toArray<HTMLElement>('[data-tp-reveal]', root).forEach((element) => {
+      gsap.from(element, {
+        opacity: 0,
+        y: 18,
+        duration: 0.72,
+        ease: 'power3.out',
+        clearProps: 'opacity,transform',
+        scrollTrigger: { trigger: element, start: 'top 88%', once: true },
+      });
+    });
+
+    // ------------------------------------------------------------ instruments
+    loops = gsap.utils.toArray<SVGSVGElement>('[data-tp-asset]', root).map((asset) => {
+      const animate = ASSETS[asset.dataset.tpAsset ?? ''];
+      return animate ? animate(asset) : () => undefined;
+    });
+    loops.push(animateTerminatorPulse(root));
+  }, root);
+
+  return () => {
+    context.revert();
+    loops.forEach((cleanup) => cleanup());
+  };
+};
+
+export const useLandingMotion = (scope: RefObject<HTMLDivElement | null>) => {
+  useGSAP(
+    () => {
+      const root = scope.current;
+      if (!root) return;
+
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let stopMotion: MotionCleanup | undefined;
+
+      // A plain media listener rather than gsap.matchMedia: ScrollTrigger's
+      // global refresh would jump the visitor's scroll position on toggle.
+      const sync = () => {
+        stopMotion?.();
+        stopMotion = reduced.matches ? undefined : setupLandingMotion(root);
+      };
+
+      sync();
+      reduced.addEventListener('change', sync);
+
+      return () => {
+        reduced.removeEventListener('change', sync);
+        stopMotion?.();
+      };
+    },
+    { scope },
+  );
+};
