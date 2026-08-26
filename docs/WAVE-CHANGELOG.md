@@ -21,12 +21,76 @@ list what changed since the previous submission — a hard AKINDO requirement.
 
 ### Shipped
 
-_(in progress — see PRD §14.1 for scope)_
+**The contract** — `contracts/tacitpay.compact`, four circuits (`createInvoice`,
+`payInvoice`, `withdraw`, `cancelInvoice`), Variant A escrow, compiled by
+compact 0.31.1 against compact-runtime 0.16.0. Ownership is proven from the
+witness secret, never from `ownPublicKey()`, which the prover supplies and so
+cannot authorise anything. Tags hash a secret-derived public key rather than the
+secret itself, because `persistentHash` is not hiding.
+
+**The shared library** — `packages/api`. The only place a circuit call happens,
+so the UI, the CLI and Wave 2's MCP server all share one audited path. Holds the
+invoice-link codec (strictly validated — it parses attacker-controlled input),
+the private-state records, the ledger reads, the status observables, and the
+§8.4 error mapping. Node providers are fully wired; browser providers are built
+on the DApp Connector API 4.0.1 with three feature-detected proving tiers.
+
+**The command-line tool** — `packages/cli`. Deploy, the full invoice lifecycle,
+`wallet dust-status`, `wallet fund-local`, and the judge sandbox. Seeds come
+from `.env.<network>` and are never printed.
+
+**The web app** — `packages/ui`. Vite + React 18 + Tailwind 4 + shadcn/ui with
+Iconsax icons; deliberately not Next.js, because invoice payloads live in the
+URL fragment and a server runtime would reintroduce exactly the surface the
+privacy claim denies. Seven routes plus a 404. Wallets are discovered by
+scanning `window.midnight` on `rdns`/name rather than by hardcoded key, and
+every injected value is treated as untrusted. Fonts are self-hosted, so the app
+makes no automatic third-party request at all.
+
+**Proving, three tiers** — in the wallet (1AM, WASM, nothing leaves the tab),
+a local proof server on `localhost:6300`, or a prover the user hosts themselves
+over TLS. Capability is detected at runtime from `getProvingProvider`, never
+inferred from which wallet is connected. TacitPay never operates a prover:
+proving requires the private witness, so a prover we ran would see every amount
+and counterparty (D-010).
+
+**The judge sandbox** — `yarn demo:seed` funds two wallets, deploys a contract
+and leaves three invoices OPEN / PAID / WITHDRAWN, printing the address, the ids
+and a ready `/pay#` link. Re-runs reuse the sandbox in seconds.
 
 ### Tests
 
-_(added: —, total passing: —)_
+```
+contracts        20 passed | 10 todo      offline, ~0.5s
+packages/api     66 passed |  1 todo      offline, ~2s
+packages/api     67 passed               against a live devnet, ~2min
+```
+
+The todos are pre-registered Wave 2/3 rows, kept visible so progress shows in
+every run. **Nothing was deferred to the integration layer** — the coin-handling
+circuits run in the pure-JS runtime, so the contract can be verified with no
+Docker, no wallet and no network.
+
+Two tests carry more weight than the rest. **U-17** runs a full lifecycle, then
+serialises the public ledger and asserts the amount is absent in four encodings,
+along with the memo hash, the salt and both secrets. **The integration test**
+asserts the merchant's shielded balance _increases_ after withdrawal — a status
+flipping to `WITHDRAWN` only proves state changed; the balance proves value
+moved — and repeats the privacy sweep against live indexer data using both
+parties' real secret keys.
 
 ### Known issues / next
 
-_(—)_
+- **Variant A escrow leaks more than value.** While the contract holds a coin,
+  its `QualifiedShieldedCoinInfo` is public, including the nonce. Variant B
+  closes it in Wave 2; test U-17b pins the current behaviour so any widening
+  fails. See [`PRIVACY.md`](./PRIVACY.md) §6.
+- **Invoice ids are an unauthenticated first-come namespace.** Deriving them
+  in-circuit is a Wave 2 candidate.
+- **Escrowed funds have no exit without the merchant** until Wave 2 refunds.
+  Keep Wave 1 on testnet.
+- **The browser wallet path has not yet run against a real wallet extension.**
+  Every provider is implemented and unit-tested against the shipped connector
+  type definitions, the wire encoding is verified against midnight-js's own
+  reference adapter, and the whole stack builds and bundles — but the end-to-end
+  browser run waits on a funded Preview wallet.
