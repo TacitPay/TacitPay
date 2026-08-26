@@ -20,10 +20,15 @@ tracks execution.
 
 A private invoicing and settlement protocol on the Midnight blockchain.
 
-A merchant issues an invoice and gets paid on-chain. What reaches the public
-ledger is only a **commitment** — a hash of the amount, memo and a random salt
-— plus a status flag. The amount, the memo and both parties' identities stay
-in private state on their own devices and are never published.
+One party issues an invoice, another settles it on-chain. What reaches the
+public ledger is only a **commitment** — a hash of the amount, memo and a
+random salt — plus a status flag. The amount, the memo and both parties'
+identities stay in private state on their own devices and are never published.
+
+The protocol knows two roles and nothing about who fills them: freelancers,
+suppliers, agencies, B2B counterparties, or — from Wave 2, through the MCP
+server — software agents. The contract and the code name the issuing role
+_merchant_, after the witness and the owner tag; read it as "issuer".
 
 The point is holding two things at once that normally conflict: **anyone can
 verify an invoice was settled**, while **nobody can see what it was for**. A
@@ -37,18 +42,18 @@ anonymous one gives the second and makes the first impossible.
 Wave 1 scope is PRD §14.1. Seven of ten items are complete and independently
 verified. Everything still outstanding is waiting on one thing: a funded wallet.
 
-| #   | Scope item                                   | Status                                                 |
-| --- | -------------------------------------------- | ------------------------------------------------------ |
-| 1   | Contract with 4 circuits, Variant A escrow   | **Done**                                               |
-| 2   | Unit tests U-01…U-17                         | **Done** (plus U-17b)                                  |
-| 3   | Integration test on local devnet             | **Done**                                               |
-| 4   | `packages/api`                               | **Done** — browser providers are real, not stubs       |
-| 5   | `packages/cli`                               | **Done**                                               |
-| 6   | `packages/ui` — six routes, works on Preview | **Built and wired**; not yet run against a real wallet |
-| 7   | Deployed to Preview, address committed       | **Not started** — blocked on wallet funding            |
-| 8   | README, PRIVACY, ARCHITECTURE, deck, video   | **Partial** — docs done; deck and video outstanding    |
-| 9   | Repo topics, Apache-2.0, repo public         | **Partial** — topics set, licensed; **still private**  |
-| 10  | Judge sandbox (`demo seed`)                  | **Done**                                               |
+| #   | Scope item                                   | Status                                                                        |
+| --- | -------------------------------------------- | ----------------------------------------------------------------------------- |
+| 1   | Contract with 4 circuits, Variant A escrow   | **Done**                                                                      |
+| 2   | Unit tests U-01…U-17                         | **Done** (plus U-17b)                                                         |
+| 3   | Integration test on local devnet             | **Done**                                                                      |
+| 4   | `packages/api`                               | **Done** — browser providers are real, not stubs                              |
+| 5   | `packages/cli`                               | **Done**                                                                      |
+| 6   | `packages/ui` — six routes, works on Preview | **Built and wired** — seven routes shipped; not yet run against a real wallet |
+| 7   | Deployed to Preview, address committed       | **Not started** — blocked on wallet funding                                   |
+| 8   | README, PRIVACY, ARCHITECTURE, deck, video   | **Partial** — docs done; deck and video outstanding                           |
+| 9   | Repo topics, Apache-2.0, repo public         | **Partial** — topics set, licensed; **still private**                         |
+| 10  | Judge sandbox (`demo seed`)                  | **Done**                                                                      |
 
 **The most important caveat:** item 6 no longer runs only on mock data — the
 chain-backed adapter is built, wired and reachable from `/settings`. But it has
@@ -137,7 +142,7 @@ the single swap point in `src/lib/api/index.tsx`. Precedence is explicit
 injection, then live, then mock.
 
 The chain code is behind a dynamic import, so a visitor to the marketing page
-never downloads it: the entry chunk is **24.8 kB** and the Midnight stack is a
+never downloads it: the entry chunk is **23.1 kB** and the Midnight stack is a
 separate **866 kB** chunk fetched only on connect.
 
 Two things the adapter has to reconcile, both documented in D-013 and D-014:
@@ -217,15 +222,15 @@ yarn env:down
 
 Verified versions (see D-011; **never pin these from memory**):
 
-| Component          | Version                                                    | Note                                                           |
-| ------------------ | ---------------------------------------------------------- | -------------------------------------------------------------- |
-| Compact compiler   | 0.31.1                                                     |                                                                |
-| compact-runtime    | 0.16.0                                                     | matches the generated artifact exactly                         |
-| Midnight.js        | 4.1.1                                                      | the PRD's original 4.0.4 never existed                         |
-| Wallet SDK         | `@midnightntwrk/wallet-sdk` 1.2.0                          | **scope has no hyphen** — the hyphenated one is stale at 1.1.0 |
-| DApp Connector API | `@midnight-ntwrk/dapp-connector-api` 4.0.1                 | the browser wallet contract; see D-013                         |
-| onchain-runtime-v3 | 3.0.0                                                      | pinned by a yarn `resolutions` entry — see D-012               |
-| Devnet images      | node 1.0.0 · indexer-standalone 4.3.3 · proof-server 8.1.0 |                                                                |
+| Component          | Version                                                    | Note                                                                                  |
+| ------------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Compact compiler   | 0.31.1                                                     |                                                                                       |
+| compact-runtime    | 0.16.0                                                     | matches the generated artifact exactly                                                |
+| Midnight.js        | 4.1.1                                                      | the PRD's original 4.0.4 never existed                                                |
+| Wallet SDK         | `@midnightntwrk/wallet-sdk` 1.2.0                          | **scope has no hyphen** — the hyphenated one is stale at 1.1.0                        |
+| DApp Connector API | `@midnight-ntwrk/dapp-connector-api` 4.0.1                 | **scope IS hyphenated here** — the un-hyphenated one has no stable release. See D-013 |
+| onchain-runtime-v3 | 3.0.0                                                      | pinned by a yarn `resolutions` entry — see D-012                                      |
+| Devnet images      | node 1.0.0 · indexer-standalone 4.3.3 · proof-server 8.1.0 |                                                                                       |
 
 ---
 
@@ -307,7 +312,7 @@ wrong with the state.
 **Done since this document was first written:** the UI is connected to
 `@tacitpay/api`; the browser providers are real; fonts are self-hosted, so the
 app now makes no automatic third-party request at all; the marketing page is
-code-split away from the app (525 kB → 24.8 kB entry); `docs/PRIVACY.md`,
+code-split away from the app (525 kB → 23.1 kB entry); `docs/PRIVACY.md`,
 `docs/ARCHITECTURE.md`, `docs/WAVE-CHANGELOG.md` and `docs/DEMO-SCRIPT.md` are
 written.
 
