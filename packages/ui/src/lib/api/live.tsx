@@ -10,8 +10,17 @@ import {
 
 import { useProving } from '../proving-context';
 import { useTacitPay } from './index';
-import { getContractAddress } from './deployment';
-import type { TacitPayApi } from './types';
+import { endpointsFor, getContractAddress, NETWORK_IDS } from './deployment';
+import type { InvoiceStatus, Observable, TacitPayApi } from './types';
+
+/** The read-only surface `/verify/<id>` needs. No wallet, no proving, no private state. */
+export interface LiveObserver {
+  readonly contractAddress: string;
+  getInvoiceStatus(
+    invoiceId: string,
+  ): Promise<{ status: InvoiceStatus; expiresAt: number; exists: boolean }>;
+  watchInvoice(invoiceId: string): Observable<InvoiceStatus>;
+}
 
 export type LiveState =
   /** No contract address is configured for this network, so there is nothing to connect to. */
@@ -30,6 +39,11 @@ interface LiveContextValue {
   blocker: LiveBlocker;
   connect(passphrase: string): Promise<void>;
   disconnect(): void;
+  /**
+   * Present whenever a contract address is configured — no wallet required. Public status
+   * reads go through this even when the rest of the app is still on the mock.
+   */
+  observer: LiveObserver | null;
 }
 
 const LiveContext = createContext<LiveContextValue | null>(null);
@@ -48,8 +62,48 @@ export function LiveApiProvider({ children }: { children: ReactNode }) {
   const { network, setLiveApi, setProofStage } = useTacitPay();
   const { connection, resolution } = useProving();
   const [state, setState] = useState<LiveState>({ status: 'unconfigured' });
+  const [observer, setObserver] = useState<LiveObserver | null>(null);
 
   const contractAddress = getContractAddress(network);
+
+  // A contract address is the only prerequisite for reading public status, so the observer
+  // is built as soon as one exists. Dynamically imported to keep the ledger code out of the
+  // entry chunk — a visitor who never opens a verification page never downloads it.
+  useEffect(() => {
+    if (!contractAddress) {
+      setObserver(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        // Deliberately NOT '@tacitpay/api/browser' — that entry imports the encrypted
+        // private-state store, which a public read has no business loading.
+        const [{ createPublicProviders }, { createObserverApi }] = await Promise.all([
+          import('@tacitpay/api/public'),
+          import('@tacitpay/api'),
+        ]);
+        const endpoints = endpointsFor(network);
+        const providers = createPublicProviders({
+          networkId: NETWORK_IDS[network],
+          indexerHttpUrl: endpoints.indexerUrl,
+          indexerWsUrl: endpoints.indexerWsUrl,
+        });
+        if (!cancelled) {
+          setObserver(createObserverApi(providers, contractAddress) as unknown as LiveObserver);
+        }
+      } catch (error) {
+        // A failed observer leaves the page on mock data rather than blanking it, but it
+        // must say so — a silently null observer is indistinguishable from an unconfigured
+        // one, and that is an hour of debugging for whoever hits it next.
+        console.error('TacitPay: could not reach the contract for public reads', error);
+        if (!cancelled) setObserver(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [contractAddress, network]);
 
   const blocker: LiveBlocker = !contractAddress
     ? 'contract'
@@ -107,8 +161,8 @@ export function LiveApiProvider({ children }: { children: ReactNode }) {
   }, [contractAddress, setLiveApi]);
 
   const value = useMemo(
-    () => ({ state, blocker, connect, disconnect }),
-    [blocker, connect, disconnect, state],
+    () => ({ state, blocker, connect, disconnect, observer }),
+    [blocker, connect, disconnect, observer, state],
   );
 
   return <LiveContext.Provider value={value}>{children}</LiveContext.Provider>;
