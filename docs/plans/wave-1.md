@@ -67,11 +67,32 @@ the devnet is up). No CI by owner decision (D-008).
       Mirror the Edda Labs `midnight-starter-template` wallet widget.
       Blocking VERIFY first: does the shipping Lace build implement
       `getProvingProvider()` (lace#2224 closed 2026-08-07)? Record in D-010.
+- [x] 6c. **UI connected to the real chain** — DONE 2026-08-24. `packages/api`
+      browser providers are no longer stubs: a real DApp Connector adapter
+      (`balanceUnsealedTransaction` / `submitTransaction`, Bech32m keys
+      normalised with the library's own helpers, tx id derived as
+      `identifiers().at(-1)` exactly as `WalletFacade` does) plus the three-tier
+      proof provider. `packages/ui/src/lib/api/real.ts` adapts it to the §8.1
+      boundary — dual merchant/payer instances, five proof stages reported by
+      wrapping the providers that perform them. Reachable from `/settings`.
+      Verified independently: lint, typecheck, build all clean; 86 offline tests
+      (66 api + 20 contracts), 7 of them new for the connector bridge; the Vite
+      build emits both WASM modules and copies the ZK artifacts into `dist/`.
+      Recorded as D-013 and D-014. The connector's `tx: string` encoding was
+      then verified as hex against midnight-js's own
+      `testkit-js/src/wallet/dapp-connector-wallet-adapter.ts` — the receiving
+      side of the same interface — including the transaction markers in both
+      directions. **Still open:** the browser path awaits a funded wallet.
 - [ ] 7. Deploy to Preview; commit `deployments/preview.json`; address in README.
-- [ ] 8. Docs: README §17.1 sections, PRIVACY.md, ARCHITECTURE.md, deck, video,
-      WAVE-CHANGELOG "Wave 1".
-- [ ] 9. Repo topics (`midnightntwrk`) + Apache-2.0 + **flip repo public** (D-003)
-      before submission.
+      **Blocked on wallet funding.**
+- [x] 8a. Docs: PRIVACY.md (who-sees-what table, INV-1…INV-11 each mapped to the
+      test that enforces it, trust assumptions, limitations), ARCHITECTURE.md
+      (four Mermaid circuit sequences derived from the code, provider table,
+      link data flow), WAVE-CHANGELOG.md "Wave 1", DEMO-SCRIPT.md (shot list plus
+      pre-recording checklist). DONE 2026-08-24.
+- [ ] 8b. Deck (≤12 slides) and the 3–5 minute video. **Needs the Preview run.**
+- [x] 9a. Repo topics set (8, including `midnightntwrk`) and Apache-2.0 licensed.
+- [ ] 9b. **Flip repo public** (D-003) before submission. **Owner action.**
 - [x] 10. Judge sandbox — DONE 2026-08-24. `tacitpay demo seed` /
       `yarn demo:seed` funds two wallets (NIGHT + DUST, polling for a spendable
       coin), deploys a contract and leaves three invoices OPEN / PAID /
@@ -84,6 +105,7 @@ the devnet is up). No CI by owner decision (D-008).
 
 - [ ] Kickoff workshop Aug 26 22:00 JST → judge guidance into docs/DECISIONS.md.
 - [ ] Fund two Lace Preview wallets; start DUST registration (~12 h lead, §12.4).
+      **This is now the only thing blocking every remaining engineering item.**
 - [x] tUSDM bridge spike — completed ahead of schedule 2026-08-22 (§16.2):
       5 tUSDM on Preview, token color `003bacd9…` confirmed.
 - [x] Proof server: `midnightntwrk/proof-server:8.1.0` pulled and RUNNING,
@@ -101,6 +123,16 @@ the devnet is up). No CI by owner decision (D-008).
       Probe correction: the indexer answers GraphQL only over **POST** (a GET
       returns 405), so `env:status` posts a real `{__typename}` query — which
       proves the API works rather than just that the process is alive.
+
+## Smaller items closed 2026-08-24
+
+- [x] Fonts self-hosted from `@fontsource`; the app makes no automatic
+      third-party request at all. The `TODO(pre-submission)` in `index.html` is
+      gone and PRIVACY.md's who-sees-what table has no CDN row.
+- [x] Marketing page code-split from the app. Entry chunk 525 kB → **24.8 kB**;
+      the Midnight stack is an 866 kB chunk fetched only on connect.
+- [x] `vercel.json` — build command, `packages/ui/dist`, the SPA rewrite that
+      keeps `/verify/<id>` alive through a refresh, and security headers.
 
 ## Token plan (per PRD §3.4 timing hook + §16.2)
 
