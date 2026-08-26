@@ -141,6 +141,57 @@ the devnet is up). No CI by owner decision (D-008).
 - [x] `vercel.json` — build command, `packages/ui/dist`, the SPA rewrite that
       keeps `/verify/<id>` alive through a refresh, and security headers.
 
+## Preview runbook — the exact sequence once the wallets are funded
+
+Everything below is blocked only on funding and DUST registration (~12 h lead).
+Nothing else in Wave 1 is waiting on anything.
+
+1. **Put the merchant seed where the CLI looks for it.** A 32-byte hex seed, in
+   `.env.preview` at the repo root, as `TACITPAY_SEED=<hex>`. That file is
+   gitignored; the CLI never prints a seed.
+
+2. **Confirm the wallet can actually transact**, not just that it holds NIGHT —
+   DUST registration is what decides that:
+
+   ```bash
+   TACITPAY_NETWORK=preview node packages/cli/dist/index.js wallet dust-status
+   ```
+
+3. **Deploy.** One command; it writes `deployments/preview.json`.
+
+   ```bash
+   yarn compile
+   yarn workspace @tacitpay/cli run build
+   TACITPAY_NETWORK=preview node packages/cli/dist/index.js deploy --network preview --token NIGHT
+   ```
+
+4. **Prove the loop head-lessly before involving a browser**, so a failure is
+   attributable to the chain rather than to a wallet extension:
+
+   ```bash
+   TACITPAY_NETWORK=preview node packages/cli/dist/index.js invoice create --amount 12.50 --memo "Preview smoke test"
+   TACITPAY_NETWORK=preview node packages/cli/dist/index.js invoice status --id <id>
+   ```
+
+5. **Rebuild the UI with the address baked in**, then host `packages/ui/dist`
+   (`vercel.json` already carries the build command, the SPA rewrite and the
+   security headers):
+
+   ```bash
+   VITE_TACITPAY_CONTRACT_PREVIEW=<address> yarn workspace @tacitpay/ui run build
+   ```
+
+6. **Then the part that is genuinely untested:** connect a wallet extension in
+   `/settings`, unlock private state, and create → pay → withdraw. This is the
+   only path no machine has exercised. If the DApp Connector disagrees with the
+   adapter, the likeliest single point of failure is the transaction encoding,
+   isolated in one pair of functions in `packages/api/src/providers/browser.ts`
+   (D-013).
+
+7. **Commit `deployments/preview.json`**, put the address in the README badge and
+   on deck slide 8, then record the video against
+   [`../DEMO-SCRIPT.md`](../DEMO-SCRIPT.md).
+
 ## Token plan (per PRD §3.4 timing hook + §16.2)
 
 Contract is token-agnostic (`paymentToken` set in the constructor). Wave 1 demos
