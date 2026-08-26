@@ -33,10 +33,13 @@ function PayAction({
   payload: InvoiceLinkPayload;
   onPaid(txId: string): void;
 }) {
-  const { api, proofStage } = useTacitPay();
+  const { api, live, proofStage } = useTacitPay();
   const { resolution, resolving, refreshProving } = useProving();
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // A real network's invoice cannot be paid by the sandbox — the mock would
+  // answer "Unknown invoice". Refuse up front instead of failing after a click.
+  const needsLiveSession = !live && payload.net !== 'local';
 
   async function pay() {
     setPaying(true);
@@ -57,7 +60,19 @@ function PayAction({
     <div className="space-y-4">
       {paying && proofStage ? <ProofStepper stage={proofStage} /> : null}
       {error ? <ErrorState message={error} title="Payment did not complete" /> : null}
-      {!resolving && !resolution?.effectiveTier ? (
+      {needsLiveSession ? (
+        <div className="rounded-lg border bg-muted/40 p-4 text-sm">
+          <p className="font-medium">This invoice lives on a real network.</p>
+          <p className="mt-1 text-muted-foreground">
+            The app is in sandbox mode, which cannot pay it. Unlock the contract in{' '}
+            <Link to="/settings" className="underline underline-offset-4">
+              Settings
+            </Link>{' '}
+            — connect the wallet, enter the passphrase, connect to the contract — then return here;
+            this page keeps the link.
+          </p>
+        </div>
+      ) : !resolving && !resolution?.effectiveTier ? (
         <ProvingUnavailableNotice reason={resolution?.reason} />
       ) : (
         <Button
