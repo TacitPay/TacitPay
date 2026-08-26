@@ -8,6 +8,7 @@ import {
   bytes32,
   MERCHANT_COIN_PUBLIC_KEY,
   MERCHANT_SECRET_KEY,
+  PAYER_COIN_PUBLIC_KEY,
   PAYER_SECRET_KEY,
   PAYMENT_TOKEN,
   shieldedCoin,
@@ -244,12 +245,18 @@ describe('tacitpay contract — Wave 1 unit matrix (PRD §11.2)', () => {
     expect(dump).not.toContain(littleEndian);
     expect(dump).not.toContain(amount.toString(16));
 
-    // The memo, its hash, and the commitment randomness (INV-3).
+    // The memo, its hash, and the commitment randomness (INV-4).
     expect(dump).not.toContain(memo);
     expect(dump).not.toContain(toHex(memoHash));
     expect(dump).not.toContain(toHex(salt));
 
-    // Neither party's root secret (INV-4).
+    // Neither party's Zswap coin public key (INV-2, INV-3). ownPublicKey() is
+    // readable inside every circuit, so "we never write it" is exactly the kind
+    // of claim that needs a test rather than an argument.
+    expect(dump).not.toContain(toHex(PAYER_COIN_PUBLIC_KEY));
+    expect(dump).not.toContain(toHex(MERCHANT_COIN_PUBLIC_KEY));
+
+    // Neither party's root secret.
     expect(dump).not.toContain(toHex(MERCHANT_SECRET_KEY));
     expect(dump).not.toContain(toHex(PAYER_SECRET_KEY));
 
