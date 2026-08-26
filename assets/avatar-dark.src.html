@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 1024px;
+        height: 1024px;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Dark avatar variant. Mirrors assets/logo-dark.svg: the disc inverts to
+         near-white and the settlement node to near-black, so the node stays the
+         contrasting anchor rather than vanishing into the disc. -->
+    <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1024" height="1024" fill="#09090b" />
+
+      <!-- Shielded state, lifted to zinc-400 for contrast on the dark ground. -->
+      <circle cx="613.5" cy="512" r="228.5" fill="none" stroke="#a1a1aa" stroke-width="48" />
+
+      <!-- Public ledger disc, inverted. -->
+      <circle cx="410.5" cy="512" r="228.5" fill="#fafafa" />
+
+      <!-- Settlement node. -->
+      <circle cx="512" cy="512" r="70" fill="#09090b" />
+    </svg>
+  </body>
+</html>

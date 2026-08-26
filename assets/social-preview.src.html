@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!-- GitHub social preview (1280x640) — the card shown when the repo is
+         linked from AKINDO, chat or social. Same brand system as the app:
+         zinc ground, editorial serif headline, mono for the technical line. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=Instrument+Serif&family=IBM+Plex+Mono:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 1280px;
+        height: 640px;
+        overflow: hidden;
+      }
+      body {
+        background: #09090b;
+        color: #fafafa;
+        display: flex;
+        align-items: center;
+        gap: 64px;
+        /* Bottom padding reserves the rule and footer, so flex centring lands
+           the content on the optical centre rather than the geometric one. */
+        padding: 0 88px 96px;
+        box-sizing: border-box;
+        font-family: 'Instrument Sans', sans-serif;
+        position: relative;
+      }
+      .mark {
+        flex: 0 0 auto;
+      }
+      .copy {
+        min-width: 0;
+      }
+      .eyebrow {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 19px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #71717a;
+        margin: 0 0 26px;
+      }
+      h1 {
+        font-family: 'Instrument Serif', serif;
+        font-size: 92px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        margin: 0 0 26px;
+        font-weight: 400;
+      }
+      h1 .muted {
+        color: #a1a1aa;
+      }
+      p {
+        font-size: 30px;
+        line-height: 1.45;
+        color: #a1a1aa;
+        margin: 0;
+        max-width: 620px;
+      }
+      .rule {
+        position: absolute;
+        left: 88px;
+        right: 88px;
+        bottom: 78px;
+        height: 1px;
+        background: #27272a;
+      }
+      .foot {
+        position: absolute;
+        left: 88px;
+        bottom: 40px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 17px;
+        letter-spacing: 0.08em;
+        color: #52525b;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- The mark occupies only ~45% of its viewBox vertically, so it needs a
+         larger box than its nominal size to hold its own beside the wordmark. -->
+    <svg
+      class="mark"
+      width="430"
+      height="430"
+      viewBox="0 0 1024 1024"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="613.5" cy="512" r="228.5" fill="none" stroke="#a1a1aa" stroke-width="48" />
+      <circle cx="410.5" cy="512" r="228.5" fill="#fafafa" />
+      <circle cx="512" cy="512" r="70" fill="#09090b" />
+    </svg>
+
+    <div class="copy">
+      <p class="eyebrow">Private invoicing on Midnight</p>
+      <h1>Tacit<span class="muted">Pay</span></h1>
+      <p>Anyone can verify the invoice was paid. Nobody can see what it was for.</p>
+    </div>
+
+    <div class="rule"></div>
+    <div class="foot">PRIVATE BY DEFAULT · PROVABLE ON DEMAND</div>
+  </body>
+</html>

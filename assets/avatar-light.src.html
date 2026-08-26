@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 1024px;
+        height: 1024px;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Avatar build of the TacitPay mark. Same three shapes as
+         packages/ui/src/components/Logo.tsx, optically adjusted for small
+         sizes: GitHub renders avatars as small as ~20px in listings, where a
+         proportional zinc-400 ring and a hairline node disappear.
+         Geometry: mark centred in the canvas at 64% width, which keeps the
+         whole thing inside GitHub's circular crop with room to spare. -->
+    <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1024" height="1024" fill="#fafafa" />
+
+      <!-- Shielded state. zinc-500 rather than the brand's zinc-400: against a
+           near-white ground the lighter tone greys out when downscaled. -->
+      <circle cx="613.5" cy="512" r="228.5" fill="none" stroke="#71717a" stroke-width="48" />
+
+      <!-- Public ledger disc. -->
+      <circle cx="410.5" cy="512" r="228.5" fill="#09090b" />
+
+      <!-- Verified settlement node, enlarged a touch to survive downscaling. -->
+      <circle cx="512" cy="512" r="70" fill="#ffffff" />
+    </svg>
+  </body>
+</html>
