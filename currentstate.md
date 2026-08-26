@@ -1,6 +1,7 @@
 # TacitPay — current state
 
-**As of 2026-08-24, commit `b771065`.** 26 commits since the pre-wave scaffold.
+**As of 2026-08-24, commit `6865246` plus uncommitted work.** 28 commits since
+the pre-wave scaffold.
 
 This document is the fast way to understand what exists without reading the
 codebase. Every claim points at the file or command that proves it, so treat
@@ -33,25 +34,27 @@ anonymous one gives the second and makes the first impossible.
 
 ## 2. Status at a glance
 
-Wave 1 scope is PRD §14.1. Six of ten items are complete and independently
-verified, one is built but not yet connected to a chain, three are outstanding.
+Wave 1 scope is PRD §14.1. Seven of ten items are complete and independently
+verified. Everything still outstanding is waiting on one thing: a funded wallet.
 
-| #   | Scope item                                   | Status                                        |
-| --- | -------------------------------------------- | --------------------------------------------- |
-| 1   | Contract with 4 circuits, Variant A escrow   | **Done**                                      |
-| 2   | Unit tests U-01…U-17                         | **Done** (plus U-17b)                         |
-| 3   | Integration test on local devnet             | **Done**                                      |
-| 4   | `packages/api`                               | **Done** (browser provider slots are stubs)   |
-| 5   | `packages/cli`                               | **Done**                                      |
-| 6   | `packages/ui` — six routes, works on Preview | **Partial** — built, but runs on mock data    |
-| 7   | Deployed to Preview, address committed       | **Not started** — blocked on wallet funding   |
-| 8   | README, PRIVACY, ARCHITECTURE, deck, video   | **Partial** — README done, rest are skeletons |
-| 9   | Repo topics, Apache-2.0, repo public         | **Partial** — licensed; still private         |
-| 10  | Judge sandbox (`demo seed`)                  | **Done**                                      |
+| #   | Scope item                                   | Status                                                 |
+| --- | -------------------------------------------- | ------------------------------------------------------ |
+| 1   | Contract with 4 circuits, Variant A escrow   | **Done**                                               |
+| 2   | Unit tests U-01…U-17                         | **Done** (plus U-17b)                                  |
+| 3   | Integration test on local devnet             | **Done**                                               |
+| 4   | `packages/api`                               | **Done** — browser providers are real, not stubs       |
+| 5   | `packages/cli`                               | **Done**                                               |
+| 6   | `packages/ui` — six routes, works on Preview | **Built and wired**; not yet run against a real wallet |
+| 7   | Deployed to Preview, address committed       | **Not started** — blocked on wallet funding            |
+| 8   | README, PRIVACY, ARCHITECTURE, deck, video   | **Partial** — docs done; deck and video outstanding    |
+| 9   | Repo topics, Apache-2.0, repo public         | **Partial** — topics set, licensed; **still private**  |
+| 10  | Judge sandbox (`demo seed`)                  | **Done**                                               |
 
-**The most important caveat:** item 6 reads "works on Preview" and it does
-not. The UI is complete and demonstrable, but it talks to an in-memory mock
-adapter, not the blockchain. Connecting it is the largest remaining task.
+**The most important caveat:** item 6 no longer runs only on mock data — the
+chain-backed adapter is built, wired and reachable from `/settings`. But it has
+never talked to a real wallet extension, because that needs a funded wallet and
+a deployed contract. Everything up to that point is verified; that last step is
+not, and this document will not claim it is.
 
 ---
 
@@ -91,14 +94,14 @@ Witness implementations: `contracts/src/witnesses.ts`.
 The only place circuit calls happen. The UI, the CLI and (in Wave 2) the MCP
 server all go through it, so there is one audited path to the chain.
 
-| File                       | Holds                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `src/link.ts`              | invoice-link codec for the URL-fragment payload, strictly validated — this parses attacker-controlled input                      |
-| `src/state.ts`             | merchant and payer private-state records                                                                                         |
-| `src/api.ts`               | deploy/reconnect, circuit calls, ledger reads, status observables                                                                |
-| `src/errors.ts`            | error mapping — circuit assertion strings surface verbatim; wallet and proof-server failures become actionable text              |
-| `src/providers/node.ts`    | the six-provider Node wiring (CLI, tests)                                                                                        |
-| `src/providers/browser.ts` | browser slots; **wallet and proof providers are typed stubs** pending the PRD §8.3 verification against the official example app |
+| File                       | Holds                                                                                                               |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `src/link.ts`              | invoice-link codec for the URL-fragment payload, strictly validated — this parses attacker-controlled input         |
+| `src/state.ts`             | merchant and payer private-state records                                                                            |
+| `src/api.ts`               | deploy/reconnect, circuit calls, ledger reads, status observables                                                   |
+| `src/errors.ts`            | error mapping — circuit assertion strings surface verbatim; wallet and proof-server failures become actionable text |
+| `src/providers/node.ts`    | the six-provider Node wiring (CLI, tests)                                                                           |
+| `src/providers/browser.ts` | the browser six-provider wiring — a real DApp Connector adapter plus the three-tier proof provider (D-013)          |
 
 ### 3.3 The command-line tool — `packages/cli`
 
@@ -127,9 +130,21 @@ claim denies.
 | `/verify/:invoiceId` | public status page, no wallet needed              |
 | `/settings`          | network, proving mode, proof-server health        |
 
-**It currently runs on `src/lib/api/mock.ts`**, an in-memory adapter typed
-against the PRD §8.1 interface. `src/lib/api/index.tsx` is the single swap
-point where the real `@tacitpay/api` will be injected.
+**It runs on `src/lib/api/mock.ts` until it is pointed at a contract.** With a
+contract address, a wallet and a prover all present, `/settings` unlocks the
+chain-backed adapter in `src/lib/api/real.ts`, which is then installed through
+the single swap point in `src/lib/api/index.tsx`. Precedence is explicit
+injection, then live, then mock.
+
+The chain code is behind a dynamic import, so a visitor to the marketing page
+never downloads it: the entry chunk is **24.8 kB** and the Midnight stack is a
+separate **866 kB** chunk fetched only on connect.
+
+Two things the adapter has to reconcile, both documented in D-013 and D-014:
+the library binds one instance to one role, so `real.ts` runs a merchant and a
+payer instance and dispatches each method to the one that owns it; and the
+five proof stages in the UI are reported by wrapping the three providers that
+actually perform them, rather than by guessing at timings.
 
 Wallet discovery (`src/lib/wallet.ts`) scans `window.midnight` and matches on
 `rdns` or name — no hardcoded wallet keys — and treats every injected value as
@@ -156,8 +171,8 @@ are changing underneath us. The active tier is shown in the app header.
 
 ```
 contracts        20 passed | 10 todo      offline, ~0.5s
-packages/api     59 passed |  1 todo      offline, ~1s
-packages/api     60 passed               against a live devnet, ~2min
+packages/api     66 passed |  1 todo      offline, ~2s
+packages/api     67 passed               against a live devnet, ~2min
 ```
 
 The todos are the pre-registered Wave 2/3 rows, kept visible so progress shows
@@ -208,6 +223,7 @@ Verified versions (see D-011; **never pin these from memory**):
 | compact-runtime    | 0.16.0                                                     | matches the generated artifact exactly                         |
 | Midnight.js        | 4.1.1                                                      | the PRD's original 4.0.4 never existed                         |
 | Wallet SDK         | `@midnightntwrk/wallet-sdk` 1.2.0                          | **scope has no hyphen** — the hyphenated one is stale at 1.1.0 |
+| DApp Connector API | `@midnight-ntwrk/dapp-connector-api` 4.0.1                 | the browser wallet contract; see D-013                         |
 | onchain-runtime-v3 | 3.0.0                                                      | pinned by a yarn `resolutions` entry — see D-012               |
 | Devnet images      | node 1.0.0 · indexer-standalone 4.3.3 · proof-server 8.1.0 |                                                                |
 
@@ -229,10 +245,16 @@ Verified versions (see D-011; **never pin these from memory**):
   Keep Wave 1 on testnet.
 - **Payment timing is correlatable.** An observer learns "some invoice was paid
   at time T", never the amount or the parties.
-- **Fonts load from Google.** Marked `TODO(pre-submission)` in
-  `packages/ui/index.html`. A product claiming no server sees anything should
-  not have visitors announce themselves to a font CDN. Self-host before
-  submitting.
+- **The browser wallet path has never met a real wallet extension.** Every
+  provider is built against the shipped `dapp-connector-api@4.0.1` type
+  definitions and unit tested, and the whole stack builds and bundles, but no
+  browser wallet has driven it. The wire format is no longer part of that
+  uncertainty: the hex encoding and the transaction markers were verified
+  against midnight-js's own `DAppConnectorWalletAdapter`, the receiving side of
+  the same interface (D-013). What remains untested is the extension itself.
+- **A forgotten private-state passphrase loses invoice bodies.** The chain still
+  proves an invoice existed and was settled; the amount, memo and salt are gone.
+  Export/import is the Wave 2 mitigation (D-014).
 
 ---
 
@@ -263,28 +285,31 @@ wrong with the state.
    time. The Preview deployment, the end-to-end run and the video all wait on it.
 2. **Flip the repository public** before the Sep 16 submission (D-003).
 
-**Engineering:**
+**Engineering — all of it now needs a funded wallet:**
 
-3. **Connect the UI to the real chain** — swap the mock adapter for
-   `@tacitpay/api` and complete `src/providers/browser.ts`. The PRD §8.3 Day-3
-   verification says to mirror the official `example-bboard` DApp rather than
-   invent connector calls. Largest remaining task.
-4. Deploy to Preview; commit `deployments/preview.json`.
-5. End-to-end run with a real wallet on Preview.
+3. Deploy to Preview; commit `deployments/preview.json`.
+4. End-to-end run with a real wallet on Preview. This also closes the Day-3
+   VERIFY on whether the shipping Lace build implements `getProvingProvider`
+   (its bug was closed 2026-08-07 while the docs still say it does not) — then
+   update D-010.
+5. Rebuild the UI with `VITE_TACITPAY_CONTRACT_PREVIEW=<address>` so the
+   deployed contract is baked in rather than pasted into Settings.
 
 **Submission materials:**
 
-6. `docs/PRIVACY.md` (needs INV-9/10/11), `docs/ARCHITECTURE.md`,
-   `docs/WAVE-CHANGELOG.md` Wave 1 section, `docs/DEMO-SCRIPT.md` — all
-   skeletons today.
-7. Deck (≤12 slides) and the 3–5 minute video.
-8. Host the UI publicly (Vercel static, `packages/ui/dist`, with an SPA
-   rewrite so `/verify/<id>` survives a refresh).
+6. Deck (≤12 slides) and the 3–5 minute video.
+   [`docs/DEMO-SCRIPT.md`](./docs/DEMO-SCRIPT.md) is the shot list.
+7. Host the UI publicly. [`vercel.json`](./vercel.json) has the build command,
+   the SPA rewrite that keeps `/verify/<id>` alive through a refresh, and the
+   security headers. Run `yarn compile` first — the deploy copies the prover
+   keys out of `contracts/managed/`, which is gitignored build output.
 
-**Smaller follow-ups:** self-host fonts; code-split the marketing page from the
-app bundle (currently one ~513 kB chunk); verify whether the shipping Lace
-build now implements `getProvingProvider` (its bug was closed 2026-08-07 while
-the docs still say it does not) and update D-010.
+**Done since this document was first written:** the UI is connected to
+`@tacitpay/api`; the browser providers are real; fonts are self-hosted, so the
+app now makes no automatic third-party request at all; the marketing page is
+code-split away from the app (525 kB → 24.8 kB entry); `docs/PRIVACY.md`,
+`docs/ARCHITECTURE.md`, `docs/WAVE-CHANGELOG.md` and `docs/DEMO-SCRIPT.md` are
+written.
 
 ---
 
