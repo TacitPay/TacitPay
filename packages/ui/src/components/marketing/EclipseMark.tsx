@@ -54,16 +54,6 @@ export function EclipseMark({
         </g>
       )}
 
-      {/* Public ledger: solid, unambiguous, always visible. */}
-      <circle
-        cx={DISC.cx}
-        cy={DISC.cy}
-        r={DISC.r}
-        fill={discFill}
-        className="tp-rise"
-        style={{ animationDelay: '120ms' }}
-      />
-
       {/* Shielded state: present and provable, but never filled in. It travels
           into place on load — the eclipse actually happening. */}
       <circle
@@ -74,6 +64,18 @@ export function EclipseMark({
         strokeWidth="5"
         className="tp-eclipse"
         style={{ animationDelay: '260ms' }}
+      />
+
+      {/* Public ledger: solid, unambiguous, always visible. Painted AFTER the
+          ring so the disc covers it, exactly as components/Logo.tsx does — the
+          ring is a background line, not an overlay. */}
+      <circle
+        cx={DISC.cx}
+        cy={DISC.cy}
+        r={DISC.r}
+        fill={discFill}
+        className="tp-rise"
+        style={{ animationDelay: '120ms' }}
       />
 
       {/* The one point both sides agree on. */}
