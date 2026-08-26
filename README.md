@@ -33,14 +33,15 @@ It is not a merchant app. The protocol knows exactly two roles — whoever issue
 
 ### What ships
 
-Four pieces, each usable on its own:
+Five pieces, each usable on its own:
 
 | Piece                        | What it is                                                                             |
 | ---------------------------- | -------------------------------------------------------------------------------------- |
-| `contracts/tacitpay.compact` | The protocol itself — four circuits, token-agnostic, the payment token set at deploy   |
+| `contracts/tacitpay.compact` | The protocol itself — six circuits, token-agnostic, the payment token set at deploy    |
 | `packages/api`               | The client library. Every circuit call goes through it, so there is one path to audit  |
 | `packages/cli`               | The whole lifecycle without a browser — deploy, invoice, pay, withdraw, seed a sandbox |
 | `packages/ui`                | A reference web app. One way to use the protocol, not the only one                     |
+| `packages/docs`              | The whitepaper & documentation site — [docs.tacitpay.xyz](https://docs.tacitpay.xyz)   |
 
 ## Why privacy is load-bearing
 
@@ -94,14 +95,18 @@ circuit into its own diagram derived from the code.
 
 ## Contract
 
-`contracts/tacitpay.compact` implements the four Wave 1 circuits — `createInvoice`, `payInvoice`, `withdraw`, `cancelInvoice` — with Variant A escrow, compiled by compact compiler 0.31.1 against `@midnight-ntwrk/compact-runtime` 0.16.0.
+`contracts/tacitpay.compact` implements six circuits — the four core ones (`createInvoice`, `payInvoice`, `withdraw`, `cancelInvoice`) plus the unshielded-lane pair (`payInvoiceUnshielded`, `withdrawUnshielded`, per D-022) — with Variant A escrow, compiled by compact compiler 0.31.1 against `@midnight-ntwrk/compact-runtime` 0.16.0.
 
-| Circuit         | Asserts                                                                           | Ever made public                             |
-| --------------- | --------------------------------------------------------------------------------- | -------------------------------------------- |
-| `createInvoice` | id unused, amount > 0                                                             | invoice id, owner tag, expiry, commitment    |
-| `payInvoice`    | invoice OPEN, not expired, commitment matches the preimage, coin colour and value | payer tag, status, escrowed coin (Variant A) |
-| `withdraw`      | invoice PAID, caller's secret derives the stored owner tag                        | status                                       |
-| `cancelInvoice` | invoice OPEN, caller's secret derives the stored owner tag                        | status                                       |
+| Circuit                | Asserts                                                                           | Ever made public                                         |
+| ---------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `createInvoice`        | id unused, amount > 0                                                             | invoice id, owner tag, expiry, commitment                |
+| `payInvoice`           | invoice OPEN, not expired, commitment matches the preimage, coin colour and value | payer tag, status, escrowed coin (Variant A)             |
+| `payInvoiceUnshielded` | invoice OPEN, not expired, commitment matches the preimage                        | payer tag, status, owed amount (public by lane's nature) |
+| `withdraw`             | invoice PAID on the shielded lane, caller's secret derives the stored owner tag   | status                                                   |
+| `withdrawUnshielded`   | invoice PAID on the unshielded lane, caller's secret derives the stored owner tag | status, payout to the merchant-chosen address            |
+| `cancelInvoice`        | invoice OPEN, caller's secret derives the stored owner tag                        | status                                                   |
+
+Each lane guards the other's exit — `withdraw` refuses an invoice paid unshielded and vice versa — so funds can never be claimed through the wrong door.
 
 The amount, memo and both parties' secrets are never disclosed — only a `persistentCommit` of the invoice body reaches the ledger. Ownership is proven from the witness secret, never from `ownPublicKey()` (which is prover-supplied and so is not an authorization check).
 
@@ -234,7 +239,8 @@ The integration suite runs the same lifecycle against a real chain with real pro
 ├── packages/
 │   ├── api/                 TacitPayApi — the only place circuit calls happen (PRD §8)
 │   ├── ui/                  Vite + React 18 + Tailwind (PRD §9)
-│   └── cli/                 deploy + invoice lifecycle for demos/tests (PRD §10)
+│   ├── cli/                 deploy + invoice lifecycle for demos/tests (PRD §10)
+│   └── docs/                docs.tacitpay.xyz — whitepaper & documentation (Astro Starlight)
 ├── deployments/             contract addresses per network (committed once deployed)
 └── config/networks.json     endpoints per network (PRD §12.2)
 ```
@@ -266,5 +272,6 @@ Stated openly per PRD §4.5:
 
 ---
 
+Live: [tacitpay.xyz](https://tacitpay.xyz) · [app.tacitpay.xyz](https://app.tacitpay.xyz) · [docs.tacitpay.xyz](https://docs.tacitpay.xyz)
 Built on [Midnight](https://midnight.network) · [Compact docs](https://docs.midnight.network) · Midnight Expert used for verified Compact generation.
 Licensed under [Apache-2.0](./LICENSE).

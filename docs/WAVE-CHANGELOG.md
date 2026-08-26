@@ -182,3 +182,39 @@ took, in order:
   (reconnect dance required), and the pay button will run against the
   sandbox when the invoice belongs to a live network — the banner warns but
   should not be the only guard.
+
+### Field notes — Aug 27, 2026, 02:15 (domains, and the repo learns to build anywhere)
+
+- **The product moved onto its own domains.** `tacitpay.xyz` is the
+  marketing apex; `app.tacitpay.xyz` serves the app at its root (`/app`
+  folds onto it). A shared `AppLink` hops hosts on the apex, a router-level
+  guard bounces stray SPA clicks, host-scoped redirects catch hard loads,
+  and the landing chapter is now lazy — an app visitor never downloads the
+  marketing motion.
+- **The org's Git builds went green.** Two root causes fixed: the Vercel
+  build only compiled the UI (a fresh clone lacks the api's build output),
+  and `contracts/managed` was gitignored — the compiled contract and prover
+  keys are now committed so any clean clone proves.
+- **The previous block's UX debt shipped the same night.** The pay button
+  refuses to run a live network's invoice against the sandbox, and the
+  wallet connection silently restores after a refresh. The private-state
+  passphrase deliberately does not: it never touches browser storage
+  (D-023) — memory-only by decision, re-entered by design.
+
+### Field notes — Aug 27, 2026, 03:20 (the landing sheds words; the whitepaper gets a house)
+
+- **The landing's onboarding pass.** Every lede from "The line" downward cut
+  to the fewest words carrying the same meaning; the eight-packet disclosure
+  corridor retired in favour of a single ledger card — four values written,
+  four redaction bars stamped down, in a quick loop — because what the chain
+  holds IS the claim.
+- **docs.tacitpay.xyz.** A Starlight site in `packages/docs`: the whitepaper,
+  five concept chapters, the architecture and circuit reference, three
+  guides, three reference pages — sixteen pages, every claim sourced from
+  the contract, the PRD and the shipped evidence, in the product's own
+  palette and faces, with the repo's hand-drawn diagrams embedded
+  theme-aware. The landing wears the doors: a docs icon in the header, an
+  icon cluster in the footer.
+- README truth-sync rode along: the contract section now lists all six
+  circuits (the unshielded-lane pair included), and the repository map and
+  live-URL footer know about `packages/docs`.
