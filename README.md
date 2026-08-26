@@ -9,17 +9,44 @@
 
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Status](https://img.shields.io/badge/status-Wave%201%20in%20progress-yellow)
-![Tests](https://img.shields.io/badge/tests-79%20unit%20%C2%B7%2060%20integration-brightgreen)
+![Tests](https://img.shields.io/badge/tests-86%20unit%20%C2%B7%2067%20integration-brightgreen)
 
 > **Status:** Wave 1 of the [Midnight Buildathon 2026](https://docs.midnight.network) (AKINDO WaveHack, Waves 1–3, Aug 27 – Nov 27).
-> The contract and its unit matrix are complete; the API, CLI and UI are landing, and the Preview deployment address appears here once deployed.
+> The contract, its unit matrix, the client library, the CLI and the web app are all built and tested; the Preview deployment address appears here once deployed.
 > The full product spec is in [`PRD.md`](./PRD.md) — the single source of truth for this project.
 
-TacitPay lets a merchant issue an invoice and get paid in a stablecoin on Midnight so that _anyone_ can verify the invoice was settled, while the amount, the counterparties, and the invoice contents stay private — and the merchant can later prove facts about their revenue (e.g. "I received ≥ X this quarter") to an auditor without revealing the underlying invoices.
+TacitPay is a **protocol for private invoicing and settlement** on Midnight.
+
+One party issues an invoice. Another settles it on-chain. What reaches the public ledger is a **commitment** — a hash of the amount, the memo and a random salt — plus a status flag and an expiry. The amount, the memo and both parties' identities stay in private state on their own devices and are never published.
+
+The point is holding two things at once that normally conflict: **anyone can verify an invoice was settled**, while **nobody can see what it was for**. A transparent chain gives you the first and destroys the second. A fully anonymous one gives you the second and makes the first impossible.
+
+### Who this is for
+
+It is not a merchant app. The protocol knows exactly two roles — whoever issued an invoice, and whoever paid it — and it does not care what either of them is. (The contract and the code call the issuing role _merchant_, because that is what the witness and the owner tag are named. Read it as "issuer" everywhere.)
+
+- **Anyone who bills anyone.** Freelancers, contractors, agencies, suppliers, B2B counterparties. The invoice is the unit; the business model behind it is none of the protocol's business.
+- **Anyone who pays.** Payers get their own private receipts and the same unlinkability the issuer does. This is not a one-sided privacy guarantee.
+- **Anyone who needs to verify.** `/verify/<id>` needs no wallet, no account and no permission. A third party — a counterparty, an accountant, a court — can confirm settlement without learning anything else.
+- **Software, not just people.** `packages/api` is the integration surface, and it is the only place a circuit call happens. Wave 2 adds an npm SDK and an MCP server so agents can issue and settle invoices the same way a person does.
+- **Auditors and lenders**, in Wave 3: prove facts about revenue — "I received ≥ X this quarter" — without revealing a single underlying invoice.
+
+### What ships
+
+Four pieces, each usable on its own:
+
+| Piece                        | What it is                                                                             |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| `contracts/tacitpay.compact` | The protocol itself — four circuits, token-agnostic, the payment token set at deploy   |
+| `packages/api`               | The client library. Every circuit call goes through it, so there is one path to audit  |
+| `packages/cli`               | The whole lifecycle without a browser — deploy, invoice, pay, withdraw, seed a sandbox |
+| `packages/ui`                | A reference web app. One way to use the protocol, not the only one                     |
 
 ## Why privacy is load-bearing
 
-On transparent chains, every stablecoin payment permanently publishes who paid whom, how much, and — via address clustering — a business's full revenue and customer list. That is why businesses that could benefit from instant stablecoin settlement mostly don't use it. The opposite extreme, fully anonymous payments, is unusable for legitimate businesses that must prove income to accountants, auditors and lenders.
+On transparent chains, every stablecoin payment permanently publishes who paid whom, how much, and — via address clustering — the payee's entire income history and counterparty list. That is true whether the payee is a company, a two-person studio, a freelancer or an autonomous agent, and it is why most of them settle in stablecoins reluctantly or not at all. Publishing your rate card to every competitor and your customer list to every recruiter is not a side effect anyone signed up for.
+
+The opposite extreme does not work either. Fully anonymous payments cannot be shown to an accountant, an auditor, a lender or a counterparty in a dispute, so they are unusable for anyone who has to account for their income — which is nearly everyone.
 
 TacitPay uses Midnight's dual-ledger model to hold both ends:
 
@@ -42,7 +69,39 @@ The only values ever `disclose()`d are on the allowed-public list in PRD §4.3. 
 | Private state (client device, encrypted) | Merchant: secret key, invoice bodies, salts, memos · Payer: secret key, receipts                       |
 | Off-chain transport (URL fragment)       | The invoice link payload — never sent to any server                                                    |
 
-More in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+One invoice, end to end. Everything inside the shaded block is private to the
+device it happens on:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant I as Issuer
+    participant L as Public ledger
+    participant P as Payer
+    participant V as Anyone
+
+    rect rgb(244, 244, 245)
+    I->>I: pick amount, memo, random salt
+    I->>I: commitment = persistentCommit({amount, memoHash}, salt)
+    end
+    I->>L: createInvoice(id, ownerTag, commitment, expiry)
+    Note over L: The ledger now holds a hash and a status.<br/>Not the amount. Not who issued it.
+    I-->>P: invoice link, in the URL fragment — no server sees it
+
+    rect rgb(244, 244, 245)
+    P->>P: recompute the commitment from the link payload
+    end
+    P->>L: payInvoice(id, preimage, shielded coin)
+    Note over L: Contract checks the commitment matches and the<br/>coin's colour and value are right, then escrows it.
+    L-->>V: status is PAID — verifiable by anyone, wallet or not
+
+    I->>L: withdraw(id)
+    Note over L: Ownership proven from the issuer's secret,<br/>never from a prover-supplied public key.
+    L-->>I: the escrowed coin, shielded
+```
+
+More in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md), which expands each
+circuit into its own diagram derived from the code.
 
 ## Contract
 
@@ -56,6 +115,25 @@ More in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 | `cancelInvoice` | invoice OPEN, caller's secret derives the stored owner tag                        | status                                       |
 
 The amount, memo and both parties' secrets are never disclosed — only a `persistentCommit` of the invoice body reaches the ledger. Ownership is proven from the witness secret, never from `ownPublicKey()` (which is prover-supplied and so is not an authorization check).
+
+## How judges test it
+
+Four paths, cheapest first. Pick one before installing anything.
+
+| Path                     | What you need                           | Docker?                                                                                     | What it proves                                                           |
+| ------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **a. Unit tests only**   | Node and yarn                           | **No** — and no wallet                                                                      | The contract is correct and leaks nothing. 86 tests, about three seconds |
+| **b. Preview with 1AM**  | The 1AM wallet extension, testnet funds | **No** — proving is in-browser WASM                                                         | The whole product, with nothing to install but a browser extension       |
+| **c. Preview with Lace** | The Lace extension, testnet funds       | **Yes**, for a local proof server (unless the current Lace build delegates proving — D-010) | The same, on the wallet most people already have                         |
+| **d. Local devnet**      | Docker, `../midnight-local-dev`         | **Yes** — node, indexer and proof server                                                    | Everything, against a real chain you control, with a seeded sandbox      |
+
+Path (a) needs no network at all and is the fastest way to check the privacy
+claim: `U-17` runs a full lifecycle, serialises the public ledger, and asserts
+the amount is absent in four separate encodings along with the memo, the salt,
+both secrets and both parties' Zswap keys.
+
+Path (d) is the fastest way to see the whole thing work: `yarn demo:seed`
+leaves three invoices in known states and prints a ready-to-open pay link.
 
 ## How to test
 
@@ -100,8 +178,8 @@ VITE_TACITPAY_CONTRACT_PREVIEW=<address> yarn workspace @tacitpay/ui run build
 ```
 
 The chain code is behind a dynamic import, so a visitor to the marketing page
-downloads a 23 kB entry chunk and never fetches the Midnight stack unless they
-connect.
+downloads a 23.1 kB entry chunk and never fetches the Midnight stack unless
+they connect.
 
 ### Proving: you choose who generates the proof
 
@@ -159,7 +237,7 @@ Stated openly per PRD §4.5:
 
 - **Payment timing is correlatable** — an observer learns "some invoice was paid at time T", never the amount or the parties.
 - **Anonymity sets are small on a young network** — inherent to any new chain.
-- **The merchant learns who the payer is** — off-chain, because they sent them the link. Normal commerce, not a chain leak.
+- **Whoever issued the invoice learns who paid it** — off-chain, because they sent them the link. Normal commerce, not a chain leak.
 - **The browser wallet path has not yet met a real wallet extension** — every provider is built against the shipped `dapp-connector-api@4.0.1` type definitions and unit tested, and the whole stack builds, but no browser wallet has driven it end to end. The wire format itself is verified: hex encoding and transaction markers match midnight-js's own `DAppConnectorWalletAdapter`, the receiving side of the same interface (D-013). A funded Preview wallet settles the rest.
 - **A forgotten private-state passphrase loses invoice bodies** — the chain still proves the invoice existed and was settled; the amount, memo and salt are gone. Export/import is the Wave 2 mitigation (D-014).
 - **Variant A escrow leaks while it holds the coin** — and more than value: the escrowed coin's nonce is public, so after a withdrawal an observer who guesses the merchant's Zswap key can confirm it against the withdrawal's coin commitment, linking that merchant's withdrawals in transaction history. Withdrawing does not undo it. Wave 2's Variant B escrow removes the exposure; test U-17b pins the current behaviour meanwhile.
