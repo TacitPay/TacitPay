@@ -1,0 +1,416 @@
+<title>TacitPay Wave 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  /* The palette is the product's own zinc scale — no accent hue anywhere.
+     The mark is a public disc and a shielded ring; colour would be a third
+     thing competing with the only distinction that matters here. */
+  :root {
+    --ground: #fafafa;
+    --surface: #f4f4f5;
+    --ink: #09090b;
+    --muted: #71717a;
+    --rule: #e4e4e7;
+    --redact: #18181b;
+    --redact-ink: #a1a1aa;
+
+    --sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --serif: 'Instrument Serif', ui-serif, Georgia, serif;
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+    --pad: clamp(1.75rem, 5vw, 5.5rem);
+    --measure: 62ch;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --ground: #09090b;
+      --surface: #18181b;
+      --ink: #fafafa;
+      --muted: #a1a1aa;
+      --rule: #27272a;
+      --redact: #e4e4e7;
+      --redact-ink: #52525b;
+    }
+  }
+  :root[data-theme='dark'] {
+    --ground: #09090b;
+    --surface: #18181b;
+    --ink: #fafafa;
+    --muted: #a1a1aa;
+    --rule: #27272a;
+    --redact: #e4e4e7;
+    --redact-ink: #52525b;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck {
+    height: 100dvh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deck { scroll-behavior: auto; }
+  }
+
+  .slide {
+    scroll-snap-align: start;
+    min-height: 100dvh;
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(1rem, 2.5vh, 2rem);
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+
+  /* Slide numbers encode a real sequence — a deck is read in order. */
+  .num {
+    position: absolute;
+    top: var(--pad);
+    right: var(--pad);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+  }
+
+  h1, h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    text-wrap: balance;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  h1 { font-size: clamp(2.75rem, 7vw, 6rem); line-height: 1.02; }
+  h2 { font-size: clamp(1.85rem, 4.2vw, 3.4rem); line-height: 1.08; }
+
+  p { margin: 0; max-width: var(--measure); }
+  .lede { font-size: clamp(1.05rem, 1rem + 0.5vw, 1.4rem); line-height: 1.5; }
+  .muted { color: var(--muted); }
+
+  strong { font-weight: 600; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* The one idea in the deck: a private value is drawn the way the chain
+     holds it — present, sized, and unreadable. */
+  .redact {
+    background: var(--redact);
+    color: transparent;
+    border-radius: 2px;
+    padding: 0 0.3em;
+    user-select: none;
+    position: relative;
+  }
+  .redact::after {
+    content: 'hidden';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--mono);
+    font-size: 0.6em;
+    letter-spacing: 0.1em;
+    color: var(--redact-ink);
+  }
+
+  .cols { display: grid; gap: clamp(1rem, 3vw, 2.5rem); grid-template-columns: 1fr; }
+  @media (min-width: 56rem) { .cols.two { grid-template-columns: 1fr 1fr; } }
+
+  .scroller { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.9rem 0.6rem 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+
+  ul { margin: 0; padding-left: 1.1rem; max-width: var(--measure); }
+  li { margin-block: 0.35rem; }
+  li::marker { color: var(--muted); }
+
+  .stats { display: grid; gap: clamp(1rem, 3vw, 2rem); grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+  .stat .n {
+    font-family: var(--serif);
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    display: block;
+  }
+  .stat .k { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+
+  .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 0.625rem; padding: clamp(1rem, 2.5vw, 1.6rem); }
+
+  .hash { font-family: var(--mono); font-size: 0.72rem; word-break: break-all; color: var(--muted); }
+
+  .note { border-left: 2px solid var(--ink); padding-left: 1rem; max-width: var(--measure); }
+
+  kbd {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    border: 1px solid var(--rule);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+  }
+
+  a { color: inherit; text-underline-offset: 3px; }
+  a:focus-visible, .deck:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+</style>
+
+<main class="deck" id="deck" tabindex="0">
+
+  <section class="slide">
+    <span class="num">01 / 12</span>
+    <span class="eyebrow">Midnight Buildathon 2026 · Wave 1</span>
+    <h1>Get paid on-chain<br>without publishing<br>your books.</h1>
+    <p class="lede">TacitPay is a protocol for private invoicing and settlement on Midnight. Anyone can verify an invoice was settled. Nobody can see what it was for.</p>
+    <p class="muted mono" style="font-size:0.75rem">github.com/Marcussy34/tacitpay · Apache-2.0</p>
+  </section>
+
+  <section class="slide">
+    <span class="num">02 / 12</span>
+    <span class="eyebrow">The problem</span>
+    <h2>A public ledger publishes your income, your rates, and your customer list.</h2>
+    <div class="cols two">
+      <p>Settle an invoice in a stablecoin on a transparent chain and you permanently publish who paid whom and how much. Address clustering does the rest: your entire revenue history and counterparty list, readable by anyone, forever.</p>
+      <p>That is true whether you are a company, a two-person studio, a freelancer or an autonomous agent. Publishing your rate card to every competitor is not a side effect anyone signed up for — so most people settle in stablecoins reluctantly, or not at all.</p>
+    </div>
+    <div class="note">
+      <p><strong>The obvious fix does not work.</strong> Fully anonymous payment cannot be shown to an accountant, an auditor, a lender, or a counterparty in a dispute. It is unusable for anyone who has to account for their income — which is nearly everyone.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="num">03 / 12</span>
+    <span class="eyebrow">Why now</span>
+    <h2>Midnight is the first chain where both halves are possible at once.</h2>
+    <ul>
+      <li>A <strong>dual ledger</strong>: a public state for what must be verifiable, a shielded state for what must not be seen. Not an overlay — the protocol's own design.</li>
+      <li><strong>Zswap</strong> hides amount and owner at the value layer, so settlement itself is private without a mixer.</li>
+      <li><strong>Compact</strong> makes disclosure explicit. A value reaches the public ledger only through a <span class="mono">disclose()</span> the author had to write.</li>
+      <li>Wallets now prove <strong>in the browser</strong>. The privacy story no longer requires the user to run infrastructure.</li>
+    </ul>
+    <p class="muted">Wave 1 targets shielded tNIGHT and bridged tUSDM on Preview. The contract is token-agnostic — the payment token is fixed at deploy.</p>
+  </section>
+
+  <section class="slide">
+    <span class="num">04 / 12</span>
+    <span class="eyebrow">The product</span>
+    <h2>One invoice, four moves.</h2>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Step</th><th>Who</th><th>What reaches the chain</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Create</strong></td><td>Issuer</td><td>A random id, a hiding commitment, a status flag, an expiry</td></tr>
+          <tr><td><strong>Send</strong></td><td>Issuer → payer</td><td class="muted">Nothing. The payload lives in the URL fragment, which browsers never send to a server</td></tr>
+          <tr><td><strong>Pay</strong></td><td>Payer</td><td>A shielded coin and a proof that it matches the commitment</td></tr>
+          <tr><td><strong>Withdraw</strong></td><td>Issuer</td><td>A status change, proven from a secret only they hold</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">It is not a merchant app. The protocol knows two roles — whoever issued an invoice and whoever paid it — and nothing about who fills them.</p>
+  </section>
+
+  <section class="slide">
+    <span class="num">05 / 12</span>
+    <span class="eyebrow">Privacy model</span>
+    <h2>What a chain observer actually sees.</h2>
+    <div class="card">
+      <p class="eyebrow" style="margin-bottom:0.9rem">Invoice record, as stored on the public ledger</p>
+      <p class="mono" style="font-size:0.8rem;line-height:2.1">
+        id &nbsp;<span class="hash" style="font-size:0.75rem">31b40d47…c91b5d</span><br>
+        amount &nbsp;<span class="redact">1,250,000</span><br>
+        memo &nbsp;<span class="redact">Consulting retainer, Q3</span><br>
+        issuer &nbsp;<span class="redact">merchant public key</span><br>
+        payer &nbsp;<span class="redact">payer public key</span><br>
+        status &nbsp;OPEN<br>
+        expires &nbsp;none
+      </p>
+    </div>
+    <p>The commitment is <strong>hiding</strong>, so amount and memo are inputs to it and never appear beside it. The owner and payer tags are per-invoice hashes — <strong>two invoices from the same issuer share no public value</strong>. Anyone can confirm this invoice settled; nobody learns the trade behind it.</p>
+    <p class="muted">Eleven invariants, INV-1 to INV-11, each mapped to the test that enforces it in <span class="mono">docs/PRIVACY.md</span>.</p>
+  </section>
+
+  <section class="slide">
+    <span class="num">06 / 12</span>
+    <span class="eyebrow">Architecture</span>
+    <h2>Four layers, and a boundary that is the whole design.</h2>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Layer</th><th>Holds</th><th>Why there</th></tr></thead>
+        <tbody>
+          <tr><td>Public ledger</td><td>Invoice map, escrow, counters</td><td>So anyone can verify existence and status</td></tr>
+          <tr><td>Zswap shielded</td><td>The payment coin</td><td>Amount and owner hidden by the protocol itself</td></tr>
+          <tr><td>Private state<br><span class="muted">(device, encrypted)</span></td><td>Secrets, invoice bodies, salts, memos</td><td>Witness inputs for proofs; never transmitted</td></tr>
+          <tr><td>URL fragment</td><td>The invoice link payload</td><td>Issuer to payer only — no server is in the path</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Every circuit call goes through one library.</strong> The web app, the CLI, and Wave 2's SDK and MCP server all use it, so there is exactly one code path that decides what gets disclosed — and exactly one thing to audit.</p>
+  </section>
+
+  <section class="slide">
+    <span class="num">07 / 12</span>
+    <span class="eyebrow">The contract</span>
+    <h2>Four circuits. Eleven disclosures, all deliberate.</h2>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Circuit</th><th>Asserts</th><th>Discloses</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">createInvoice</td><td>id unused, amount &gt; 0</td><td>id, owner tag, expiry <span class="muted">(3)</span></td></tr>
+          <tr><td class="mono">payInvoice</td><td>OPEN, unexpired, commitment matches preimage, coin colour and value</td><td>payer tag, status, escrowed coin <span class="muted">(4)</span></td></tr>
+          <tr><td class="mono">withdraw</td><td>PAID, caller's secret derives the stored owner tag</td><td>status <span class="muted">(1)</span></td></tr>
+          <tr><td class="mono">cancelInvoice</td><td>OPEN, caller's secret derives the stored owner tag</td><td>status <span class="muted">(1)</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <p><strong>Ownership is proven from the witness secret, never from <span class="mono">ownPublicKey()</span>.</strong> That value is supplied by the prover, so it can name a recipient but cannot authorise anything. Getting this backwards is the bug that would let anyone withdraw anyone's money.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="num">08 / 12</span>
+    <span class="eyebrow">Running today</span>
+    <h2>A real contract, on a real chain, verifiable with no wallet.</h2>
+    <p class="hash">contract 97d059c284eaf7bff8d1e76a60d0cf53a908bae8d8d600b2b48ad18d1c0a76d0</p>
+    <div class="cols two">
+      <div class="card">
+        <p class="eyebrow" style="margin-bottom:0.6rem">Seeded by <span class="mono">yarn demo:seed</span></p>
+        <p class="mono" style="font-size:0.8rem;line-height:2">
+          31b40d47… &nbsp;<strong>OPEN</strong><br>
+          0d46e99a… &nbsp;<strong>PAID</strong><br>
+          c7670c52… &nbsp;<strong>WITHDRAWN</strong>
+        </p>
+      </div>
+      <div>
+        <p>One command deploys a contract, funds two wallets, and leaves three invoices in known states with a ready pay link.</p>
+        <p style="margin-top:0.8rem">Open <span class="mono">/verify/&lt;id&gt;</span> and read each status straight off the chain — <strong>no extension, no funds, no signing</strong>. Verified in a browser on a cold load, in the dev server and the production build alike.</p>
+      </div>
+    </div>
+    <p class="muted">Still to come: the signing path against a funded Preview wallet. Every provider is built and unit-tested; no wallet extension has driven it yet, and the deck does not pretend otherwise.</p>
+  </section>
+
+  <section class="slide">
+    <span class="num">09 / 12</span>
+    <span class="eyebrow">Tests &amp; QA</span>
+    <h2>Nothing deferred to the integration layer.</h2>
+    <div class="stats">
+      <div class="stat"><span class="n">86</span><span class="k">Offline tests</span></div>
+      <div class="stat"><span class="n">67</span><span class="k">Live devnet</span></div>
+      <div class="stat"><span class="n">4</span><span class="k">Circuits</span></div>
+      <div class="stat"><span class="n">15</span><span class="k">Decisions logged</span></div>
+    </div>
+    <p>The coin-handling circuits run in the pure-JS runtime, so the contract can be verified with <strong>no Docker, no wallet and no network</strong>.</p>
+    <ul>
+      <li><strong>U-17</strong> runs a full lifecycle, serialises the public ledger, and asserts the amount is absent in four encodings — along with the memo, the salt, both secrets and both parties' Zswap keys.</li>
+      <li><strong>The integration test</strong> asserts the issuer's shielded balance <em>increases</em> after withdrawal. A status flag proves state changed; a balance proves value moved.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <span class="num">10 / 12</span>
+    <span class="eyebrow">Roadmap</span>
+    <h2>Three waves, each shipping something a judge can run.</h2>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Wave</th><th>Theme</th><th>Ships</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>The loop works</td><td>Contract, tests, library, CLI, web app, Variant A escrow, judge sandbox</td></tr>
+          <tr><td class="mono">2</td><td>Developers and agents</td><td>Variant B escrow, milestone escrow, claim-based refunds, recurring invoices, Node SDK, MCP server, tUSDM</td></tr>
+          <tr><td class="mono">3</td><td>Prove it to the auditor</td><td>ZK revenue and receivables proofs, USDM on mainnet <span class="muted">(stretch)</span>, mobile PoC</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <p><strong>Stated openly:</strong> Variant A escrow publishes the coin's value — and its nonce — while the contract holds it. Test U-17b pins that exposure so it stays a tracked limitation rather than an assumption. Variant B closes it in Wave 2.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <span class="num">11 / 12</span>
+    <span class="eyebrow">Market &amp; distribution</span>
+    <h2>The people already paid in stablecoins, and the software about to be.</h2>
+    <div class="cols two">
+      <div>
+        <p><strong>Who needs it first.</strong> Freelancers, studios, agencies and suppliers who invoice across borders and already settle in stablecoins — the people for whom a public ledger is a live commercial problem, not a theoretical one.</p>
+      </div>
+      <div>
+        <p><strong>How it spreads.</strong> The library is the product surface. Wave 2 ships it as an npm SDK and an MCP server, so an agent can issue and settle an invoice the same way a person does — and agent-to-agent payment has no privacy story at all today.</p>
+      </div>
+    </div>
+    <p class="muted">Adoption path: judge sandbox → self-serve web app → SDK in someone else's product → agents transacting without a human in the loop.</p>
+  </section>
+
+  <section class="slide">
+    <span class="num">12 / 12</span>
+    <span class="eyebrow">Ask</span>
+    <h2>Private by default. Provable on demand.</h2>
+    <p class="lede">Wave 1 is the loop working end to end, with the limitations written down rather than hidden. Wave 2 closes the escrow exposure and puts the protocol in other people's hands.</p>
+    <div class="cols two">
+      <div>
+        <p class="eyebrow" style="margin-bottom:0.5rem">Verify it yourself</p>
+        <p class="mono" style="font-size:0.78rem;line-height:1.9">yarn install &amp;&amp; yarn compile<br>yarn test<br>yarn env:up &amp;&amp; yarn demo:seed</p>
+      </div>
+      <div>
+        <p class="eyebrow" style="margin-bottom:0.5rem">Repository</p>
+        <p class="mono" style="font-size:0.78rem">github.com/Marcussy34/tacitpay</p>
+        <p class="muted" style="margin-top:0.6rem;font-size:0.85rem">Built on Midnight. Apache-2.0.</p>
+      </div>
+    </div>
+    <p class="muted" style="font-size:0.8rem"><kbd>↑</kbd> <kbd>↓</kbd> to navigate</p>
+  </section>
+
+</main>
+
+<script>
+  // Arrow-key navigation, so the deck can be presented without a mouse.
+  const deck = document.getElementById('deck');
+  const slides = [...document.querySelectorAll('.slide')];
+  deck.focus();
+  addEventListener('keydown', (e) => {
+    const step = e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' '
+      ? 1
+      : e.key === 'ArrowUp' || e.key === 'PageUp'
+        ? -1
+        : 0;
+    if (!step) return;
+    e.preventDefault();
+    const here = slides.findIndex((s) => s.getBoundingClientRect().top > -window.innerHeight / 2);
+    const next = slides[Math.min(Math.max(here + step, 0), slides.length - 1)];
+    next?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  });
+</script>

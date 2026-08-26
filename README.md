@@ -230,6 +230,7 @@ The integration suite runs the same lifecycle against a real chain with real pro
 | 3 (Oct 27 – Nov 16) | Prove it to the auditor | ZK revenue & receivables proofs, USDM on mainnet (stretch), mobile PoC                                                              |
 
 Progress per wave: [`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md).
+Twelve-slide overview: [`docs/deck/index.html`](./docs/deck/index.html) — open it in a browser and present with the arrow keys.
 
 ## Known limitations
 

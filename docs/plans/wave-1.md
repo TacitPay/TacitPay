@@ -90,7 +90,14 @@ the devnet is up). No CI by owner decision (D-008).
       (four Mermaid circuit sequences derived from the code, provider table,
       link data flow), WAVE-CHANGELOG.md "Wave 1", DEMO-SCRIPT.md (shot list plus
       pre-recording checklist). DONE 2026-08-24.
-- [ ] 8b. Deck (≤12 slides) and the 3–5 minute video. **Needs the Preview run.**
+- [x] 8b-deck. Deck — DONE 2026-08-24. Twelve slides at `docs/deck/index.html`,
+      following the §17.2 outline. Built on the app's own brand (zinc
+      monochrome, Instrument Serif/Sans, IBM Plex Mono) so the deck and the
+      product read as one thing. Slide 8 uses the real seeded sandbox contract
+      and its three invoice ids rather than placeholder stills, and says plainly
+      that the signing path has not run against a wallet yet. Present with
+      arrow keys; scroll-snapped, responsive, works in both themes.
+- [ ] 8c. The 3–5 minute video. **Owner action** — needs the Preview run.
 - [x] 9a. Repo topics set (8, including `midnightntwrk`) and Apache-2.0 licensed.
 - [ ] 9b. **Flip repo public** (D-003) before submission. **Owner action.**
 - [x] 10. Judge sandbox — DONE 2026-08-24. `tacitpay demo seed` /
