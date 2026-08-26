@@ -58,8 +58,7 @@ export function FinalCta() {
             Issue an invoice that proves itself.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-tp-ink-muted">
-            Create one in the browser, send the link, and let anyone confirm it settled — without
-            handing them your ledger.
+            Create it in the browser, send the link, and let anyone confirm it settled.
           </p>
 
           {/* Two doors, because the page has two kinds of reader by now: someone

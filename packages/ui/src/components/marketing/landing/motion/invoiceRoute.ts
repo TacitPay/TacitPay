@@ -22,9 +22,9 @@ export const ROUTE = {
   // where the ledger's own field names and hashes belong.
   stations: [
     { x: 180, label: 'Create', value: 'a commitment, never the amount' },
-    { x: 476, label: 'Share', value: 'details ride in the link fragment' },
-    { x: 772, label: 'Settle', value: 'an on-chain settlement marks it paid' },
-    { x: 1020, label: 'Verify', value: 'checked by anyone, with no wallet' },
+    { x: 476, label: 'Share', value: 'details travel inside the link' },
+    { x: 772, label: 'Settle', value: 'marked paid on chain' },
+    { x: 1020, label: 'Verify', value: 'anyone can check, no wallet' },
   ],
 } as const;
 

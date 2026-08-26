@@ -41,7 +41,7 @@ const FOUNDATIONS: readonly Foundation[] = [
     height: 55,
     role: 'The dual ledger',
     detail:
-      'Two states at once — a public ledger anyone can read, and a private state that never leaves your device. Zero-knowledge proofs let the first verify the second without ever receiving it.',
+      'A public ledger beside a private state — zero-knowledge proofs let one verify the other without seeing it.',
     href: 'https://docs.midnight.network/what-is-midnight',
   },
   {
@@ -52,7 +52,7 @@ const FOUNDATIONS: readonly Foundation[] = [
     height: 251,
     role: 'Inherited security',
     detail:
-      'Midnight is its first partner chain, which means it inherits the security of a large, mature network instead of bootstrapping its own — and stays firewalled from it.',
+      'Midnight is its first partner chain — it inherits the security of a mature network instead of bootstrapping its own.',
     href: 'https://docs.midnight.network/concepts/sidechains-partnerchains',
   },
 ];
@@ -64,8 +64,8 @@ export function BuiltOnSection() {
         <SectionIntro
           className="max-w-3xl"
           eyebrow="Built on"
-          title="One property makes all of this possible."
-          lede="A normal chain forces a choice: publish the amount so the payment can be proven, or keep it private and prove nothing. Midnight refuses the trade — it holds a public ledger beside a private state and proves one to the other. Take that away and TacitPay is just an invoice."
+          title="One property makes this possible."
+          lede="Most chains force a choice: prove the payment in public, or keep it private and prove nothing. Midnight does both."
         />
 
         <div className="mt-16 grid gap-px overflow-hidden border-y border-tp-rule bg-tp-rule md:grid-cols-2">

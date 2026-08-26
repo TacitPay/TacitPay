@@ -35,8 +35,8 @@ export function InterlockSection() {
         <SectionIntro
           className="max-w-3xl"
           eyebrow="The contract"
-          title="Four circuits, and every one of them discloses nothing."
-          lede="Ownership is proven from a secret that only exists on your device — never from a key the prover hands in, which anyone could claim. Read the table left to right: everything a circuit takes in, then everything it writes down. Nothing appears on both sides."
+          title="Four circuits. Zero disclosures."
+          lede="What a circuit takes in stays private. What it writes is public. Nothing appears on both sides."
         />
 
         {/* A matrix needs its columns, so narrow screens get the four circuits

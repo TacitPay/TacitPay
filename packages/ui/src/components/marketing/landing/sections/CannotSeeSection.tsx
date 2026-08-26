@@ -16,17 +16,17 @@ const CANNOT_SEE: readonly { icon: Icon; title: string; body: string }[] = [
   {
     icon: Driver,
     title: 'We run no server',
-    body: 'Invoice details travel inside the link fragment, which browsers never send to a server. There is no backend to subpoena, breach, or quietly log.',
+    body: 'Details travel inside the link. There is no backend to breach, subpoena, or log.',
   },
   {
     icon: Cpu,
     title: 'We run no prover',
-    body: 'Generating a proof requires your private data, so TacitPay never operates one. It happens inside your wallet, or on a machine you control.',
+    body: 'Proofs need your private data, so they run in your wallet or on a machine you control.',
   },
   {
     icon: Key,
     title: 'We hold no keys',
-    body: 'Withdrawal is proven from a secret that only ever exists on your device. Nobody at TacitPay can move your funds, because there is nobody to ask.',
+    body: 'Withdrawals are proven from a secret that never leaves your device. There is nobody to ask.',
   },
 ];
 
@@ -42,7 +42,7 @@ export function CannotSeeSection() {
             <SectionIntro
               eyebrow="Structural, not promised"
               title="What TacitPay cannot see."
-              lede="Every payment product says it respects your privacy. The difference here is that there is no version of TacitPay that could look, even if we wanted to."
+              lede="Not a promise — there is no version of TacitPay that could look."
             />
 
             <div className="mt-12 space-y-8">

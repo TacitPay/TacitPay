@@ -39,8 +39,8 @@ export function RouteSection() {
         <SectionIntro
           className="max-w-3xl"
           eyebrow="The route"
-          title="Four moves, and none of them involve trusting us."
-          lede="Your device commits the invoice, the link carries the details in a fragment browsers never transmit, the payer's wallet proves they match, and anyone at all can check the result afterwards."
+          title="Four moves. No trust required."
+          lede="Commit, share, settle, verify — with no server anywhere on the route."
         />
 
         {/* Same rule as the corridor: the rail needs width, so narrow screens
@@ -60,7 +60,7 @@ export function RouteSection() {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               role="img"
-              aria-label="An invoice travels one rail through four stations: create, which writes a commitment; share, which puts the details in a link fragment; settle, which is an on-chain settlement marking the status paid; and verify, which anyone can read without a wallet."
+              aria-label="An invoice travels one rail through four stations: create writes a commitment; share puts the details in the link; settle marks it paid on chain; verify is open to anyone, no wallet needed."
               className="min-w-[62rem]"
             >
               {/* The rail: a graduated track, not a bare line. The bays are
