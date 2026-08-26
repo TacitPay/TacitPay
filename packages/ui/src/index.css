@@ -538,14 +538,17 @@
 
      Same three theme states as the palette above, so a visitor on `system`
      gets the right one rather than the light-mode default. The two alphas
-     differ on purpose and are the splash's own, unchanged: a hairline on paper
-     carries further than a dot on the void, so equal numbers would not read as
-     equal weight. Cell size is shared (44px), so the two never feel like
+     differ on purpose: a hairline on paper carries much further than a dot on
+     the void, so equal numbers would not read as equal weight. The dots keep
+     the splash's own 0.13; the grid is pulled back from the splash's 0.055 to
+     0.032, because behind a full page of work — rather than under a hero — a
+     continuous ruled line reads as drawn rather than as ground. Cell size is
+     shared (44px), so the two never feel like
      different rooms. */
   .tp-field {
     background-image:
-      repeating-linear-gradient(to right, rgb(var(--tp-glow) / 0.055) 0 1px, transparent 1px 44px),
-      repeating-linear-gradient(to bottom, rgb(var(--tp-glow) / 0.055) 0 1px, transparent 1px 44px);
+      repeating-linear-gradient(to right, rgb(var(--tp-glow) / 0.032) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(to bottom, rgb(var(--tp-glow) / 0.032) 0 1px, transparent 1px 44px);
   }
 
   @media (prefers-color-scheme: dark) {
