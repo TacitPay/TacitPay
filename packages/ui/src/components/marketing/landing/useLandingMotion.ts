@@ -13,10 +13,17 @@ if (typeof window !== 'undefined') {
 
 /* SPLASH RESOLVE STORYBOARD
  *   0ms  the shell, the lockup and the actions are already in the DOM
- * 120ms  the terminator opens across the full width
- * 300ms  the shielded ring travels in and comes to rest over the public disc
- * 460ms  the settlement node lights — the one point both sides agree on
+ * 120ms  the terminator opens across the full width, and the public disc lands
+ * 300ms  the wordmark settles beside it
  * 560ms  the promise and the actions settle
+ * 620ms  the shielded ring DRAWS itself around the disc — growing out of the
+ *        disc's shoulder, over the top and round, tucking in at its lower edge
+ * 1380ms the settlement node lights, last: the one point both sides agree on
+ *
+ * The order is the argument. The ledger's disc exists first, the shielded
+ * state is drawn around it, and the single point they agree on is what the
+ * closed line produces — so the node cannot light before the ring has closed,
+ * and the ring cannot be drawn before there is something to draw it around.
  *
  * Motion never owns visibility here: every tween is a `from`, so the resting
  * state is what the markup already says. Turning on reduced motion tears the
@@ -24,10 +31,16 @@ if (typeof window !== 'undefined') {
  */
 const RESOLVE = {
   terminator: 0.12,
-  ring: 0.3,
-  node: 0.46,
+  wordmark: 0.3,
   details: 0.56,
+  ring: 0.62,
+  node: 1.38,
 } as const;
+
+/** How long the ring takes to draw its visible round. `inOut` rather than the
+ *  `power3.out` the rest of the resolve uses: a drawn line wants to leave and
+ *  arrive at rest, where an object that travels wants to arrive at rest only. */
+const DRAW = { duration: 0.85, ease: 'power2.inOut' } as const;
 
 const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
   let loops: MotionCleanup[] = [];
@@ -40,6 +53,7 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
     const fields = gsap.utils.toArray<HTMLElement>('[data-tp-field]', root);
     const grounds = root.querySelector<HTMLElement>('[data-tp-grounds]');
     const promise = root.querySelector<HTMLElement>('[data-tp-promise]');
+    const markRing = root.querySelector<SVGCircleElement>('[data-tp-mark-ring]');
 
     // ---------------------------------------------------------- load resolve
     if (splash && beam && lockup) {
@@ -55,22 +69,40 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
           { scale: 0.86, opacity: 0, duration: 0.5, ease: 'power3.out' },
           RESOLVE.terminator,
         )
-        // The eclipse itself: the shielded ring travels in over the public disc.
-        .from(
-          '[data-tp-mark-ring]',
-          { x: 34, opacity: 0, duration: 0.85, ease: 'power3.out' },
-          RESOLVE.ring,
-        )
         .from(
           '[data-tp-wordmark]',
           { x: -18, opacity: 0, duration: 0.7, ease: 'power3.out' },
-          RESOLVE.ring,
+          RESOLVE.wordmark,
         )
         .from(
           '[data-tp-mark-node]',
           { scale: 0, opacity: 0, duration: 0.4, ease: 'back.out(2.4)' },
           RESOLVE.node,
         )
+        // THE ECLIPSE ITSELF. The ring is not moved into place at all — it is
+        // DRAWN, and drawn FROM the disc: SplashLockup rotates the path so it
+        // starts where the ring leaves the disc's cover, and hands over two
+        // numbers. `data-tp-draw` is the full dash, which hides the line;
+        // `data-tp-draw-tuck` is the offset where the tip has swept the whole
+        // visible round and sits tucked back in under the disc. Tweening to
+        // the tuck rather than to zero puts the ease's settle on the tuck-in
+        // itself; the instant set then finishes the still-hidden remainder,
+        // under the disc where the two states render identically.
+        //
+        // No fade rides along with it. A stroke that draws itself is already
+        // its own reveal, and fading it in at the same time reads as two
+        // separate things happening to one shape.
+        .fromTo(
+          markRing ? [markRing] : [],
+          { strokeDashoffset: markRing?.dataset.tpDraw },
+          {
+            strokeDashoffset: markRing?.dataset.tpDrawTuck,
+            duration: DRAW.duration,
+            ease: DRAW.ease,
+          },
+          RESOLVE.ring,
+        )
+        .set(markRing ? [markRing] : [], { strokeDashoffset: 0 }, '>')
         .from(
           '[data-tp-splash-detail]',
           { y: 14, opacity: 0, duration: 0.7, ease: 'power3.out', stagger: 0.08 },
