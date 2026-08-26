@@ -23,6 +23,7 @@ import type {
   InvoiceStatus,
   InvoiceView,
   Observable,
+  PaidPool,
   ProofStage,
   ReceiptView,
   TacitPayApi,
@@ -281,7 +282,11 @@ class RealTacitPayApi implements TacitPayApi {
 
   withdraw(invoiceId: string): Promise<{ txId: string }> {
     return this.withStages(async () => {
-      const { txId } = await this.merchant.withdraw(invoiceId);
+      const status = await this.api.getInvoiceStatus(invoiceId);
+      const { txId } =
+        status.paidPool === 'unshielded'
+          ? await this.merchant.withdrawUnshielded(invoiceId, this.options.accountId)
+          : await this.merchant.withdraw(invoiceId);
       await this.confirmOnChain(
         invoiceId,
         txId,
@@ -313,6 +318,7 @@ class RealTacitPayApi implements TacitPayApi {
       createdAt: invoice.createdAt,
       expiresAt: invoice.expiresAt,
       status: statusName(invoice.onChainStatus),
+      paidPool: invoice.paidPool,
       link: this.linkFor(invoice),
       txId: invoice.txIds.created ?? '',
     }));
@@ -324,7 +330,11 @@ class RealTacitPayApi implements TacitPayApi {
 
   payInvoice(payload: InvoiceLinkPayload): Promise<{ txId: string }> {
     return this.withStages(async () => {
-      const { txId } = await this.payer.payInvoice(toApiPayload(payload));
+      const apiPayload = toApiPayload(payload);
+      const { txId } =
+        endpointsFor(this.options.network).settlementLane === 'unshielded'
+          ? await this.payer.payInvoiceUnshielded(apiPayload)
+          : await this.payer.payInvoice(apiPayload);
       await this.confirmOnChain(payload.id, txId, (result) => statusName(result.status) === 'PAID');
       return { txId };
     });
@@ -340,18 +350,20 @@ class RealTacitPayApi implements TacitPayApi {
       memo: receipt.memo ?? '',
       paidAt: receipt.paidAt,
       status: statusName(receipt.status),
+      paidPool: receipt.paidPool,
       txId: receipt.txId,
     }));
   }
 
   async getInvoiceStatus(
     invoiceId: string,
-  ): Promise<{ status: InvoiceStatus; expiresAt: number; exists: boolean }> {
+  ): Promise<{ status: InvoiceStatus; expiresAt: number; exists: boolean; paidPool: PaidPool }> {
     const result = await this.api.getInvoiceStatus(invoiceId);
     return {
       status: statusName(result.status),
       expiresAt: result.expiresAt,
       exists: result.exists,
+      paidPool: result.paidPool,
     };
   }
 

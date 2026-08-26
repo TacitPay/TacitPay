@@ -10,6 +10,8 @@ export type ProofStage = (typeof PROOF_STAGES)[number];
 
 export type InvoiceStatus = 'OPEN' | 'PAID' | 'WITHDRAWN' | 'CANCELLED';
 
+export type PaidPool = 'shielded' | 'unshielded' | null;
+
 export type InvoiceNetwork = 'preview' | 'local';
 
 export interface InvoiceLinkPayload {
@@ -32,6 +34,7 @@ export interface InvoiceView {
   readonly createdAt: number;
   readonly expiresAt: number;
   readonly status: InvoiceStatus;
+  readonly paidPool: PaidPool;
   readonly link: string;
   readonly txId: string;
 }
@@ -43,6 +46,7 @@ export interface ReceiptView {
   readonly memo: string;
   readonly paidAt: number;
   readonly status: InvoiceStatus;
+  readonly paidPool: PaidPool;
   readonly txId: string;
 }
 
@@ -81,6 +85,6 @@ export interface TacitPayApi {
 
   getInvoiceStatus(
     invoiceId: string,
-  ): Promise<{ status: InvoiceStatus; expiresAt: number; exists: boolean }>;
+  ): Promise<{ status: InvoiceStatus; expiresAt: number; exists: boolean; paidPool: PaidPool }>;
   watchInvoice(invoiceId: string): Observable<InvoiceStatus>;
 }

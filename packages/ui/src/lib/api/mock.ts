@@ -8,6 +8,7 @@ import {
   type InvoiceView,
   type Observable,
   type ObservableObserver,
+  type PaidPool,
   type ProofStage,
   type ReceiptView,
   type TacitPayApi,
@@ -302,6 +303,10 @@ class MockTacitPayApi implements TacitPayApi {
     return this.state.invoices.find((invoice) => invoice.invoiceId === invoiceId.toLowerCase());
   }
 
+  private paidPoolFor(invoice: StoredInvoice | undefined): PaidPool {
+    return invoice?.status === 'PAID' ? endpointsFor(this.options.network).settlementLane : null;
+  }
+
   private payloadFor(invoice: StoredInvoice): InvoiceLinkPayload {
     return {
       v: 1,
@@ -325,6 +330,7 @@ class MockTacitPayApi implements TacitPayApi {
       createdAt: invoice.createdAt,
       expiresAt: invoice.expiresAt,
       status: invoice.status,
+      paidPool: this.paidPoolFor(invoice),
       link: encodeInvoiceLink(this.payloadFor(invoice)),
       txId: invoice.txId,
     };
@@ -454,23 +460,32 @@ class MockTacitPayApi implements TacitPayApi {
 
   async listMyReceipts(): Promise<ReceiptView[]> {
     await wait(420);
-    return this.state.receipts.map((receipt) => ({
-      invoiceId: receipt.invoiceId,
-      amount: BigInt(receipt.amount),
-      token: receipt.token,
-      memo: receipt.memo,
-      paidAt: receipt.paidAt,
-      status: this.findInvoice(receipt.invoiceId)?.status ?? 'PAID',
-      txId: receipt.txId,
-    }));
+    return this.state.receipts.map((receipt) => {
+      const invoice = this.findInvoice(receipt.invoiceId);
+      return {
+        invoiceId: receipt.invoiceId,
+        amount: BigInt(receipt.amount),
+        token: receipt.token,
+        memo: receipt.memo,
+        paidAt: receipt.paidAt,
+        status: invoice?.status ?? 'PAID',
+        paidPool: this.paidPoolFor(invoice),
+        txId: receipt.txId,
+      };
+    });
   }
 
   async getInvoiceStatus(invoiceId: string) {
     await wait(360);
     const invoice = this.findInvoice(invoiceId);
     return invoice
-      ? { status: invoice.status, expiresAt: invoice.expiresAt, exists: true }
-      : { status: 'OPEN' as const, expiresAt: 0, exists: false };
+      ? {
+          status: invoice.status,
+          expiresAt: invoice.expiresAt,
+          exists: true,
+          paidPool: this.paidPoolFor(invoice),
+        }
+      : { status: 'OPEN' as const, expiresAt: 0, exists: false, paidPool: null };
   }
 
   watchInvoice(invoiceId: string): Observable<InvoiceStatus> {

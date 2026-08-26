@@ -177,6 +177,10 @@ export function LiveApiProvider({ children }: { children: ReactNode }) {
           wallet: connection.api as Parameters<typeof createRealTacitPayApi>[0]['wallet'],
           passphrase,
           accountId: connection.address,
+          // The display symbol maps to the API's semantic token union.
+          token: endpointsFor(network).tokenSymbol.toUpperCase().includes('USDM')
+            ? 'USDM'
+            : 'NIGHT',
           proving:
             tier === 'wallet' ? { tier: 'wallet' } : { tier, url: resolution.effectiveUrl ?? '' },
           onProofStage: setProofStage,
