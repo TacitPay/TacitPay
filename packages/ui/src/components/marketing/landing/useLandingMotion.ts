@@ -187,7 +187,26 @@ export const useLandingMotion = (scope: RefObject<HTMLDivElement | null>) => {
       sync();
       reduced.addEventListener('change', sync);
 
+      // Vite swaps a section's DOM on a hot update, but this effect does not
+      // re-run — so GSAP goes on driving elements that have left the document.
+      // Every loop then looks frozen while its readout keeps ticking, because
+      // the `.call()` steps that write the readout need no element at all. That
+      // reads as a broken instrument and has twice been reported as one.
+      //
+      // Re-establishing on `vite:afterUpdate` costs nothing in a build:
+      // `import.meta.hot` is undefined there and the whole block is dropped.
+      // The frame's delay lets React commit the new markup first, so the fresh
+      // setup queries elements that are actually mounted.
+      let hotFrame = 0;
+      const rebuild = () => {
+        cancelAnimationFrame(hotFrame);
+        hotFrame = requestAnimationFrame(sync);
+      };
+      import.meta.hot?.on('vite:afterUpdate', rebuild);
+
       return () => {
+        cancelAnimationFrame(hotFrame);
+        import.meta.hot?.off('vite:afterUpdate', rebuild);
         reduced.removeEventListener('change', sync);
         stopMotion?.();
       };
