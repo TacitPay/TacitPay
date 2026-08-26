@@ -1,18 +1,20 @@
 # TacitPay — current state
 
-**As of 2026-08-24, commit `6865246` plus uncommitted work.** 28 commits since
-the pre-wave scaffold.
+**As of 2026-08-24, commit `f710478`.** 69 commits since the pre-wave scaffold.
 
 This document is the fast way to understand what exists without reading the
-codebase. Every claim points at the file or command that proves it, so treat
-it as a map, not as authority — **the code and the tests are the truth**. If
-this document and the repository disagree, the repository is right and this
-file is stale.
+codebase. Every claim points at the file or command that proves it, so treat it
+as a map, not as authority — **the code and the tests are the truth**. If this
+document and the repository disagree, the repository is right and this file is
+stale.
 
 Related documents: [`PRD.md`](./PRD.md) is the product spec and the source of
-truth for intent. [`docs/DECISIONS.md`](./docs/DECISIONS.md) records why
-things are the way they are. [`docs/plans/wave-1.md`](./docs/plans/wave-1.md)
-tracks execution.
+truth for intent. [`docs/DECISIONS.md`](./docs/DECISIONS.md) records why things
+are the way they are, D-001 through D-015.
+[`docs/plans/wave-1.md`](./docs/plans/wave-1.md) tracks execution and holds the
+Preview runbook. [`docs/PRIVACY.md`](./docs/PRIVACY.md) and
+[`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) are the deep versions of §3 and
+§6 here.
 
 ---
 
@@ -21,8 +23,8 @@ tracks execution.
 A private invoicing and settlement protocol on the Midnight blockchain.
 
 One party issues an invoice, another settles it on-chain. What reaches the
-public ledger is only a **commitment** — a hash of the amount, memo and a
-random salt — plus a status flag. The amount, the memo and both parties'
+public ledger is only a **commitment** — a hash of the amount, memo and a random
+salt — plus a status flag and an expiry. The amount, the memo and both parties'
 identities stay in private state on their own devices and are never published.
 
 The protocol knows two roles and nothing about who fills them: freelancers,
@@ -39,27 +41,35 @@ anonymous one gives the second and makes the first impossible.
 
 ## 2. Status at a glance
 
-Wave 1 scope is PRD §14.1. Seven of ten items are complete and independently
-verified. Everything still outstanding is waiting on one thing: a funded wallet.
+Wave 1 scope is PRD §14.1.
 
-| #   | Scope item                                   | Status                                                                        |
-| --- | -------------------------------------------- | ----------------------------------------------------------------------------- |
-| 1   | Contract with 4 circuits, Variant A escrow   | **Done**                                                                      |
-| 2   | Unit tests U-01…U-17                         | **Done** (plus U-17b)                                                         |
-| 3   | Integration test on local devnet             | **Done**                                                                      |
-| 4   | `packages/api`                               | **Done** — browser providers are real, not stubs                              |
-| 5   | `packages/cli`                               | **Done**                                                                      |
-| 6   | `packages/ui` — six routes, works on Preview | **Built and wired** — seven routes shipped; not yet run against a real wallet |
-| 7   | Deployed to Preview, address committed       | **Not started** — blocked on wallet funding                                   |
-| 8   | README, PRIVACY, ARCHITECTURE, deck, video   | **Partial** — docs done; deck and video outstanding                           |
-| 9   | Repo topics, Apache-2.0, repo public         | **Partial** — topics set, licensed; **still private**                         |
-| 10  | Judge sandbox (`demo seed`)                  | **Done**                                                                      |
+| #   | Scope item                                   | Status                                                                 |
+| --- | -------------------------------------------- | ---------------------------------------------------------------------- |
+| 1   | Contract with 4 circuits, Variant A escrow   | **Done**                                                               |
+| 2   | Unit tests U-01…U-17                         | **Done** (plus U-17b)                                                  |
+| 3   | Integration test on local devnet             | **Done**                                                               |
+| 4   | `packages/api`                               | **Done** — browser providers are real, not stubs                       |
+| 5   | `packages/cli`                               | **Done**                                                               |
+| 6   | `packages/ui` — six routes, works on Preview | **Read path done and proven; write path built but never met a wallet** |
+| 7   | Deployed to Preview, address committed       | **Not started** — blocked on wallet funding                            |
+| 8   | README, PRIVACY, ARCHITECTURE, deck, video   | **Docs and deck done; video outstanding**                              |
+| 9   | Repo topics, Apache-2.0, repo public         | **Topics set, Apache-2.0 licensed; still private**                     |
+| 10  | Judge sandbox (`demo seed`)                  | **Done**                                                               |
 
-**The most important caveat:** item 6 no longer runs only on mock data — the
-chain-backed adapter is built, wired and reachable from `/settings`. But it has
-never talked to a real wallet extension, because that needs a funded wallet and
-a deployed contract. Everything up to that point is verified; that last step is
-not, and this document will not claim it is.
+Six items are complete outright (1, 2, 3, 4, 5, 10). Item 6 is complete except
+for one step nothing can substitute for. Items 7, 8 and 9 have exactly one
+piece left each — a deployment, a video, and a visibility flip.
+
+**Everything outstanding is gated on one thing: two funded Preview wallets.**
+
+### The one caveat that matters
+
+§3.6 states it precisely, but in short: the UI is no longer a mock. The
+chain-backed adapter is built, wired, and its **read** path is proven against a
+real chain in a real browser. Its **write** path — signing and submitting
+through a wallet extension — has never been executed by anything, because that
+needs a funded wallet and a deployed contract. This document will not claim
+otherwise, and neither should the deck or the video.
 
 ---
 
@@ -70,27 +80,28 @@ not, and this document will not claim it is.
 Four exported circuits, compiled by compact 0.31.1 against
 `@midnight-ntwrk/compact-runtime` 0.16.0.
 
-| Circuit         | Asserts                                                             | Ever made public                          |
-| --------------- | ------------------------------------------------------------------- | ----------------------------------------- |
-| `createInvoice` | id unused, amount > 0                                               | invoice id, owner tag, expiry, commitment |
-| `payInvoice`    | OPEN, unexpired, commitment matches preimage, coin colour and value | payer tag, status, escrowed coin          |
-| `withdraw`      | PAID, caller's secret derives the stored owner tag                  | status                                    |
-| `cancelInvoice` | OPEN, caller's secret derives the stored owner tag                  | status                                    |
+| Circuit         | Asserts                                                             | `disclose()`d                           |
+| --------------- | ------------------------------------------------------------------- | --------------------------------------- |
+| `createInvoice` | id unused, amount > 0                                               | invoice id, owner tag, expiry (3 calls) |
+| `payInvoice`    | OPEN, unexpired, commitment matches preimage, coin colour and value | payer tag, status, escrowed coin (4)    |
+| `withdraw`      | PAID, caller's secret derives the stored owner tag                  | status (1)                              |
+| `cancelInvoice` | OPEN, caller's secret derives the stored owner tag                  | status (1)                              |
 
 Two design points that are easy to get wrong and worth understanding before
 changing anything:
 
 - **Ownership is proven from the witness secret, never from `ownPublicKey()`.**
   That value is supplied by the prover, so it can name a recipient but cannot
-  authorise anything.
+  authorise anything. Getting this backwards is the bug that lets anyone
+  withdraw anyone's money.
 - **Tags hash a secret-derived public key, never the secret.** `persistentHash`
   is not hiding, so hashing a secret directly would leak it. `persistentCommit`
   _is_ hiding, which is why the invoice commitment can be stored without
-  `disclose()`.
+  `disclose()` — that absence is the design working.
 
 Escrow is **Variant A**: the contract holds the paid coin between `payInvoice`
-and `withdraw`, because sending to a key other than the transaction creator
-does not notify that user's wallet. Its cost is documented in §6 below.
+and `withdraw`, because sending to a key other than the transaction creator does
+not notify that user's wallet. Its cost is documented in §6.
 
 Witness implementations: `contracts/src/witnesses.ts`.
 
@@ -104,19 +115,43 @@ server all go through it, so there is one audited path to the chain.
 | `src/link.ts`              | invoice-link codec for the URL-fragment payload, strictly validated — this parses attacker-controlled input         |
 | `src/state.ts`             | merchant and payer private-state records                                                                            |
 | `src/api.ts`               | deploy/reconnect, circuit calls, ledger reads, status observables                                                   |
+| `src/observer.ts`          | the **read-only** surface — status reads and the live status observable, needing only a `publicDataProvider`        |
 | `src/errors.ts`            | error mapping — circuit assertion strings surface verbatim; wallet and proof-server failures become actionable text |
 | `src/providers/node.ts`    | the six-provider Node wiring (CLI, tests)                                                                           |
 | `src/providers/browser.ts` | the browser six-provider wiring — a real DApp Connector adapter plus the three-tier proof provider (D-013)          |
+| `src/providers/public.ts`  | the single provider a public read needs; deliberately imports no private-state store (D-015)                        |
+
+Four entry points, and the split between them is load-bearing rather than tidy:
+
+```
+@tacitpay/api           the library
+@tacitpay/api/node      Node providers   — CLI, integration tests
+@tacitpay/api/browser   browser providers — wallet, proving, private state
+@tacitpay/api/public    one provider      — public reads, no wallet, no LevelDB
+```
+
+`/browser` imports `levelPrivateStateProvider`, which pulls LevelDB and Node's
+`events` with it. Importing that to read a public status does not merely bloat a
+bundle — in a browser it fails outright. A page that must work without a wallet
+must not have a wallet's dependencies in its graph, and a separate entry point
+is what makes that impossible to regress by accident (D-015).
 
 ### 3.3 The command-line tool — `packages/cli`
 
 Deploy, full invoice lifecycle, `wallet dust-status`, `wallet fund-local`, and
-the judge sandbox. Seeds come from `.env.<network>` and are never printed.
-Commands needing the chain fail with _"Run yarn env:up, then retry"_ rather
-than a connection stack trace.
+the judge sandbox. Seeds come from `TACITPAY_SEED` or `.env.<network>` and are
+never printed. Commands needing the chain fail with _"Run yarn env:up, then
+retry"_ rather than a connection stack trace.
+
+```
+tacitpay deploy --network local|preview --token NIGHT|USDM|<hex>
+tacitpay invoice create|pay|withdraw|cancel|status
+tacitpay wallet dust-status|fund-local
+tacitpay demo seed [--reset]
+```
 
 `src/local.ts` holds the sandbox and funding logic; `src/main.ts` the command
-dispatch.
+dispatch; `src/config.ts` the network and seed loading.
 
 ### 3.4 The web app — `packages/ui`
 
@@ -133,23 +168,44 @@ claim denies.
 | `/pay`               | decodes the link fragment, pays                   |
 | `/receipts`          | payer's receipts                                  |
 | `/verify/:invoiceId` | public status page, no wallet needed              |
-| `/settings`          | network, proving mode, proof-server health        |
+| `/settings`          | network, proving mode, contract connection        |
 
-**It runs on `src/lib/api/mock.ts` until it is pointed at a contract.** With a
-contract address, a wallet and a prover all present, `/settings` unlocks the
-chain-backed adapter in `src/lib/api/real.ts`, which is then installed through
-the single swap point in `src/lib/api/index.tsx`. Precedence is explicit
-injection, then live, then mock.
+Plus a 404. Seven routes shipped where §14.1 asked for six — `/` was split out
+so the marketing page carries no app chrome.
 
-The chain code is behind a dynamic import, so a visitor to the marketing page
+**How it decides what to talk to** (`src/lib/api/`):
+
+| File            | Role                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| `index.tsx`     | the swap point — explicit injection, then a live API, then the mock                              |
+| `mock.ts`       | in-memory adapter; what runs until a contract address is configured                              |
+| `real.ts`       | the chain-backed adapter over `@tacitpay/api`                                                    |
+| `live.tsx`      | builds the observer and, on unlock, the full API; tears both down when a prerequisite disappears |
+| `deployment.ts` | which contract to talk to, and the endpoint table                                                |
+
+Two paths, with different requirements, which is the important part:
+
+- **Public reads need only a contract address.** `/verify/<id>` builds an
+  observer from `@tacitpay/api/public` as soon as one is configured — no wallet,
+  no prover, no passphrase. That is what a public verification page has to mean.
+- **Everything else needs a wallet, a prover and a passphrase**, and is unlocked
+  deliberately from `/settings` → Contract connection. Nothing is attempted
+  automatically: connecting reads private state and costs a wallet prompt.
+
+A contract address comes from `VITE_TACITPAY_CONTRACT_{PREVIEW,LOCAL}` at build
+time, or from a value pasted into Settings and stored per network — a stored one
+wins, so a judge can point the app at their own local deployment.
+
+The chain code sits behind a dynamic import, so a visitor to the marketing page
 never downloads it: the entry chunk is **23.1 kB** and the Midnight stack is a
-separate **866 kB** chunk fetched only on connect.
+separate **866 kB** chunk plus ~11.5 MB of WASM, fetched only when a page
+actually reads the chain.
 
-Two things the adapter has to reconcile, both documented in D-013 and D-014:
-the library binds one instance to one role, so `real.ts` runs a merchant and a
-payer instance and dispatches each method to the one that owns it; and the
-five proof stages in the UI are reported by wrapping the three providers that
-actually perform them, rather than by guessing at timings.
+Two things `real.ts` has to reconcile (D-013, D-014): the library binds one
+instance to one role, so it runs a merchant and a payer instance and dispatches
+each method to the one that owns it; and the five proof stages are reported by
+wrapping the three providers that actually perform them, rather than by guessing
+at timings.
 
 Wallet discovery (`src/lib/wallet.ts`) scans `window.midnight` and matches on
 `rdns` or name — no hardcoded wallet keys — and treats every injected value as
@@ -157,12 +213,12 @@ untrusted.
 
 ### 3.5 Proving — the part users feel
 
-Generating a proof requires the private invoice data, so whoever proves it
-sees it. **TacitPay therefore never operates a prover.** `src/lib/proving.ts`
-resolves three tiers, in trust order:
+Generating a proof requires the private invoice data, so whoever proves it sees
+it. **TacitPay therefore never operates a prover.** `src/lib/proving.ts` resolves
+three tiers, in trust order:
 
-1. **In the wallet.** 1AM proves in-browser via WASM — no Docker, nothing
-   leaves the tab. This is the seamless path.
+1. **In the wallet.** 1AM proves in-browser via WASM — no Docker, nothing leaves
+   the tab. This is the seamless path.
 2. **A local proof server** on `localhost:6300`. Lace requires this today.
 3. **A prover the user hosts** themselves, over TLS. Settings only.
 
@@ -170,39 +226,77 @@ Capability is detected at runtime (`typeof api.getProvingProvider === 'function'
 and never inferred from which wallet is connected, because wallet capabilities
 are changing underneath us. The active tier is shown in the app header.
 
+### 3.6 What has actually been executed, and what has not
+
+The distinction this whole document turns on.
+
+| Path                                               | Run against a real chain?                                       |
+| -------------------------------------------------- | --------------------------------------------------------------- |
+| Contract circuits, all four                        | **Yes** — pure-JS runtime, 20 offline tests                     |
+| Full lifecycle via Node + CLI                      | **Yes** — live devnet, real proofs, two wallets, balance checks |
+| Judge sandbox (`demo seed`)                        | **Yes** — deploys and seeds three invoices                      |
+| Browser **read** — `/verify/<id>`                  | **Yes** — real contract, cold load, dev _and_ production builds |
+| Browser **write** — connect, create, pay, withdraw | **No.** Built and unit-tested; no wallet extension has run it   |
+
+Getting the browser read path working surfaced three defects that every offline
+check had passed — see D-015. They are worth knowing because they are the class
+of thing a green build cannot show you:
+
+1. **The Midnight WASM never initialised under Vite.** The bundle built, both
+   `.wasm` files were emitted, lint and typecheck and all tests passed, and the
+   first chain read threw `Cannot access '__wbindgen_start' before initialization`.
+   Fixed with `vite-plugin-wasm`.
+2. **The wallet-free page dragged LevelDB in** and died with
+   `Class extends value undefined`. Fixed by the `/public` entry point in §3.2.
+3. **A stale response overwrote a newer one.** The mock waits 360 ms by design;
+   the observer answered faster, so the mock's reply landed second and won. The
+   page reported "unknown invoice" for an invoice that plainly existed, then was
+   correct after any navigation. Fixed with a cancellation guard.
+
 ---
 
 ## 4. Tests
 
 ```
-contracts        20 passed | 10 todo      offline, ~0.5s
-packages/api     66 passed |  1 todo      offline, ~2s
-packages/api     67 passed               against a live devnet, ~2min
+contracts        20 passed | 10 todo               offline, ~0.5s
+packages/api     66 passed |  1 todo |  4 skipped  offline, ~2s
+packages/api     67 passed                         against a live devnet, ~2min
 ```
 
-The todos are the pre-registered Wave 2/3 rows, kept visible so progress shows
-in every run.
+The todos are pre-registered Wave 2/3 rows, kept visible so progress shows in
+every run. The 4 skipped are the two integration files, which skip themselves
+unless `TACITPAY_INT=1` and (for the observer) a seeded sandbox exists.
 
-**Nothing was deferred to the integration layer.** The coin-handling circuits
-run in the pure-JS runtime, so a judge can verify the contract with no Docker,
-no wallet and no network.
+**Nothing was deferred to the integration layer.** The coin-handling circuits run
+in the pure-JS runtime, so a judge can verify the contract with no Docker, no
+wallet and no network.
 
-Two tests carry more weight than the rest:
+Four tests carry more weight than the rest:
 
 - **U-17** (`contracts/src/test/tacitpay.test.ts`) runs a full lifecycle, then
   serialises the public ledger and asserts the amount is absent in four
-  encodings, along with the memo hash, the salt and both secrets.
-- **The integration test** (`packages/api/test/lifecycle.int.test.ts`) asserts
-  the merchant's shielded balance **increases** after withdrawal. A status
-  flipping to `WITHDRAWN` only proves state changed; the balance proves value
-  moved. It repeats the privacy sweep against live indexer data using both
-  parties' real secret keys.
+  encodings — along with the memo, the memo hash, the salt, both root secrets
+  and **both parties' Zswap coin public keys**. That last group was added after
+  an audit of `docs/PRIVACY.md` found INV-3 had no test and was holding by
+  construction only.
+- **U-17b** pins the Variant A exposure window, so the escrow leak stays a
+  tested limitation rather than an assumption.
+- **`lifecycle.int.test.ts`** asserts the merchant's shielded balance
+  **increases** after withdrawal. A status flipping to `WITHDRAWN` only proves
+  state changed; the balance proves value moved. It repeats the privacy sweep
+  against live indexer data using both parties' real secret keys.
+- **`observer.int.test.ts`** reads the three seeded sandbox invoices off a live
+  chain with **no wallet constructed, no seed read, no proof server contacted
+  and no private state opened**. The absence is the point: if any of those ever
+  became necessary, the test would stop compiling.
 
 Run them:
 
 ```bash
-yarn test                                              # offline, everything
-TACITPAY_INT=1 yarn workspace @tacitpay/api run test   # live devnet
+yarn test                                                # offline, everything
+yarn env:up && yarn demo:seed                            # a real chain to test against
+TACITPAY_INT=1 yarn workspace @tacitpay/api run test     # live devnet, full
+TACITPAY_INT=1 yarn workspace @tacitpay/api run test:int # live devnet, just the two
 ```
 
 ---
@@ -216,7 +310,7 @@ yarn workspace @tacitpay/ui run dev          # http://localhost:5173
 git clone https://github.com/midnightntwrk/midnight-local-dev.git ../midnight-local-dev
 yarn env:up        # node :9944 · indexer :8088 · proof server :6300
 yarn env:status    # container state plus live endpoint probes
-yarn demo:seed     # judge sandbox
+yarn demo:seed     # judge sandbox — prints a contract address and three invoice ids
 yarn env:down
 ```
 
@@ -232,6 +326,16 @@ Verified versions (see D-011; **never pin these from memory**):
 | onchain-runtime-v3 | 3.0.0                                                      | pinned by a yarn `resolutions` entry — see D-012                                      |
 | Devnet images      | node 1.0.0 · indexer-standalone 4.3.3 · proof-server 8.1.0 |                                                                                       |
 
+**Two Vite settings are load-bearing and must not be removed** (D-015):
+`vite-plugin-wasm`, without which the Midnight WASM never initialises at runtime
+however cleanly it builds; and `build.target: 'esnext'`, because wasm-bindgen's
+output uses top-level await. Do **not** add `vite-plugin-top-level-await` — it
+requires Rollup and Vite 8 bundles with Rolldown, so it breaks the config.
+
+The prover keys and ZKIR live in `contracts/managed/`, which is gitignored build
+output. `yarn compile` must run before any UI build, or proving has nothing to
+work with; the Vite plugin serves them in dev and copies them into `dist/`.
+
 ---
 
 ## 6. Known limitations — state these openly
@@ -239,99 +343,121 @@ Verified versions (see D-011; **never pin these from memory**):
 - **Variant A escrow leaks more than value.** While the contract holds a coin,
   its `QualifiedShieldedCoinInfo` is public — including the **nonce**. After a
   withdrawal, an observer who guesses the merchant's Zswap key can confirm it
-  against the recomputed coin commitment, linking that merchant's withdrawals
-  in transaction history. Withdrawing does not undo this. Variant B (Wave 2)
-  closes it; test **U-17b** pins the current behaviour so any widening fails.
-- **Invoice ids are an unauthenticated first-come namespace.** Someone holding
-  a link payload could create the invoice first under their own secret. Bounded
-  — the merchant's client sees the failed transaction — but deriving ids
+  against the recomputed coin commitment, linking that merchant's withdrawals in
+  transaction history. Withdrawing does not undo this. Variant B (Wave 2) closes
+  it; test **U-17b** pins the current behaviour so any widening fails.
+- **The browser write path has never met a real wallet extension.** Every
+  provider is built against the shipped `dapp-connector-api@4.0.1` type
+  definitions and unit tested, but nothing has signed or submitted through a
+  wallet. The wire format is _not_ part of that uncertainty — the hex encoding
+  and the transaction markers were verified against midnight-js's own
+  `DAppConnectorWalletAdapter`, the receiving side of the same interface
+  (D-013). What remains untested is the extension itself.
+- **Invoice ids are an unauthenticated first-come namespace.** Someone holding a
+  link payload could create the invoice first under their own secret. Bounded —
+  the merchant's client sees the failed transaction — but deriving ids
   in-circuit is a Wave 2 candidate.
 - **Escrowed funds have no exit without the merchant** until Wave 2 refunds.
   Keep Wave 1 on testnet.
 - **Payment timing is correlatable.** An observer learns "some invoice was paid
   at time T", never the amount or the parties.
-- **The browser _write_ path has never met a real wallet extension.** Every
-  provider is built against the shipped `dapp-connector-api@4.0.1` type
-  definitions and unit tested, but no browser wallet has signed or submitted
-  anything. The wire format is not part of that uncertainty: the hex encoding
-  and the transaction markers were verified against midnight-js's own
-  `DAppConnectorWalletAdapter`, the receiving side of the same interface
-  (D-013). What remains untested is the extension itself.
-
-  The browser _read_ path, by contrast, is now proven: `/verify/<id>` reads a
-  real contract on a real chain, in a browser, on a cold load, in both the dev
-  server and the production build (D-015). Getting there surfaced three defects
-  that every offline check had passed — uninitialised WASM, LevelDB dragged into
-  a wallet-free page, and a stale response overwriting a newer one.
-
 - **A forgotten private-state passphrase loses invoice bodies.** The chain still
   proves an invoice existed and was settled; the amount, memo and salt are gone.
   Export/import is the Wave 2 mitigation (D-014).
+
+Full who-sees-what table, and every invariant mapped to the test that enforces
+it, in [`docs/PRIVACY.md`](./docs/PRIVACY.md).
 
 ---
 
 ## 7. Decisions worth knowing
 
-Full text in [`docs/DECISIONS.md`](./docs/DECISIONS.md).
+Full text in [`docs/DECISIONS.md`](./docs/DECISIONS.md), D-001 through D-015.
 
-| ID    | Decision                                                                                                                 |
-| ----- | ------------------------------------------------------------------------------------------------------------------------ |
-| D-003 | Repo is private during development — **must be public before Sep 16**                                                    |
-| D-008 | No CI, by owner decision; the same gates run locally before every push                                                   |
-| D-010 | Three-tier feature-detected proving; both Lace and 1AM; Docker optional. A TacitPay-hosted prover is explicitly rejected |
-| D-011 | Midnight.js pinned at 4.1.1; wallet SDK from the un-hyphenated scope                                                     |
-| D-012 | `onchain-runtime-v3` pinned to a single instance via `resolutions`                                                       |
+| ID    | Decision                                                                                                                        |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------- |
+| D-003 | Repo is private during development — **must be public before Sep 16**                                                           |
+| D-008 | No CI, by owner decision; the same gates run locally before every push                                                          |
+| D-010 | Three-tier feature-detected proving; both Lace and 1AM; Docker optional. A TacitPay-hosted prover is explicitly rejected        |
+| D-011 | Midnight.js pinned at 4.1.1; wallet SDK from the un-hyphenated scope                                                            |
+| D-012 | `onchain-runtime-v3` pinned to a single instance via `resolutions`                                                              |
+| D-013 | Browser slots adapt the DApp Connector; hex wire format; tx id derived as `identifiers().at(-1)`; connector scope IS hyphenated |
+| D-014 | Private state encrypted with a typed passphrase, not a wallet signature — a forgotten passphrase loses invoice bodies           |
+| D-015 | Public reads are a separate wallet-free entry point; Vite needs `vite-plugin-wasm` or the WASM never initialises                |
 
-**D-012 is worth reading before debugging anything odd.** Two copies of a
-WASM-backed module in one process fail `instanceof` against each other, and
-the symptom is a misleading `expected instance of StateValue` — nothing is
-wrong with the state.
+**Three of these will save someone a day each.** D-012: two copies of a
+WASM-backed module in one process fail `instanceof` against each other, and the
+symptom is a misleading `expected instance of StateValue` — nothing is wrong
+with the state. D-013: the connector's package scope is the opposite of the
+wallet SDK's, so applying D-011 by analogy installs a canary. D-015: a green
+build proves nothing about whether WASM initialises.
 
 ---
 
 ## 8. What is left
 
-**Blocked on the owner — start these first, they gate everything on-chain:**
+The full step-by-step sequence, with the reasoning behind the ordering, is the
+**Preview runbook** in [`docs/plans/wave-1.md`](./docs/plans/wave-1.md). In
+summary:
+
+**Owner actions — start (1) first, it gates everything else:**
 
 1. **Fund the two Lace Preview wallets and register for DUST.** ~12-hour lead
-   time. The Preview deployment, the end-to-end run and the video all wait on it.
+   time. The deployment, the end-to-end run and the video all wait on it.
 2. **Flip the repository public** before the Sep 16 submission (D-003).
+3. **Record the 3–5 minute video.**
+   [`docs/DEMO-SCRIPT.md`](./docs/DEMO-SCRIPT.md) is the shot list and the
+   pre-recording checklist.
 
-**Engineering — all of it now needs a funded wallet:**
+**Engineering, all of it gated on (1):**
 
-3. Deploy to Preview; commit `deployments/preview.json`.
-4. End-to-end run with a real wallet on Preview. This also closes the Day-3
-   VERIFY on whether the shipping Lace build implements `getProvingProvider`
-   (its bug was closed 2026-08-07 while the docs still say it does not) — then
-   update D-010.
-5. Rebuild the UI with `VITE_TACITPAY_CONTRACT_PREVIEW=<address>` so the
-   deployed contract is baked in rather than pasted into Settings.
-
-**Submission materials:**
-
-6. Deck (≤12 slides) and the 3–5 minute video.
-   [`docs/DEMO-SCRIPT.md`](./docs/DEMO-SCRIPT.md) is the shot list.
-7. Host the UI publicly. [`vercel.json`](./vercel.json) has the build command,
+4. Check `wallet dust-status` before deploying — holding NIGHT is not the same
+   as being able to transact, and finding out at deploy time wastes the lead.
+5. Deploy to Preview; commit `deployments/preview.json`; put the address in the
+   README badge and on deck slide 8.
+6. Run the lifecycle through the **CLI first**, so a failure is attributable to
+   the chain rather than to a wallet extension.
+7. Rebuild the UI with `VITE_TACITPAY_CONTRACT_PREVIEW=<address>`, then run the
+   full loop through a real wallet extension. This is the one genuinely untested
+   path. If it fails, the likeliest single culprit is the transaction encoding,
+   isolated in one pair of functions in `packages/api/src/providers/browser.ts`
+   (D-013). This step also closes the Day-3 VERIFY on whether the shipping Lace
+   build implements `getProvingProvider` — update D-010 with the answer.
+8. Host the UI publicly. [`vercel.json`](./vercel.json) has the build command,
    the SPA rewrite that keeps `/verify/<id>` alive through a refresh, and the
-   security headers. Run `yarn compile` first — the deploy copies the prover
-   keys out of `contracts/managed/`, which is gitignored build output.
+   security headers. Run `yarn compile` first.
 
-**Done since this document was first written:** the UI is connected to
-`@tacitpay/api`; the browser providers are real; fonts are self-hosted, so the
-app now makes no automatic third-party request at all; the marketing page is
-code-split away from the app (525 kB → 23.1 kB entry); `docs/PRIVACY.md`,
-`docs/ARCHITECTURE.md`, `docs/WAVE-CHANGELOG.md` and `docs/DEMO-SCRIPT.md` are
-written.
+**Already done** and needing nothing further: the contract and its tests, the
+library, the CLI, the judge sandbox, the UI including its live read path, all
+four documentation files, the twelve-slide deck at
+[`docs/deck/index.html`](./docs/deck/index.html), self-hosted fonts, the
+code-split bundle, and the Vercel configuration.
 
 ---
 
 ## 9. Verifying this document
 
+Nothing here should be taken on trust. Every number above came from running
+these, and they should be re-run rather than believed.
+
 ```bash
-yarn compile && yarn lint && yarn typecheck && yarn test   # the full local gate
-grep -c "^export circuit" contracts/tacitpay.compact       # 4
-yarn env:status                                            # devnet health, if up
+yarn compile && yarn lint && yarn typecheck && yarn format && yarn test  # the full local gate
+grep -c "^export circuit" contracts/tacitpay.compact                     # 4
+grep -c 'path="' packages/ui/src/App.tsx                                 # 8 — 7 routes + 404
+grep -oE '^- \*\*D-0[0-9]{2}' docs/DECISIONS.md | wc -l                  # 15
+node -e "console.log(Object.keys(require('./packages/api/package.json').exports))"
+yarn env:status                                                          # devnet health, if up
 ```
 
-Nothing here should be taken on trust. Every number above came from running
-these commands, and they should be re-run rather than believed.
+To check the claim in §3.6 that the browser read path works — the one that
+distinguishes this from a mock — start a devnet, seed it, and open the app
+against the address it prints:
+
+```bash
+yarn env:up && yarn demo:seed
+VITE_TACITPAY_CONTRACT_LOCAL=<printed address> yarn workspace @tacitpay/ui run dev
+# then open /verify/<any printed invoice id>, switch the network selector to Local
+```
+
+The three seeded invoices should read OPEN, PAID and WITHDRAWN, with no wallet
+installed and nothing signed.
