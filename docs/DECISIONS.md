@@ -213,3 +213,42 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     bodies. The chain still proves an invoice existed and was settled; the
     amount, memo and salt are gone. Private-state export/import (PRD §9,
     `PrivateStateExport`) is the mitigation and is Wave 2.
+
+- **D-015 (2026-08-24) — the public read path is a separate entry point with no
+  wallet, no private state and no LevelDB in its dependency graph, and the Vite
+  build needs an explicit WASM plugin.**
+  Both halves were found by actually running the app against a live devnet in a
+  browser. Neither was visible from a green build.
+  - **`/verify/<id>` must work for someone who has never installed a wallet.**
+    That is the whole point of a public verification page — a third party
+    confirms settlement without being a participant. Reading a status needs only
+    `publicDataProvider`, so `packages/api/src/observer.ts` holds that logic and
+    `TacitPayApi` delegates to it rather than duplicating it.
+  - **The separation is enforced by a separate export, `@tacitpay/api/public`,
+    because a shared import silently broke it.** `providers/browser.ts` imports
+    `levelPrivateStateProvider` at module scope, which pulls LevelDB and Node's
+    `events` with it. Importing that entry to read a public status did not merely
+    bloat the bundle — in a browser it threw
+    `Class extends value undefined is not a constructor or null`, because Vite
+    externalises `events` and the Level classes extend `EventEmitter`. A page
+    that must work without a wallet must not have a wallet's dependencies in its
+    graph, and only a separate entry point makes that impossible to regress.
+  - **`vite-plugin-wasm` is mandatory, and its absence is invisible until
+    runtime.** The Midnight runtime and ledger ship wasm-bindgen's bundler
+    target, whose entry is
+    `import * as wasm from "./…_bg.wasm"; wasm.__wbindgen_start()` — WebAssembly
+    ESM integration, which Vite does not implement. Without the plugin the
+    bundle builds, both `.wasm` files are emitted, lint and typecheck and every
+    test pass, and the first chain read throws
+    `Cannot access '__wbindgen_start' before initialization`. Treat a green
+    build as evidence of nothing where WASM is concerned.
+  - **`vite-plugin-top-level-await` must NOT be added alongside it**, which is
+    the advice most guides give. It requires Rollup; Vite 8 bundles with
+    Rolldown, so installing it fails the config outright with
+    `Cannot find module 'rollup'`. It exists for targets without native
+    top-level await, so `build.target` is pinned to `esnext` instead — lowering
+    that target silently reintroduces the wasm-bindgen failure.
+  - **Verified, not assumed:** the three seeded sandbox invoices read OPEN, PAID
+    and WITHDRAWN from a real chain in a browser, on a cold load, in both the
+    dev server and the production build, with no wallet extension involved.
+    `packages/api/test/observer.int.test.ts` pins the same path headlessly.
