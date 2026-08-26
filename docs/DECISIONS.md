@@ -641,3 +641,17 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     (splash-era 08-24/25 entries vs the payments D-020 above). References
     elsewhere use the payments meaning; renumbering history would break
     them, so the collision stays documented here instead.
+
+- **D-023 (2026-08-27) — The passphrase never touches browser storage.** The
+  refresh-survival work initially kept the private-state passphrase in
+  sessionStorage so a reload could restore the whole live session. Automated
+  security review flagged it and the flag is correct: browsers persist
+  sessionStorage to disk for tab restore, so the plaintext key to a privacy
+  product's private records would land exactly where it must not. Decision:
+  the WALLET identity may persist (it is just an extension name, and Lace
+  re-authorizes silently), so a reload reconnects the wallet on its own — but
+  the passphrase lives in memory only, and unlocking private state always
+  costs one fresh prompt. The reload dance shrinks from three steps to one,
+  deliberately not zero. A sealed-token unlock (WebCrypto non-extractable key
+  guarding an encrypted session token, per the reviewer's suggestion) is the
+  Wave 2 way to remove the last step without storing a secret.
