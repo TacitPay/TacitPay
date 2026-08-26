@@ -5,5 +5,6 @@ export * from './constants.js';
 export * from './crypto.js';
 export * from './errors.js';
 export * from './link.js';
+export * from './observer.js';
 export * from './state.js';
 export * from './types.js';

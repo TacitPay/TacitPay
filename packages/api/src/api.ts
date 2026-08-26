@@ -11,7 +11,7 @@ import {
   ledger,
   type Witnesses as GeneratedWitnesses,
 } from '@tacitpay/contracts/managed/tacitpay/contract';
-import { catchError, map, throwError, type Observable } from 'rxjs';
+import type { Observable } from 'rxjs';
 
 import {
   bytes32FromHex,
@@ -26,6 +26,7 @@ import { MAX_UINT64 } from './constants.js';
 import { memoHash } from './crypto.js';
 import { toTacitPayError } from './errors.js';
 import { decodeLink, encodeLink } from './link.js';
+import { observeInvoiceStatus, queryPublicLedger, readInvoiceStatus } from './observer.js';
 import {
   createMerchantPrivateState,
   createPayerPrivateState,
@@ -218,16 +219,8 @@ class TacitPayApiImplementation implements TacitPayApi {
     if (this.role !== role) throw new Error(`This operation requires the ${role} role`);
   }
 
-  private async queryLedger() {
-    try {
-      const state = await this.providers.publicDataProvider.queryContractState(
-        this.contractAddress,
-      );
-      if (state === null) throw new Error(`No TacitPay contract found at ${this.contractAddress}`);
-      return ledger(state.data);
-    } catch (error) {
-      throw toTacitPayError(error);
-    }
+  private queryLedger() {
+    return queryPublicLedger(this.providers, this.contractAddress);
   }
 
   private async merchantState(): Promise<MerchantPrivateState> {
@@ -449,36 +442,17 @@ class TacitPayApiImplementation implements TacitPayApi {
     });
   }
 
-  async getInvoiceStatus(invoiceId: string): Promise<{
+  // Public reads need no wallet, so they share the observer's implementation.
+  getInvoiceStatus(invoiceId: string): Promise<{
     readonly status: InvoiceStatus;
     readonly expiresAt: number;
     readonly exists: boolean;
   }> {
-    const id = bytes32FromHex(parseHexBytes32(invoiceId, 'invoiceId'), 'invoiceId');
-    const publicLedger = await this.queryLedger();
-    if (!publicLedger.invoices.member(id)) {
-      return { status: InvoiceStatus.OPEN, expiresAt: 0, exists: false };
-    }
-    const record = publicLedger.invoices.lookup(id);
-    return { status: record.status, expiresAt: expiryAsNumber(record.expiresAt), exists: true };
+    return readInvoiceStatus(this.providers, this.contractAddress, invoiceId);
   }
 
   watchInvoice(invoiceId: string): Observable<InvoiceStatus> {
-    const id = bytes32FromHex(parseHexBytes32(invoiceId, 'invoiceId'), 'invoiceId');
-    try {
-      return this.providers.publicDataProvider
-        .contractStateObservable(this.contractAddress, { type: 'latest' })
-        .pipe(
-          map((state) => {
-            const publicLedger = ledger(state.data);
-            if (!publicLedger.invoices.member(id)) throw new Error('Unknown invoice');
-            return publicLedger.invoices.lookup(id).status;
-          }),
-          catchError((error: unknown) => throwError(() => toTacitPayError(error))),
-        );
-    } catch (error) {
-      return throwError(() => toTacitPayError(error));
-    }
+    return observeInvoiceStatus(this.providers, this.contractAddress, invoiceId);
   }
 }
 
