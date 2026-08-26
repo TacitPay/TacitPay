@@ -1,16 +1,16 @@
 import { Component, type ErrorInfo, lazy, type ReactNode, useEffect } from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { AppLayout } from '@/components/AppLayout';
 import { AppShell } from '@/components/AppShell';
 import { ErrorState } from '@/components/DataStates';
 import { Button } from '@/components/ui/button';
 import { getSmoothScroll } from '@/lib/smoothScroll';
-import { HomePage } from '@/pages/HomePage';
 
 // The marketing page at / is the one a stranger hits first, and it needs none of
 // the chain machinery. Everything behind it is split into its own chunk so that
 // first visit does not pay for the wallet, ledger and proving code.
+const HomePage = lazy(async () => ({ default: (await import('@/pages/HomePage')).HomePage }));
 const AppHomePage = lazy(async () => ({
   default: (await import('@/pages/AppHomePage')).AppHomePage,
 }));
@@ -97,6 +97,9 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryS
   }
 }
 
+const ON_APP_HOST =
+  typeof window !== 'undefined' && window.location.hostname === 'app.tacitpay.xyz';
+
 // SPA clicks never touch the server, so vercel.json's host redirects cannot
 // catch them: any app route rendering on the marketing apex hops itself to
 // app.tacitpay.xyz, fragment and query intact. Every other host is untouched.
@@ -119,12 +122,20 @@ export function App() {
       <ScrollManager />
       <ApexHostGuard />
       <Routes>
-        {/* Public marketing surface — no wallet, no app chrome. */}
-        <Route path="/" element={<HomePage />} />
+        {/* app.tacitpay.xyz owns the root outright; every other host serves the
+            marketing surface there and keeps the app under /app. */}
+        {ON_APP_HOST ? null : <Route path="/" element={<HomePage />} />}
 
         {/* The app proper. `/app` is the door "Get started" opens. */}
         <Route element={<AppLayout />}>
-          <Route path="/app" element={<AppHomePage />} />
+          {ON_APP_HOST ? (
+            <>
+              <Route path="/" element={<AppHomePage />} />
+              <Route path="/app" element={<Navigate to="/" replace />} />
+            </>
+          ) : (
+            <Route path="/app" element={<AppHomePage />} />
+          )}
           <Route path="/merchant" element={<MerchantPage />} />
           <Route path="/pay" element={<PayPage />} />
           <Route path="/receipts" element={<ReceiptsPage />} />

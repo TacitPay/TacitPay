@@ -19,8 +19,10 @@ export function AppLink({
   children: ReactNode;
 }) {
   if (onMarketingApex()) {
+    // The subdomain owns the root, so the /app segment collapses onto it.
+    const hop = to === '/app' ? '/' : to.startsWith('/app#') ? `/${to.slice(4)}` : to;
     return (
-      <a href={`${APP_ORIGIN}${to}`} className={className}>
+      <a href={`${APP_ORIGIN}${hop}`} className={className}>
         {children}
       </a>
     );

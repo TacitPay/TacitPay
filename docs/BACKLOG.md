@@ -81,3 +81,8 @@ notes). Wave 1 items are marked; the rest is Wave 2 planning input:
   network's invoice open and the contract session locked, Pay runs against
   the mock and reports "Unknown invoice"; the banner warns but should not be
   the only guard. Disable Pay and point at Settings until the session is live.
+- **[Post-buildathon] Marketing site as its own Next.js repo** — considered
+  Aug 27 and deliberately deferred: the host split + lazy-loaded landing give
+  the lean-app outcome inside one repo, and the bespoke GSAP landing would
+  cost a risky port for no judge-visible value mid-wave. Revisit when real
+  SEO/SSR traffic exists.

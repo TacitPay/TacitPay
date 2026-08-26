@@ -12,14 +12,14 @@
   ],
   "redirects": [
     {
-      "source": "/",
+      "source": "/app",
       "has": [
         {
           "type": "host",
           "value": "app.tacitpay.xyz"
         }
       ],
-      "destination": "/app",
+      "destination": "/",
       "permanent": false
     },
     {
