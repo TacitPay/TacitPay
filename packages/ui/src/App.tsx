@@ -1,18 +1,32 @@
-import { Component, type ErrorInfo, type ReactNode, useEffect } from 'react';
+import { Component, type ErrorInfo, lazy, type ReactNode, useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 
 import { AppLayout } from '@/components/AppLayout';
 import { AppShell } from '@/components/AppShell';
 import { ErrorState } from '@/components/DataStates';
 import { Button } from '@/components/ui/button';
-import { AppHomePage } from '@/pages/AppHomePage';
 import { HomePage } from '@/pages/HomePage';
-import { MerchantPage } from '@/pages/MerchantPage';
-import { NotFoundPage } from '@/pages/NotFoundPage';
-import { PayPage } from '@/pages/PayPage';
-import { ReceiptsPage } from '@/pages/ReceiptsPage';
-import { SettingsPage } from '@/pages/SettingsPage';
-import { VerifyPage } from '@/pages/VerifyPage';
+
+// The marketing page at / is the one a stranger hits first, and it needs none of
+// the chain machinery. Everything behind it is split into its own chunk so that
+// first visit does not pay for the wallet, ledger and proving code.
+const AppHomePage = lazy(async () => ({
+  default: (await import('@/pages/AppHomePage')).AppHomePage,
+}));
+const MerchantPage = lazy(async () => ({
+  default: (await import('@/pages/MerchantPage')).MerchantPage,
+}));
+const NotFoundPage = lazy(async () => ({
+  default: (await import('@/pages/NotFoundPage')).NotFoundPage,
+}));
+const PayPage = lazy(async () => ({ default: (await import('@/pages/PayPage')).PayPage }));
+const ReceiptsPage = lazy(async () => ({
+  default: (await import('@/pages/ReceiptsPage')).ReceiptsPage,
+}));
+const SettingsPage = lazy(async () => ({
+  default: (await import('@/pages/SettingsPage')).SettingsPage,
+}));
+const VerifyPage = lazy(async () => ({ default: (await import('@/pages/VerifyPage')).VerifyPage }));
 
 // Routes whose hash is a section anchor. Everywhere else the hash is data —
 // /pay#<payload> carries the invoice itself — so it must never be treated as
