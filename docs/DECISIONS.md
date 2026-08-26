@@ -178,3 +178,24 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
   - **`hintUsage` is called up front** with the exact method list TacitPay uses,
     so a wallet can gather every permission in one prompt instead of
     interrupting mid-payment. A wallet that does not implement it still works.
+
+- **D-014 (2026-08-24) — on-device private state is encrypted with a passphrase
+  the user types, not with anything derived from the wallet.**
+  - `levelPrivateStateProvider` requires a `privateStoragePasswordProvider`;
+    encryption is not optional, which is correct for a store holding invoice
+    amounts, memos and salts.
+  - **The tempting alternative was rejected.** Deriving the key by asking the
+    wallet to `signData` a fixed domain string would remove the passphrase
+    entirely and bind the state to the wallet. It is only safe if that signature
+    is deterministic, and nothing in the connector contract promises it. A
+    randomised signature would silently produce a new key every session and
+    render the private state permanently unreadable — a data-loss bug that would
+    not appear until someone had real invoices. Revisit only with a signature
+    scheme verified deterministic in writing.
+  - The passphrase is stretched once per session with PBKDF2-SHA256 at 210,000
+    iterations, salted with the account id, and only the derived value is
+    retained. It is never stored and never transmitted.
+  - **Consequence to state plainly:** a forgotten passphrase means lost invoice
+    bodies. The chain still proves an invoice existed and was settled; the
+    amount, memo and salt are gone. Private-state export/import (PRD §9,
+    `PrivateStateExport`) is the mitigation and is Wave 2.
