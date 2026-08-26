@@ -37,6 +37,7 @@ const UNKNOWN_INVOICE_ID = bytes32(0x99);
 const AMOUNT = 1000n;
 const MEMO_HASH = bytes32(0x33);
 const SALT = bytes32(0x44);
+const MERCHANT_USER_ADDRESS = { bytes: bytes32(0xe5) };
 const ZERO_BYTES_HEX = toHex(bytes32(0x00));
 
 // Wave 1 unit matrix (PRD §11.2), run against the generated contract module in
@@ -54,6 +55,12 @@ describe('tacitpay contract — Wave 1 unit matrix (PRD §11.2)', () => {
   const createAndPay = (invoiceId: Uint8Array = INVOICE_ID, expiresAt = 0n): void => {
     sim.createInvoice(invoiceId, AMOUNT, MEMO_HASH, SALT, expiresAt);
     sim.payInvoice(invoiceId, AMOUNT, MEMO_HASH, SALT, shieldedCoin(AMOUNT));
+  };
+
+  /** Creates an OPEN invoice and pays it from the public pool. */
+  const createAndPayUnshielded = (invoiceId: Uint8Array = INVOICE_ID): void => {
+    sim.createInvoice(invoiceId, AMOUNT, MEMO_HASH, SALT);
+    sim.payInvoiceUnshielded(invoiceId, AMOUNT, MEMO_HASH, SALT);
   };
 
   it('U-01 createInvoice stores OPEN record with commitment and ownerTag set', () => {
@@ -223,6 +230,82 @@ describe('tacitpay contract — Wave 1 unit matrix (PRD §11.2)', () => {
 
     expect(() => sim.cancelInvoice(INVOICE_ID)).toThrow('Only open invoices can be cancelled');
     expect(sim.ledger().invoices.lookup(INVOICE_ID).status).toBe(InvoiceStatus.PAID);
+  });
+
+  it('U-29 payInvoiceUnshielded with correct preimage → PAID, owed entry, payerTag, no escrow', () => {
+    createAndPayUnshielded();
+
+    const state = sim.ledger();
+    const record = state.invoices.lookup(INVOICE_ID);
+    expect(record.status).toBe(InvoiceStatus.PAID);
+    expect(toHex(record.payerTag)).not.toBe(ZERO_BYTES_HEX);
+    expect(state.paidCount).toBe(1n);
+
+    // Public-pool custody records the disclosed amount without a shielded coin.
+    expect(state.unshieldedOwed.member(INVOICE_ID)).toBe(true);
+    expect(state.unshieldedOwed.lookup(INVOICE_ID)).toBe(AMOUNT);
+    expect(state.escrow.member(INVOICE_ID)).toBe(false);
+  });
+
+  it('U-30 payInvoiceUnshielded with wrong amount preimage throws "Invoice details do not match"', () => {
+    sim.createInvoice(INVOICE_ID, AMOUNT, MEMO_HASH, SALT);
+
+    expect(() => sim.payInvoiceUnshielded(INVOICE_ID, AMOUNT + 1n, MEMO_HASH, SALT)).toThrow(
+      'Invoice details do not match',
+    );
+    expect(sim.ledger().invoices.lookup(INVOICE_ID).status).toBe(InvoiceStatus.OPEN);
+  });
+
+  it('U-31 payInvoiceUnshielded on a PAID invoice throws "Invoice is not open"', () => {
+    createAndPayUnshielded();
+
+    expect(() => sim.payInvoiceUnshielded(INVOICE_ID, AMOUNT, MEMO_HASH, SALT)).toThrow(
+      'Invoice is not open',
+    );
+    expect(sim.ledger().paidCount).toBe(1n);
+  });
+
+  it('U-32 withdrawUnshielded by owner after unshielded pay → WITHDRAWN, owed entry removed', () => {
+    createAndPayUnshielded();
+    sim.withdrawUnshielded(INVOICE_ID, MERCHANT_USER_ADDRESS);
+
+    const state = sim.ledger();
+    const record = state.invoices.lookup(INVOICE_ID);
+    expect(record.status).toBe(InvoiceStatus.WITHDRAWN);
+    expect(state.unshieldedOwed.member(INVOICE_ID)).toBe(false);
+    // Other fields survive the status change.
+    expect(toHex(record.payerTag)).not.toBe(ZERO_BYTES_HEX);
+  });
+
+  it('U-33 withdrawUnshielded by non-owner secret throws "Not the invoice owner"', () => {
+    createAndPayUnshielded();
+
+    expect(() =>
+      sim.withdrawUnshielded(INVOICE_ID, MERCHANT_USER_ADDRESS, PAYER_SECRET_KEY),
+    ).toThrow('Not the invoice owner');
+    expect(sim.ledger().unshieldedOwed.member(INVOICE_ID)).toBe(true);
+  });
+
+  it('U-34 withdrawUnshielded on a shielded-paid invoice throws "Paid shielded - use withdraw"', () => {
+    createAndPay();
+
+    expect(() => sim.withdrawUnshielded(INVOICE_ID, MERCHANT_USER_ADDRESS)).toThrow(
+      'Paid shielded - use withdraw',
+    );
+    expect(sim.ledger().escrow.member(INVOICE_ID)).toBe(true);
+  });
+
+  it('U-35 shielded withdraw on an unshielded-paid invoice throws "Paid unshielded - use withdrawUnshielded"', () => {
+    createAndPayUnshielded();
+
+    expect(() => sim.withdraw(INVOICE_ID)).toThrow('Paid unshielded - use withdrawUnshielded');
+    expect(sim.ledger().unshieldedOwed.member(INVOICE_ID)).toBe(true);
+  });
+
+  it('U-36 payInvoiceUnshielded on unknown id throws "Unknown invoice"', () => {
+    expect(() => sim.payInvoiceUnshielded(UNKNOWN_INVOICE_ID, AMOUNT, MEMO_HASH, SALT)).toThrow(
+      'Unknown invoice',
+    );
   });
 
   it('U-17 privacy: no amount/memo/secret bytes anywhere in serialized ledger state', () => {

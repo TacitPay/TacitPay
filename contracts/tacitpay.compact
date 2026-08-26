@@ -33,6 +33,10 @@ export struct InvoiceRecord {
 export sealed ledger paymentToken: Bytes<32>;
 export ledger invoices: Map<Bytes<32>, InvoiceRecord>;
 export ledger escrow: Map<Bytes<32>, QualifiedShieldedCoinInfo>;
+// D-022: unshielded lane bookkeeping. Presence of an id here marks the invoice
+// as paid from the PUBLIC pool (escrow map = shielded pool). Amounts in this
+// map are public -- an unshielded payment discloses its amount by nature.
+export ledger unshieldedOwed: Map<Bytes<32>, Uint<128>>;
 export ledger invoiceCount: Counter;
 export ledger paidCount: Counter;
 
@@ -147,11 +151,50 @@ export circuit payInvoice(
   paidCount.increment(1);
 }
 
+export circuit payInvoiceUnshielded(
+  invoiceId: Bytes<32>,
+  amount: Uint<64>,
+  memoHash: Bytes<32>,
+  salt: Bytes<32>
+): [] {
+  const id = disclose(invoiceId);
+  assert(invoices.member(id), "Unknown invoice");
+  const inv = invoices.lookup(id);
+  assert(inv.status == InvoiceStatus.OPEN, "Invoice is not open");
+  // expiresAt == 0 means "never expires" (PRD §6.1).
+  if (inv.expiresAt != 0) {
+    assert(blockTimeLt(inv.expiresAt), "Invoice expired");
+  }
+
+  // Proves the payer knows the invoice preimage without revealing it.
+  assert(
+    commitInvoice(InvoiceBody { amount: amount, memoHash: memoHash }, salt) == inv.commitment,
+    "Invoice details do not match"
+  );
+
+  receiveUnshielded(paymentToken, disclose(amount as Uint<128>));
+  unshieldedOwed.insert(id, disclose(amount as Uint<128>));
+
+  const ptag = tagFor(payerPubKey(payerSecret()), invoiceId);
+  invoices.insert(
+    id,
+    InvoiceRecord {
+      ownerTag: inv.ownerTag,
+      commitment: inv.commitment,
+      status: InvoiceStatus.PAID,
+      expiresAt: inv.expiresAt,
+      payerTag: disclose(ptag)
+    }
+  );
+  paidCount.increment(1);
+}
+
 export circuit withdraw(invoiceId: Bytes<32>): [] {
   const id = disclose(invoiceId);
   assert(invoices.member(id), "Unknown invoice");
   const inv = invoices.lookup(id);
   assert(inv.status == InvoiceStatus.PAID, "Nothing to withdraw");
+  assert(escrow.member(id), "Paid unshielded - use withdrawUnshielded");
   // Ownership is proven from the witness secret, never from ownPublicKey()
   // (which is prover-supplied and therefore not an authorization check).
   assert(tagFor(merchantPubKey(merchantSecret()), invoiceId) == inv.ownerTag, "Not the invoice owner");
@@ -160,6 +203,30 @@ export circuit withdraw(invoiceId: Bytes<32>): [] {
   // Full value goes out, so ShieldedSendResult.change is always none.
   sendShielded(coin, left<ZswapCoinPublicKey, ContractAddress>(ownPublicKey()), coin.value);
   escrow.remove(id);
+
+  invoices.insert(
+    id,
+    InvoiceRecord {
+      ownerTag: inv.ownerTag,
+      commitment: inv.commitment,
+      status: InvoiceStatus.WITHDRAWN,
+      expiresAt: inv.expiresAt,
+      payerTag: inv.payerTag
+    }
+  );
+}
+
+export circuit withdrawUnshielded(invoiceId: Bytes<32>, to: UserAddress): [] {
+  const id = disclose(invoiceId);
+  assert(invoices.member(id), "Unknown invoice");
+  const inv = invoices.lookup(id);
+  assert(inv.status == InvoiceStatus.PAID, "Nothing to withdraw");
+  assert(unshieldedOwed.member(id), "Paid shielded - use withdraw");
+  // The witness tag authorizes the merchant-selected public destination.
+  assert(tagFor(merchantPubKey(merchantSecret()), invoiceId) == inv.ownerTag, "Not the invoice owner");
+
+  sendUnshielded(paymentToken, unshieldedOwed.lookup(id), right<ContractAddress, UserAddress>(disclose(to)));
+  unshieldedOwed.remove(id);
 
   invoices.insert(
     id,

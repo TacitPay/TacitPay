@@ -140,10 +140,39 @@ export class TacitPaySimulator {
     ).context;
   }
 
+  payInvoiceUnshielded(
+    invoiceId: Uint8Array,
+    amount: bigint,
+    memoHash: Uint8Array,
+    salt: Uint8Array,
+  ): void {
+    this.asPersona(PAYER_COIN_PUBLIC_KEY, DECOY_MERCHANT_SECRET_KEY);
+    this.context = this.contract.impureCircuits.payInvoiceUnshielded(
+      this.context,
+      invoiceId,
+      amount,
+      memoHash,
+      salt,
+    ).context;
+  }
+
   /** `merchantSecretKey` is overridable so INV-6 can be tested from the wrong key. */
   withdraw(invoiceId: Uint8Array, merchantSecretKey: Uint8Array = MERCHANT_SECRET_KEY): void {
     this.asPersona(MERCHANT_COIN_PUBLIC_KEY, merchantSecretKey);
     this.context = this.contract.impureCircuits.withdraw(this.context, invoiceId).context;
+  }
+
+  withdrawUnshielded(
+    invoiceId: Uint8Array,
+    to: { bytes: Uint8Array },
+    merchantSecretKey: Uint8Array = MERCHANT_SECRET_KEY,
+  ): void {
+    this.asPersona(MERCHANT_COIN_PUBLIC_KEY, merchantSecretKey);
+    this.context = this.contract.impureCircuits.withdrawUnshielded(
+      this.context,
+      invoiceId,
+      to,
+    ).context;
   }
 
   cancelInvoice(invoiceId: Uint8Array, merchantSecretKey: Uint8Array = MERCHANT_SECRET_KEY): void {
