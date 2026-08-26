@@ -4,6 +4,10 @@
 file, circuit or test that proves it — treat the code as the authority. If this
 document and the repository disagree, the repository is right.
 
+Line numbers below are correct at the commit that last touched this file and
+will drift as the code moves. The **test identifiers** — `U-01` … `U-28` — are
+stable and greppable; use those if a line number does not land where it says.
+
 Related: [`../PRD.md`](../PRD.md) §4 is the source of truth for intent,
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) explains where each piece of state
 lives, and [`../currentstate.md`](../currentstate.md) §6 is the short version of
@@ -95,19 +99,19 @@ fail if the invariant broke.
 **INV-1** — No ledger field ever contains an invoice amount in plaintext,
 except the Variant A escrow entry, which must be removed on withdrawal.
 
-> `U-17` (`contracts/src/test/tacitpay.test.ts:227`) runs create → pay →
+> `U-17` (`contracts/src/test/tacitpay.test.ts:228`) runs create → pay →
 > withdraw, serialises the whole public ledger three ways, and asserts the
 > amount is absent as a decimal, as big-endian hex, as little-endian hex and as
-> a bare hex string. `U-17b` (`:267`) pins the exception: it asserts the amount
+> a bare hex string. `U-17b` (`:274`) pins the exception: it asserts the amount
 > **is** present between pay and withdraw and gone after, so any widening of
-> that window fails a test. `U-12` (`:176`) asserts the escrow entry is removed.
+> that window fails a test. `U-12` (`:177`) asserts the escrow entry is removed.
 > Live: `packages/api/test/lifecycle.int.test.ts:287` repeats the decimal and
 > hex sweep against indexer-sourced ledger state on a real devnet.
 
 **INV-2** — No ledger field contains a merchant public key or any value equal
 across two invoices of the same merchant.
 
-> `U-04` (`contracts/src/test/tacitpay.test.ts:90`) creates two invoices under
+> `U-04` (`contracts/src/test/tacitpay.test.ts:91`) creates two invoices under
 > one merchant secret and asserts the two `ownerTag`s differ. `U-17` asserts
 > that neither root secret nor either party's Zswap coin public key appears in
 > public state.
@@ -120,7 +124,7 @@ across two invoices of the same merchant.
 **INV-3** — A payer's wallet address / coin public key never appears in
 contract state.
 
-> `U-17` (`contracts/src/test/tacitpay.test.ts:227`) sweeps the serialized
+> `U-17` (`contracts/src/test/tacitpay.test.ts:228`) sweeps the serialized
 > public ledger for **both** parties' Zswap coin public keys —
 > `PAYER_COIN_PUBLIC_KEY` and `MERCHANT_COIN_PUBLIC_KEY` — after a full
 > create → pay → withdraw, and asserts neither appears.
@@ -153,11 +157,11 @@ is committed.
 **INV-5** — Paying requires the invoice preimage _and_ an actual shielded coin
 of the right value and colour in the same transaction.
 
-> Four tests, one per failure mode. `U-05` (`:102`) is the happy path — PAID,
-> escrow entry present, `payerTag` non-zero. `U-06` (`:118`) supplies a wrong
-> amount preimage and gets `"Invoice details do not match"`. `U-07` (`:127`)
+> Four tests, one per failure mode. `U-05` (`:103`) is the happy path — PAID,
+> escrow entry present, `payerTag` non-zero. `U-06` (`:119`) supplies a wrong
+> amount preimage and gets `"Invoice details do not match"`. `U-07` (`:128`)
 > supplies a correct preimage with a mismatched coin value and gets
-> `"Wrong amount"`. `U-08` (`:137`) supplies the wrong token colour and gets
+> `"Wrong amount"`. `U-08` (`:138`) supplies the wrong token colour and gets
 > `"Wrong token"`; both assert no escrow entry was created. Live: the
 > integration test's Step 4 (`lifecycle.int.test.ts:256`) asserts the merchant's
 > shielded NIGHT balance **increases** after withdrawal — a status flag proves
@@ -192,8 +196,8 @@ withdraw or cancel.
 payer's release approval unless the timeout has passed.
 
 > Not implemented; no circuit exists yet. `U-20`
-> (`contracts/src/test/tacitpay.test.ts:294`) is pre-registered against INV-9
-> directly; `U-21`, `U-22` and `U-23` (`:295–297`) cover the rest of the
+> (`contracts/src/test/tacitpay.test.ts:301`) is pre-registered against INV-9
+> directly; `U-21`, `U-22` and `U-23` (`:302–304`) cover the rest of the
 > milestone state machine. All four are visible as `todo` rows in every test run.
 
 **INV-10** (Wave 2) — An offered refund can only be claimed by the original
