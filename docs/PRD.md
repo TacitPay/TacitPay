@@ -959,7 +959,7 @@ Notes:
 4. `packages/api` with the Wave 1 interface.
 5. `packages/cli`: deploy + lifecycle commands.
 6. `packages/ui`: `/`, `/merchant`, `/pay`, `/receipts`, `/verify/:id`, `/settings`; Lace connection; works on Preview.
-7. Deployed contract on **Preview**, address in `deployments/preview.json` and README.
+7. Deployed contract on **Preview**, address in `deployments/preview.json` and README. ✅ _Done 2026-08-26 — `1f37835dd1…21bc547`._
 8. README (§17.1), `docs/PRIVACY.md`, `docs/ARCHITECTURE.md`, deck (§17.2), 3–5 minute video (§17.3), `docs/WAVE-CHANGELOG.md` "Wave 1" section.
 9. Repo topics + Apache-2.0.
 10. **Judge sandbox** (`yarn demo:seed` / `tacitpay demo seed`): scripted local-devnet seeding — two funded wallets and three sample invoices in known states — so judge path (b) completes in minutes; referenced from README item 6 (§17.1).
@@ -981,7 +981,7 @@ Notes:
 | 4–5 | `packages/api` complete; unit tests U-05…U-14, U-17; privacy test. |
 | 6–7 | UI: wallet connect, merchant dashboard, create invoice, link + QR. |
 | 8–9 | UI: pay page, receipts, verify page, settings; proof stepper; error mapping. |
-| 10 | Deploy to Preview; e2e with Lace; fix. Commit `deployments/preview.json`. |
+| 10 | Deploy to Preview; e2e with Lace; fix. Commit `deployments/preview.json`. ✅ _2026-08-26: deployed; Lace create-leg e2e proven; pay leg pending shielded payer funding._ |
 | 11–12 | Polish UI (frontend-design skill), empty/error states, mobile. Host static UI. Build the judge-sandbox seeding script (`demo seed`). |
 | 13 | README, PRIVACY.md, ARCHITECTURE.md, WAVE-CHANGELOG.md. |
 | 14 | Deck + record video (one clean take; re-record if any step fails). |

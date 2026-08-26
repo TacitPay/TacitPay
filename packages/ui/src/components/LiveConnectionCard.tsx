@@ -1,5 +1,5 @@
 import { Link21, LinkCircle, ShieldTick, Warning2 } from 'iconsax-reactjs';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +40,15 @@ export function LiveConnectionCard() {
   const [address, setAddress] = useState(() => getContractAddress(network) ?? '');
   const [passphrase, setPassphrase] = useState('');
   const [touched, setTouched] = useState(false);
+
+  // The address is PER-NETWORK state behind a single mounted field: re-seed it
+  // whenever the network flips, or the input goes on showing the previous
+  // network's address over this one's stored value — which reads as the save
+  // having landed in the wrong slot.
+  useEffect(() => {
+    setAddress(getContractAddress(network) ?? '');
+    setTouched(false);
+  }, [network]);
   const fromBuild = !getStoredContractAddress(network) && Boolean(getContractAddress(network));
 
   const addressValid = isContractAddress(address);

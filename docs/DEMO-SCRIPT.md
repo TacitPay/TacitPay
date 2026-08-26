@@ -6,13 +6,16 @@ re-record if any step fails.
 **Before recording**, have all of this already true, because none of it is
 interesting to watch:
 
-- `yarn env:up` green, or a funded Lace/1AM wallet on Preview.
+- `yarn env:up` green, or a funded Lace/1AM wallet on Preview. The **payer
+  wallet must hold shielded tNIGHT** — faucet funds are transparent and cannot
+  pay an invoice; shield a few hundred before recording.
 - `yarn demo:seed` already run once, so the sandbox exists and the second run
   is instant. Keep the printed contract address and invoice ids on a notepad.
 - Two browser profiles open — merchant and payer — so the payer genuinely
   cannot see the merchant's private state. This is the single most convincing
   thing in the video; do not fake it with one profile.
-- A block explorer tab already at the contract address.
+- A block explorer tab already at the contract address — live:
+  <https://preview.midnightexplorer.com/contracts/1f37835dd1f3ba29cfa912385ff6f0059f66aad9cad6b5dc8686b8a3e21bc547>.
 - Terminal font large enough to read at 720p.
 
 ---

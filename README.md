@@ -12,7 +12,7 @@
 ![Tests](https://img.shields.io/badge/tests-86%20unit%20%C2%B7%2067%20integration-brightgreen)
 
 > **Status:** Wave 1 of the [Midnight Buildathon 2026](https://docs.midnight.network) (AKINDO WaveHack, Waves 1–3, Aug 27 – Nov 27).
-> The contract, its unit matrix, the client library, the CLI and the web app are all built and tested; the Preview deployment address appears here once deployed.
+> The contract, its unit matrix, the client library, the CLI and the web app are all built and tested — and **live on Preview** since Aug 26 2026: contract [`1f37835dd1…21bc547`](https://preview.midnightexplorer.com/contracts/1f37835dd1f3ba29cfa912385ff6f0059f66aad9cad6b5dc8686b8a3e21bc547) (`deployments/preview.json`), where a Lace wallet has connected, proved in-wallet, and created the first real invoice from the browser.
 > The full product spec is in [`PRD.md`](./PRD.md) — the single source of truth for this project.
 
 TacitPay is a **protocol for private invoicing and settlement** on Midnight.
@@ -109,12 +109,12 @@ The amount, memo and both parties' secrets are never disclosed — only a `persi
 
 Four paths, cheapest first. Pick one before installing anything.
 
-| Path                     | What you need                           | Docker?                                                                                     | What it proves                                                           |
-| ------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| **a. Unit tests only**   | Node and yarn                           | **No** — and no wallet                                                                      | The contract is correct and leaks nothing. 86 tests, about three seconds |
-| **b. Preview with 1AM**  | The 1AM wallet extension, testnet funds | **No** — proving is in-browser WASM                                                         | The whole product, with nothing to install but a browser extension       |
-| **c. Preview with Lace** | The Lace extension, testnet funds       | **Yes**, for a local proof server (unless the current Lace build delegates proving — D-010) | The same, on the wallet most people already have                         |
-| **d. Local devnet**      | Docker, `../midnight-local-dev`         | **Yes** — node, indexer and proof server                                                    | Everything, against a real chain you control, with a seeded sandbox      |
+| Path                     | What you need                           | Docker?                                                                                                                                 | What it proves                                                           |
+| ------------------------ | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **a. Unit tests only**   | Node and yarn                           | **No** — and no wallet                                                                                                                  | The contract is correct and leaks nothing. 86 tests, about three seconds |
+| **b. Preview with 1AM**  | The 1AM wallet extension, testnet funds | **No** — proving is in-browser WASM                                                                                                     | The whole product, with nothing to install but a browser extension       |
+| **c. Preview with Lace** | The Lace extension, testnet funds       | **No** — Lace 4.0.1 proves in-wallet (verified Aug 26); its Midnight settings can also point at Midnight's remote prover or a local one | The same, on the wallet most people already have                         |
+| **d. Local devnet**      | Docker, `../midnight-local-dev`         | **Yes** — node, indexer and proof server                                                                                                | Everything, against a real chain you control, with a seeded sandbox      |
 
 Path (a) needs no network at all and is the fastest way to check the privacy
 claim: `U-17` runs a full lifecycle, serialises the public ledger, and asserts
@@ -123,6 +123,29 @@ both secrets and both parties' Zswap keys.
 
 Path (d) is the fastest way to see the whole thing work: `yarn demo:seed`
 leaves three invoices in known states and prints a ready-to-open pay link.
+
+### Verified against a real wallet — and the one prerequisite for paying
+
+On Aug 26 2026 the browser write path met its first real wallet: Lace 4.0.1
+connected, matched network ids, proved **in-wallet**, and created an invoice on
+Preview (block 587,108) — confirmed independently by the CLI's ledger read and
+the public explorer. Two things that first contact taught, worth knowing before
+you test:
+
+- **Paying needs _shielded_ tNIGHT — and shielding on Preview is an open
+  question.** The faucet dispenses transparent tNIGHT; the `payInvoice`
+  circuit consumes a shielded coin, so a faucet-funded payer sits at
+  "Balancing fees" forever. As of Aug 26 no wallet-exposed conversion exists:
+  Lace's send refuses the crossing, and the wallet SDK's `transferTransaction`
+  rejects shielded outputs from a transparent balance ("Insufficient funds").
+  The two candidate roads — anticipated in PRD §16.2 and its risk table — are
+  a deeper SDK shielding spike and the `receiveUnshielded` fallback circuit
+  path. On the local devnet the pay leg works today because the genesis wallet
+  holds pre-shielded funds.
+- **The app only reports success the ledger can confirm.** Every mutation polls
+  the contract's public state through the app's own indexer connection and
+  fails loudly if the transaction never lands — a wallet's optimistic "submitted"
+  is not treated as truth.
 
 ## How to test
 
@@ -155,8 +178,10 @@ yarn env:down
 Out of the box the app runs on an in-memory mock, so every screen is explorable
 with no chain at all. To connect it to one, open `/settings` → **Contract
 connection**, paste a deployed contract address (`yarn demo:seed` prints one for
-a local devnet), connect a wallet, and unlock your private state with a
-passphrase.
+a local devnet; the live Preview address is in `deployments/preview.json`),
+connect a wallet, and unlock your private state with a passphrase. **Until the
+Settings card shows the "Live" badge, every write — including invoice creation
+— is sandbox theater**: it runs on the mock and touches no chain.
 
 That passphrase encrypts invoice bodies, salts and memos in this browser. It is
 never transmitted and cannot be recovered — see D-014. For a public deployment,
@@ -212,11 +237,11 @@ The integration suite runs the same lifecycle against a real chain with real pro
 
 ## Roadmap
 
-| Wave                | Theme                   | Highlights                                                                                                                          |
-| ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 1 (Aug 27 – Sep 16) | The loop works          | Contract + tests, API, CLI, UI on Preview, Variant A escrow, judge sandbox                                                          |
-| 2 (Sep 27 – Oct 17) | Developers and agents   | Milestone escrow, claim-based refunds, recurring invoices, Variant B escrow, receipt proofs, Node SDK, MCP server, tUSDM on Preview |
-| 3 (Oct 27 – Nov 16) | Prove it to the auditor | ZK revenue & receivables proofs, USDM on mainnet (stretch), mobile PoC                                                              |
+| Wave                | Theme                   | Highlights                                                                                                                                               |
+| ------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 (Aug 27 – Sep 16) | The loop works          | Contract + tests, API, CLI, UI on Preview, Variant A escrow, judge sandbox                                                                               |
+| 2 (Sep 27 – Oct 17) | Developers and agents   | Milestone escrow, claim-based refunds, recurring invoices, Variant B escrow, receipt proofs, Node SDK, MCP server, tUSDM on Preview, in-app shield-funds |
+| 3 (Oct 27 – Nov 16) | Prove it to the auditor | ZK revenue & receivables proofs, USDM on mainnet (stretch), mobile PoC                                                                                   |
 
 Progress per wave: [`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md).
 Twelve-slide overview: [`docs/deck/index.html`](./docs/deck/index.html) — open it in a browser and present with the arrow keys.
@@ -228,7 +253,8 @@ Stated openly per PRD §4.5:
 - **Payment timing is correlatable** — an observer learns "some invoice was paid at time T", never the amount or the parties.
 - **Anonymity sets are small on a young network** — inherent to any new chain.
 - **Whoever issued the invoice learns who paid it** — off-chain, because they sent them the link. Normal commerce, not a chain leak.
-- **The browser _write_ path has not yet met a real wallet extension** — every provider is built against the shipped `dapp-connector-api@4.0.1` type definitions and unit tested, but no browser wallet has signed or submitted anything. The wire format itself is verified against midnight-js's own `DAppConnectorWalletAdapter`, the receiving side of the same interface (D-013). A funded Preview wallet settles the rest. The browser _read_ path is proven — public verification reads a real chain in a browser, in dev and production builds alike (D-015).
+- **The browser _write_ path met its first real wallet on Aug 26 2026** — Lace 4.0.1 connected, proved in-wallet and created an invoice on Preview, ledger-confirmed (see "How judges test it"). The pay leg is next; it already surfaced that **paying requires shielded tNIGHT** while faucets dispense transparent tNIGHT. The browser _read_ path was already proven (D-015).
+- **Wallet-reported transaction IDs are ledger _identifiers_, not hashes** — explorers index the 64-hex transaction _hash_, so pasting the ID a wallet shows into an explorer search finds nothing. The indexer maps between the two; the success dialog deep-linking by hash is a pending fix.
 - **A forgotten private-state passphrase loses invoice bodies** — the chain still proves the invoice existed and was settled; the amount, memo and salt are gone. Export/import is the Wave 2 mitigation (D-014).
 - **Variant A escrow leaks while it holds the coin** — and more than value: the escrowed coin's nonce is public, so after a withdrawal an observer who guesses the merchant's Zswap key can confirm it against the withdrawal's coin commitment, linking that merchant's withdrawals in transaction history. Withdrawing does not undo it. Wave 2's Variant B escrow removes the exposure; test U-17b pins the current behaviour meanwhile.
 

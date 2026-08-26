@@ -72,6 +72,12 @@ export default defineConfig({
       // Midnight.js helpers (toHex, parseCoinPublicKeyToHex, …) are written against
       // Node's Buffer. The browser build supplies the userland implementation.
       buffer: 'buffer/',
+      // abstract-level — inside midnight-js's level private-state provider — does
+      // `class AbstractLevel extends EventEmitter`, requiring EventEmitter from
+      // Node's `events`. The browser build must supply the userland package, or
+      // the class extends undefined and the real API cannot even be IMPORTED
+      // ("Class extends value undefined is not a constructor or null").
+      events: 'events/',
     },
   },
   define: {

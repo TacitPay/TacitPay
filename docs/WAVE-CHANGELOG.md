@@ -89,10 +89,44 @@ parties' real secret keys.
   in-circuit is a Wave 2 candidate.
 - **Escrowed funds have no exit without the merchant** until Wave 2 refunds.
   Keep Wave 1 on testnet.
-- **The browser _write_ path has not yet run against a real wallet extension.**
-  Every provider is implemented and unit-tested against the shipped connector
-  type definitions and the wire encoding is verified against midnight-js's own
-  reference adapter, but no wallet has signed or submitted anything. That run
-  waits on a funded Preview wallet.
-  The browser _read_ path is proven: public verification reads a real contract
-  on a real chain in a browser, dev and production builds alike (D-015).
+- **The browser _write_ path met its first real wallet on Aug 26** — see the
+  field notes below. The create leg is proven end-to-end on Preview; the pay
+  leg is in progress and requires the payer to hold **shielded** tNIGHT.
+  The browser _read_ path was already proven (D-015).
+
+### Field notes — Aug 26, 2026 (first real-wallet session)
+
+Deployed to Preview (contract `1f37835dd1…21bc547`, `deployments/preview.json`)
+and drove the app with a real Lace 4.0.1 wallet for the first time. What it
+took, in order:
+
+- **`events` polyfill** — the level-backed private-state provider does
+  `class AbstractLevel extends EventEmitter`; without a browser `events`
+  package the real API could not even be imported. Fixed via a Vite alias,
+  same pattern as the existing `buffer` alias.
+- **Bound `fetch`** — `FetchZkConfigProvider`'s default parameter captures the
+  global unbound; Chrome throws "Illegal invocation" on the first prover-key
+  download. Fixed by passing `fetch.bind(globalThis)`.
+- **Ledger-confirmed success** — a wallet can return a transaction id for a
+  submission that never reaches any chain (observed repeatedly). Every
+  mutation now polls the contract's public state through the app's own indexer
+  and fails loudly on a two-minute timeout; success dialogs can no longer lie.
+- **Sandbox vs live is a trap** — with a wallet connected but the contract not
+  yet unlocked (passphrase + "Connect to contract"), writes silently run on
+  the in-memory mock with plausible-looking ids. A loud sandbox banner and
+  obviously-fake stub ids are queued.
+- **Paying needs shielded tNIGHT, and no shielding path exists in wallets
+  today** — the faucet dispenses transparent tNIGHT; `payInvoice` consumes a
+  shielded coin, so balancing hangs for a faucet-only payer. Lace's send
+  refuses transparent→shielded, and the SDK's `transferTransaction` rejects
+  shielded outputs without existing shielded funds. PRD §16.2's risk table
+  anticipated exactly this; the candidate mitigations are a deeper SDK
+  shielding spike and the `receiveUnshielded` circuit path. The local devnet
+  pay leg works because genesis holds pre-shielded funds.
+- **Identifiers ≠ hashes** — wallets report the ledger transaction
+  _identifier_; explorers index the _hash_. Both resolve via the indexer's
+  `transactions(offset: {identifier|hash})`.
+- Assorted fixes along the way: the per-network contract-address field now
+  re-seeds on network switch, the proof stepper and wallet card lay out by
+  container width instead of viewport, and `/pay` without a fragment offers a
+  paste-a-link box instead of an error.

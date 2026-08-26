@@ -109,7 +109,9 @@ const instrumentProviders = (
     submitTx: async (tx) => {
       onStage('Submitting');
       const txId = await providers.midnightProvider.submitTx(tx);
-      // midnight-js blocks on watchForTxData after this resolves.
+      // The stage is honest only because every mutation ALSO polls the ledger
+      // via confirmOnChain before reporting success — a wallet has returned a
+      // txId here for a transaction it never managed to broadcast.
       onStage('Waiting for confirmation');
       return txId;
     },
@@ -211,6 +213,31 @@ class RealTacitPayApi implements TacitPayApi {
   }
 
   /**
+   * THE TRUTH GATE. A connected wallet's submitTx can resolve with a txId for
+   * a transaction that never reaches any chain — Lace has done exactly that,
+   * leaving the tx spinning in its own "Sending…" queue while this app showed
+   * "confirmed". So no mutation reports success on the wallet's word alone:
+   * success is when THIS APP's own indexer connection reads the change out of
+   * the contract's public ledger. Anything else fails loudly, with the txId.
+   */
+  private async confirmOnChain(
+    invoiceId: string,
+    txId: string,
+    settled: (result: { exists: boolean; status: LedgerInvoiceStatus }) => boolean,
+  ): Promise<void> {
+    const deadline = Date.now() + 120_000;
+    while (Date.now() < deadline) {
+      const result = await this.api.getInvoiceStatus(invoiceId);
+      if (settled(result)) return;
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+    }
+    throw new Error(
+      `Transaction ${txId} was accepted by the wallet but never appeared on this network's ledger. ` +
+        'Check the wallet activity for a stuck submission before retrying.',
+    );
+  }
+
+  /**
    * `listMyInvoices` returns the private record, not a link — the link is derived, and
    * every field it needs is already on the record.
    */
@@ -247,18 +274,33 @@ class RealTacitPayApi implements TacitPayApi {
   }): Promise<{ invoiceId: string; link: string; txId: string }> {
     return this.withStages(async () => {
       const created = await this.merchant.createInvoice(input);
+      await this.confirmOnChain(created.invoiceId, created.txId, (result) => result.exists);
       return { invoiceId: created.invoiceId, link: created.link, txId: created.txId };
     });
   }
 
   withdraw(invoiceId: string): Promise<{ txId: string }> {
-    return this.withStages(async () => ({ txId: (await this.merchant.withdraw(invoiceId)).txId }));
+    return this.withStages(async () => {
+      const { txId } = await this.merchant.withdraw(invoiceId);
+      await this.confirmOnChain(
+        invoiceId,
+        txId,
+        (result) => statusName(result.status) === 'WITHDRAWN',
+      );
+      return { txId };
+    });
   }
 
   cancelInvoice(invoiceId: string): Promise<{ txId: string }> {
-    return this.withStages(async () => ({
-      txId: (await this.merchant.cancelInvoice(invoiceId)).txId,
-    }));
+    return this.withStages(async () => {
+      const { txId } = await this.merchant.cancelInvoice(invoiceId);
+      await this.confirmOnChain(
+        invoiceId,
+        txId,
+        (result) => statusName(result.status) === 'CANCELLED',
+      );
+      return { txId };
+    });
   }
 
   async listMyInvoices(): Promise<InvoiceView[]> {
@@ -281,9 +323,11 @@ class RealTacitPayApi implements TacitPayApi {
   }
 
   payInvoice(payload: InvoiceLinkPayload): Promise<{ txId: string }> {
-    return this.withStages(async () => ({
-      txId: (await this.payer.payInvoice(toApiPayload(payload))).txId,
-    }));
+    return this.withStages(async () => {
+      const { txId } = await this.payer.payInvoice(toApiPayload(payload));
+      await this.confirmOnChain(payload.id, txId, (result) => statusName(result.status) === 'PAID');
+      return { txId };
+    });
   }
 
   async listMyReceipts(): Promise<ReceiptView[]> {

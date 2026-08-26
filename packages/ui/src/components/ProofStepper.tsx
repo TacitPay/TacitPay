@@ -10,13 +10,16 @@ export function ProofStepper({ stage }: { stage: ProofStage }) {
     <section
       aria-live="polite"
       aria-label="Transaction proof progress"
-      className="rounded-lg border bg-muted/35 p-4"
+      // @container: the stepper lives in wide dialogs AND narrow side rails, so
+      // its layout must key on ITS OWN width — viewport breakpoints put five
+      // columns into a 300px column on any large screen.
+      className="@container rounded-lg border bg-muted/35 p-4"
     >
       <div className="mb-4 flex items-center justify-between gap-4">
         <p className="text-sm font-semibold">Preparing your private transaction</p>
         <span className="text-xs text-muted-foreground">Step {activeIndex + 1} of 5</span>
       </div>
-      <ol className="grid gap-3 md:grid-cols-5">
+      <ol className="grid gap-3 @md:grid-cols-5">
         {PROOF_STAGES.map((proofStage, index) => {
           const complete = index < activeIndex;
           const active = index === activeIndex;
@@ -25,7 +28,7 @@ export function ProofStepper({ stage }: { stage: ProofStage }) {
               key={proofStage}
               aria-current={active ? 'step' : undefined}
               className={cn(
-                'flex items-center gap-2 rounded-md p-2 text-xs leading-5 md:flex-col md:items-start',
+                'flex items-center gap-2 rounded-md p-2 text-xs leading-5 @md:flex-col @md:items-start',
                 active && 'bg-background font-medium text-foreground',
                 !active && !complete && 'text-muted-foreground',
                 complete && 'text-primary',

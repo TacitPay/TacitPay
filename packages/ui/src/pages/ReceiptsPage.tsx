@@ -49,7 +49,7 @@ function ReceiptsList() {
         description="Pay an invoice from its private link and the receipt will be saved to your payer state here."
         action={
           <Button asChild variant="outline">
-            <Link to="/">Open an invoice link</Link>
+            <Link to="/pay">Open an invoice link</Link>
           </Button>
         }
       />

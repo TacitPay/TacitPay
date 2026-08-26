@@ -259,7 +259,13 @@ export const createBrowserProviderBase = (config: BrowserProviderConfig): Browse
       config.indexerWsUrl,
       browserWebSocket,
     ),
-    zkConfigProvider: new FetchZkConfigProvider<CircuitIds>(config.zkConfigBaseUrl),
+    // The explicit bound fetch matters: the library's default parameter captures
+    // the global unbound, and Chrome then throws "Illegal invocation" the first
+    // time the provider fetches a prover key as a method call.
+    zkConfigProvider: new FetchZkConfigProvider<CircuitIds>(
+      config.zkConfigBaseUrl,
+      fetch.bind(globalThis),
+    ),
   };
 };
 

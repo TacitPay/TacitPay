@@ -32,3 +32,5 @@ deployments/undeployed*.json
 .vite/
 .firecrawl/
 .serena/
+# Node-wallet private state written by CLI runs — never commit
+midnight-level-db/

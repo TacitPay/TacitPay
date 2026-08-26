@@ -58,8 +58,9 @@ export function WalletGate({
   if (connection) {
     const connectedWallet = wallets.find((wallet) => wallet.id === connection.walletId);
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-3 rounded-lg border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="@container space-y-6">
+        {/* Keyed on the CONTAINER: this card sits full-width on Merchant and in a ~300px pay-page rail, and viewport breakpoints crammed the row layout into the rail. */}
+        <div className="flex flex-col gap-3 rounded-lg border bg-card px-4 py-3 @sm:flex-row @sm:items-center @sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             {connectedWallet?.icon ? (
               <span className="relative shrink-0">

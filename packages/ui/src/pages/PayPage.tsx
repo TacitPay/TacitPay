@@ -1,6 +1,6 @@
-import { ReceiptText, SearchStatus, Verify } from 'iconsax-reactjs';
+import { Link21, ReceiptText, SearchStatus, Verify } from 'iconsax-reactjs';
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { DetailSkeleton, EmptyState, ErrorState } from '@/components/DataStates';
 import { PageHeader } from '@/components/PageHeader';
@@ -11,6 +11,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { TransactionSuccess } from '@/components/TransactionSuccess';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { WalletGate } from '@/components/WalletGate';
 import { type InvoiceLinkPayload, type InvoiceStatus, useTacitPay } from '@/lib/api';
@@ -88,6 +89,10 @@ export function PayPage() {
   // because the mock only knows the invoices it created itself.
   const source = observer ?? api;
   const location = useLocation();
+  const navigate = useNavigate();
+  // The paste box below: arriving with no fragment is a normal way in (the
+  // Receipts empty state links here), not an error.
+  const [pastedLink, setPastedLink] = useState('');
   const [data, setData] = useState<PayInvoiceData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -102,10 +107,12 @@ export function PayPage() {
       setError(null);
       setData(null);
       setPaymentTxId(null);
+      // No fragment is the paste-a-link state, not a failure.
+      if (!location.hash) {
+        setLoading(false);
+        return;
+      }
       try {
-        if (!location.hash) {
-          throw new Error('This page needs an invoice payload after the # fragment.');
-        }
         const payload = api.decodeLink(location.hash);
         const publicState = await source.getInvoiceStatus(payload.id);
         if (run.cancelled) return;
@@ -150,6 +157,37 @@ export function PayPage() {
 
       {loading ? (
         <DetailSkeleton />
+      ) : !location.hash ? (
+        <EmptyState
+          icon={<Link21 size={24} variant="Linear" aria-hidden="true" />}
+          title="Paste an invoice link"
+          description="A TacitPay invoice travels as a private link — everything after the # stays in your browser and is never sent to a server."
+          action={
+            <form
+              className="flex w-full max-w-xl gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const raw = pastedLink.trim();
+                if (!raw) return;
+                // Accept a full URL, a /pay#… path, or the bare fragment.
+                const hashIndex = raw.indexOf('#');
+                const hash = hashIndex >= 0 ? raw.slice(hashIndex) : `#${raw}`;
+                setPastedLink('');
+                void navigate(`/pay${hash}`);
+              }}
+            >
+              <Input
+                value={pastedLink}
+                onChange={(event) => setPastedLink(event.target.value)}
+                placeholder="http://…/pay#eyJ…"
+                aria-label="Invoice link"
+              />
+              <Button type="submit" disabled={!pastedLink.trim()}>
+                Open
+              </Button>
+            </form>
+          }
+        />
       ) : error ? (
         <ErrorState
           message={error}
