@@ -9,19 +9,30 @@ import { connectLoop, getLoopUi, type MotionCleanup } from './liveLoop';
  */
 export const ROUTE = {
   width: 1200,
-  height: 214,
-  railY: 120,
-  railStart: 120,
-  railEnd: 1124,
+  height: 240,
+  railY: 126,
+  railStart: 108,
+  railEnd: 1092,
+  /** Radius of the bay each station sits in. The rail runs behind them. */
+  bay: 32,
+  /** Spacing of the rail's gradations. A bare line reads as a placeholder; a
+   *  graduated one reads as a track something is measured along. */
+  tick: 28,
   // Captions read as prose, not as machine output: the corridor instrument is
   // where the ledger's own field names and hashes belong.
   stations: [
     { x: 180, label: 'Create', value: 'a commitment, never the amount' },
-    { x: 480, label: 'Share', value: 'details ride in the link fragment' },
-    { x: 780, label: 'Settle', value: 'a shielded transfer marks it paid' },
-    { x: 1060, label: 'Verify', value: 'checked by anyone, with no wallet' },
+    { x: 476, label: 'Share', value: 'details ride in the link fragment' },
+    { x: 772, label: 'Settle', value: 'a shielded transfer marks it paid' },
+    { x: 1020, label: 'Verify', value: 'checked by anyone, with no wallet' },
   ],
 } as const;
+
+/** How far a station is dimmed before the invoice has reached it. The old 0.28
+ *  was mechanically correct and visually useless: a white ring at 28% on a dark
+ *  ground still reads as lit, so all four stations looked the same and the
+ *  sequence carried no information. */
+const PENDING = { bay: 0.16, glyph: 0.13 } as const;
 
 const TIMING = {
   enter: 0.5,
@@ -41,15 +52,41 @@ export const animateInvoiceRoute = (asset: SVGSVGElement): MotionCleanup => {
   const values = ROUTE.stations.map((_, index) =>
     asset.querySelector<SVGGraphicsElement>(`[data-tp-value="${index}"]`),
   );
+  // The glyph inside each bay. Animated apart from the bay ring so the ring can
+  // pop on arrival without dragging the icon's own scale around with it.
+  const glyphs = ROUTE.stations.map((_, index) =>
+    asset.querySelector<SVGGraphicsElement>(`[data-tp-glyph="${index}"]`),
+  );
+  // The settled copy of each bay, cross-faded over the pending one as the
+  // invoice arrives. See RouteSection for why it is a second layer rather than
+  // a colour tween.
+  const lits = ROUTE.stations.map((_, index) =>
+    asset.querySelector<SVGGraphicsElement>(`[data-tp-lit="${index}"]`),
+  );
+  // Rides from bay to bay with the invoice. A settled station says which ones
+  // are DONE; this says which one is happening now.
+  const marker = asset.querySelector<SVGGraphicsElement>('[data-tp-marker]');
 
   const timeline = gsap.timeline({ paused: true, repeat: -1, repeatDelay: 0.6 });
   const span = ROUTE.railEnd - ROUTE.railStart;
 
   // Rest state: the rail is drawn but nothing has travelled it yet.
   timeline
-    .set(packet, { attr: { cx: ROUTE.railStart }, opacity: 0 })
+    .set(packet, { attr: { x: ROUTE.railStart - 7 }, opacity: 0 })
     .set(progress, { scaleX: 0, transformOrigin: 'left center' })
-    .set(nodes.filter(Boolean), { opacity: 0.28, scale: 1, transformOrigin: 'center center' })
+    .set(nodes.filter(Boolean), {
+      opacity: PENDING.bay,
+      scale: 1,
+      transformOrigin: 'center center',
+    })
+    .set(glyphs.filter(Boolean), { opacity: PENDING.glyph })
+    .set(lits.filter(Boolean), { opacity: 0, scale: 0.86, transformOrigin: 'center center' })
+    .set(marker, {
+      attr: { cx: ROUTE.stations[0].x },
+      opacity: 0,
+      scale: 0.72,
+      transformOrigin: 'center center',
+    })
     .set(values.filter(Boolean), { opacity: 0, y: 6 })
     .call(() => ui.setReadout('drafting', 'nothing on chain yet'))
     .to(packet, { opacity: 1, duration: TIMING.enter, ease: 'power2.out' });
@@ -62,13 +99,25 @@ export const animateInvoiceRoute = (asset: SVGSVGElement): MotionCleanup => {
     timeline
       .to(
         packet,
-        { attr: { cx: station.x }, duration: TIMING.hop, ease: 'power1.inOut' },
+        { attr: { x: station.x - 7 }, duration: TIMING.hop, ease: 'power1.inOut' },
         index === 0 ? '<' : undefined,
       )
       .to(progress, { scaleX: reached, duration: TIMING.hop, ease: 'power1.inOut' }, '<')
-      // The station lights as the packet arrives, not before.
-      .to(node, { opacity: 1, scale: 1.35, duration: 0.16, ease: 'power3.out' }, '>-0.05')
-      .to(node, { scale: 1, duration: 0.22, ease: 'power2.out' })
+      // The marker appears at the first station and travels with the invoice
+      // after that, so "where it is now" never has to be inferred.
+      .to(
+        marker,
+        index === 0
+          ? { opacity: 1, scale: 1, duration: 0.34, ease: 'back.out(2)' }
+          : { attr: { cx: station.x }, duration: TIMING.hop, ease: 'power1.inOut' },
+        index === 0 ? '>-0.14' : '<',
+      )
+      // The station settles as the invoice arrives, not before. The pending
+      // layer brightens underneath at the same time, so the couple of frames
+      // before the settled ground is fully opaque are not a dim flash.
+      .to(lits[index], { opacity: 1, scale: 1, duration: 0.34, ease: 'back.out(1.7)' }, '>-0.05')
+      .to(node, { opacity: 1, duration: 0.2, ease: 'power2.out' }, '<')
+      .to(glyphs[index], { opacity: 1, duration: 0.2, ease: 'power2.out' }, '<')
       .to(value, { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }, '<')
       .call(() => ui.setReadout(station.label.toLowerCase(), station.value), undefined, '<')
       .to({}, { duration: TIMING.dwell });
@@ -77,11 +126,23 @@ export const animateInvoiceRoute = (asset: SVGSVGElement): MotionCleanup => {
   // Fade out rather than snapping back: the invoice is done, not rewound.
   timeline
     .to(packet, { opacity: 0, duration: TIMING.reset, ease: 'power2.in' })
+    .to(marker, { opacity: 0, scale: 0.72, duration: TIMING.reset, ease: 'power2.in' }, '<')
     .to(
-      [...nodes.filter(Boolean), ...values.filter(Boolean)],
-      { opacity: 0.28, duration: TIMING.reset, ease: 'power2.in' },
+      lits.filter(Boolean),
+      { opacity: 0, scale: 0.86, duration: TIMING.reset, ease: 'power2.in' },
       '<',
-    );
+    )
+    .to(
+      nodes.filter(Boolean),
+      { opacity: PENDING.bay, duration: TIMING.reset, ease: 'power2.in' },
+      '<',
+    )
+    .to(
+      glyphs.filter(Boolean),
+      { opacity: PENDING.glyph, duration: TIMING.reset, ease: 'power2.in' },
+      '<',
+    )
+    .to(values.filter(Boolean), { opacity: 0, duration: TIMING.reset, ease: 'power2.in' }, '<');
 
   return connectLoop(asset, timeline, ui, 'route ready', 'illustrative sequence');
 };
