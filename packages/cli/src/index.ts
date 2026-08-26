@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-import { installMidnightRuntimeCompatibility } from './runtime-compat.js';
+import { main } from './main.js';
 
-installMidnightRuntimeCompatibility();
-
-const { main } = await import('./main.js');
 process.exitCode = await main();

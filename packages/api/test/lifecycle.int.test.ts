@@ -9,10 +9,10 @@ import { describe, expect, it } from 'vitest';
 
 import type { TacitPayProviders } from '../src/index.js';
 import type { FundableWallet } from './local-wallet.js';
-import { installMidnightRuntimeCompatibility } from './runtime-compat.js';
 
-installMidnightRuntimeCompatibility();
-
+// Imported dynamically because the WASM-backed runtime must resolve to a single
+// instance before the contract module loads — see the `resolutions` entry for
+// onchain-runtime-v3 in the root package.json.
 const { InvoiceStatus, ledger } = await import('@tacitpay/contracts/managed/tacitpay/contract');
 const {
   NIGHT_TOKEN_COLOR,

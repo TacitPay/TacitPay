@@ -463,13 +463,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@midnight-ntwrk/onchain-runtime-v3@npm:^3.0.0":
-  version: 3.1.0
-  resolution: "@midnight-ntwrk/onchain-runtime-v3@npm:3.1.0"
-  checksum: 10c0/9b6a0585c02784a42fd68d50007e421a6a870f375994629cf978644b681adb57e13484f2eba01326d86aa68c45661a37711bef5edd727f1dd97f9e68c1c13ae3
-  languageName: node
-  linkType: hard
-
 "@midnight-ntwrk/platform-js@npm:2.2.4, @midnight-ntwrk/platform-js@npm:^2.2.4":
   version: 2.2.4
   resolution: "@midnight-ntwrk/platform-js@npm:2.2.4"
