@@ -69,36 +69,13 @@ The only values ever `disclose()`d are on the allowed-public list in PRD §4.3. 
 | Private state (client device, encrypted) | Merchant: secret key, invoice bodies, salts, memos · Payer: secret key, receipts                       |
 | Off-chain transport (URL fragment)       | The invoice link payload — never sent to any server                                                    |
 
-One invoice, end to end. Everything inside the shaded block is private to the
-device it happens on:
+The whole system on one canvas — the link as the transport, every caller
+funnelling through one API, the six providers, and what actually reaches the
+chain:
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant I as Issuer
-    participant L as Public ledger
-    participant P as Payer
-    participant V as Anyone
+[![TacitPay architecture](./docs/tacitpay-architecture.png)](./docs/tacitpay-architecture.png)
 
-    rect rgb(244, 244, 245)
-    I->>I: pick amount, memo, random salt
-    I->>I: commitment = persistentCommit({amount, memoHash}, salt)
-    end
-    I->>L: createInvoice(id, ownerTag, commitment, expiry)
-    Note over L: The ledger now holds a hash and a status.<br/>Not the amount. Not who issued it.
-    I-->>P: invoice link, in the URL fragment — no server sees it
-
-    rect rgb(244, 244, 245)
-    P->>P: recompute the commitment from the link payload
-    end
-    P->>L: payInvoice(id, preimage, shielded coin)
-    Note over L: Contract checks the commitment matches and the<br/>coin's colour and value are right, then escrows it.
-    L-->>V: status is PAID — verifiable by anyone, wallet or not
-
-    I->>L: withdraw(id)
-    Note over L: Ownership proven from the issuer's secret,<br/>never from a prover-supplied public key.
-    L-->>I: the escrowed coin, shielded
-```
+<sub>Editable source: [`docs/tacitpay-architecture.excalidraw`](./docs/tacitpay-architecture.excalidraw) — open it at [excalidraw.com](https://excalidraw.com).</sub>
 
 More in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md), which expands each
 circuit into its own diagram derived from the code.
