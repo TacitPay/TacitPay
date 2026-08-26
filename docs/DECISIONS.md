@@ -173,6 +173,20 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     functions in `browser.ts`, so the encoding stays stated in one place.
     (`@midnightntwrk/dapp-connector-api@4.0.1`'s own mock names the parameter
     `hexTx`, and 1AM's published typings label the methods "hex-based".)
+  - **The connector scope is the HYPHENATED one, and D-011's lesson does not
+    generalise.** Both `@midnight-ntwrk/dapp-connector-api` and
+    `@midnightntwrk/dapp-connector-api` exist and were published minutes apart.
+    For the _wallet SDK_, D-011 concluded the un-hyphenated scope is the live
+    one. For the _connector_ it is the reverse: the hyphenated package is
+    `4.0.1` stable — the version PRD §8.3 names — while the un-hyphenated
+    package has **no stable release at all**, only `4.1.0-beta` and a long tail
+    of canaries, with its `latest` tag pointing at one of them. Applying D-011's
+    rule by analogy would silently install a canary.
+    This is easy to do by accident, because midnight-js's own testkit adapter —
+    the file this decision cites as the reference implementation — imports the
+    un-hyphenated scope. Verified 2026-08-24 with `npm view <pkg> dist-tags`;
+    re-check rather than trust either scope from memory.
+
   - **`ttl` is dropped deliberately.** The connector takes no such argument; the
     wallet owns the time-to-live of the inputs it selects.
   - **`hintUsage` is called up front** with the exact method list TacitPay uses,
