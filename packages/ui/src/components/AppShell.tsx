@@ -8,6 +8,7 @@ import { useProving } from '@/lib/proving-context';
 import { cn } from '@/lib/utils';
 
 import { Logo } from './Logo';
+import { ThemeToggle } from './ThemeToggle';
 
 const navigation = [
   { label: 'Merchant', to: '/merchant' },
@@ -78,17 +79,20 @@ export function AppShell({ children }: { children: ReactNode }) {
               />
             </Link>
           </div>
-          <nav aria-label="Primary navigation" className="hidden items-center gap-1 md:flex">
-            {navigation.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) => navigationClass(isActive && !item.to.includes('#'))}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+          <div className="flex items-center gap-2">
+            <nav aria-label="Primary navigation" className="hidden items-center gap-1 md:flex">
+              {navigation.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) => navigationClass(isActive && !item.to.includes('#'))}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+            <ThemeToggle />
+          </div>
         </div>
         <nav
           aria-label="Mobile navigation"

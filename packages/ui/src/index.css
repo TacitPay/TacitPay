@@ -23,6 +23,8 @@
    Previously these neutrals carried a teal cast (hue ~194–220) and the accent
    was a teal that appeared nowhere in the brand. */
 :root {
+  color-scheme: light;
+
   --background: var(--color-zinc-50);
   --foreground: var(--color-zinc-950);
   --card: #ffffff;
@@ -64,6 +66,155 @@
   --status-withdrawn-fg: var(--color-violet-700);
   --status-cancelled-bg: var(--color-zinc-100);
   --status-cancelled-fg: var(--color-zinc-600);
+
+  /* The marketing surface at `/` runs a small semantic set of its own on top of
+     the shadcn tokens: it alternates two grounds, rules everything with
+     hairlines, and keeps exactly one inverted chapter. Naming them here is what
+     lets the page carry a light and a dark register without a single hardcoded
+     zinc left in the sections themselves. */
+  --tp-surface: var(--color-zinc-50);
+  --tp-surface-alt: #ffffff;
+  --tp-ink: var(--color-zinc-950);
+  --tp-ink-muted: var(--color-zinc-600);
+  --tp-ink-faint: var(--color-zinc-500);
+  --tp-rule: var(--color-zinc-200);
+  --tp-rule-strong: var(--color-zinc-300);
+  --tp-redact: var(--color-zinc-300);
+  --tp-warn: var(--color-amber-700);
+  --tp-invert-surface: var(--color-zinc-950);
+  --tp-invert-ink: var(--color-zinc-50);
+  --tp-invert-ink-muted: var(--color-zinc-400);
+  --tp-invert-rule: var(--color-zinc-800);
+  /* The shielded ring of the mark, which is its own brand value. */
+  --tp-mark-ring: var(--color-zinc-400);
+  /* The terminator is one colour at a dozen alphas, so it needs raw channels
+     rather than a colour token. It is the ink of whichever ground it is on. */
+  --tp-glow: 9 9 11;
+}
+
+/* ---------------------------------------------------------------------------
+   Dark register.
+
+   The visitor has three states, not two. An explicit choice stamps
+   `data-theme` on <html>; the default "system" setting stamps nothing, so only
+   `prefers-color-scheme` separates light from dark there. The media query is
+   therefore guarded against an explicit light choice, and the attribute rule
+   repeats it so the toggle wins in both directions.
+
+   These two blocks are identical on purpose. Change one, change the other.
+   --------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --background: var(--color-zinc-950);
+    --foreground: var(--color-zinc-50);
+    --card: var(--color-zinc-900);
+    --card-foreground: var(--color-zinc-50);
+    --popover: var(--color-zinc-900);
+    --popover-foreground: var(--color-zinc-50);
+
+    /* Primary inverts with the ground: the disc is whatever reads as solid. */
+    --primary: var(--color-zinc-50);
+    --primary-foreground: var(--color-zinc-950);
+
+    --secondary: var(--color-zinc-800);
+    --secondary-foreground: var(--color-zinc-100);
+    --muted: var(--color-zinc-800);
+    --muted-foreground: var(--color-zinc-400);
+
+    --accent: var(--color-zinc-800);
+    --accent-foreground: var(--color-zinc-50);
+
+    --destructive: var(--color-red-500);
+    --border: var(--color-zinc-800);
+    --input: var(--color-zinc-700);
+    --ring: var(--color-zinc-600);
+
+    /* Status keeps its hues but swaps which end of the scale carries them, so a
+     chip still reads as a label rather than glowing off a near-black table. */
+    --status-open-bg: var(--color-blue-950);
+    --status-open-fg: var(--color-blue-300);
+    --status-paid-bg: var(--color-emerald-950);
+    --status-paid-fg: var(--color-emerald-300);
+    --status-withdrawn-bg: var(--color-violet-950);
+    --status-withdrawn-fg: var(--color-violet-300);
+    --status-cancelled-bg: var(--color-zinc-800);
+    --status-cancelled-fg: var(--color-zinc-400);
+
+    --tp-surface: var(--color-zinc-950);
+    --tp-surface-alt: #101013;
+    --tp-ink: var(--color-zinc-50);
+    --tp-ink-muted: var(--color-zinc-400);
+    --tp-ink-faint: var(--color-zinc-500);
+    --tp-rule: var(--color-zinc-800);
+    --tp-rule-strong: var(--color-zinc-700);
+    --tp-redact: var(--color-zinc-700);
+    --tp-warn: var(--color-amber-500);
+    /* The inverted chapter cannot go lighter here, so it goes deeper instead. */
+    --tp-invert-surface: #050506;
+    --tp-invert-ink: var(--color-zinc-50);
+    --tp-invert-ink-muted: var(--color-zinc-400);
+    --tp-invert-rule: var(--color-zinc-800);
+    --tp-mark-ring: var(--color-zinc-500);
+    --tp-glow: 250 250 250;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --background: var(--color-zinc-950);
+  --foreground: var(--color-zinc-50);
+  --card: var(--color-zinc-900);
+  --card-foreground: var(--color-zinc-50);
+  --popover: var(--color-zinc-900);
+  --popover-foreground: var(--color-zinc-50);
+
+  /* Primary inverts with the ground: the disc is whatever reads as solid. */
+  --primary: var(--color-zinc-50);
+  --primary-foreground: var(--color-zinc-950);
+
+  --secondary: var(--color-zinc-800);
+  --secondary-foreground: var(--color-zinc-100);
+  --muted: var(--color-zinc-800);
+  --muted-foreground: var(--color-zinc-400);
+
+  --accent: var(--color-zinc-800);
+  --accent-foreground: var(--color-zinc-50);
+
+  --destructive: var(--color-red-500);
+  --border: var(--color-zinc-800);
+  --input: var(--color-zinc-700);
+  --ring: var(--color-zinc-600);
+
+  /* Status keeps its hues but swaps which end of the scale carries them, so a
+     chip still reads as a label rather than glowing off a near-black table. */
+  --status-open-bg: var(--color-blue-950);
+  --status-open-fg: var(--color-blue-300);
+  --status-paid-bg: var(--color-emerald-950);
+  --status-paid-fg: var(--color-emerald-300);
+  --status-withdrawn-bg: var(--color-violet-950);
+  --status-withdrawn-fg: var(--color-violet-300);
+  --status-cancelled-bg: var(--color-zinc-800);
+  --status-cancelled-fg: var(--color-zinc-400);
+
+  --tp-surface: var(--color-zinc-950);
+  --tp-surface-alt: #101013;
+  --tp-ink: var(--color-zinc-50);
+  --tp-ink-muted: var(--color-zinc-400);
+  --tp-ink-faint: var(--color-zinc-500);
+  --tp-rule: var(--color-zinc-800);
+  --tp-rule-strong: var(--color-zinc-700);
+  --tp-redact: var(--color-zinc-700);
+  --tp-warn: var(--color-amber-500);
+  /* The inverted chapter cannot go lighter here, so it goes deeper instead. */
+  --tp-invert-surface: #050506;
+  --tp-invert-ink: var(--color-zinc-50);
+  --tp-invert-ink-muted: var(--color-zinc-400);
+  --tp-invert-rule: var(--color-zinc-800);
+  --tp-mark-ring: var(--color-zinc-500);
+  --tp-glow: 250 250 250;
 }
 
 @theme inline {
@@ -85,6 +236,23 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  /* The marketing surface's own semantic colours, so sections say
+     `bg-tp-surface` rather than naming a zinc step that only works in one
+     register. */
+  --color-tp-surface: var(--tp-surface);
+  --color-tp-surface-alt: var(--tp-surface-alt);
+  --color-tp-ink: var(--tp-ink);
+  --color-tp-ink-muted: var(--tp-ink-muted);
+  --color-tp-ink-faint: var(--tp-ink-faint);
+  --color-tp-rule: var(--tp-rule);
+  --color-tp-rule-strong: var(--tp-rule-strong);
+  --color-tp-redact: var(--tp-redact);
+  --color-tp-warn: var(--tp-warn);
+  --color-tp-invert-surface: var(--tp-invert-surface);
+  --color-tp-invert-ink: var(--tp-invert-ink);
+  --color-tp-invert-ink-muted: var(--tp-invert-ink-muted);
+  --color-tp-invert-rule: var(--tp-invert-rule);
+  --color-tp-mark-ring: var(--tp-mark-ring);
   /* Typography follows the mark: a precise grotesque for interface text, an
      editorial serif for display, and a technical mono for anything the chain
      actually stores (ids, hashes, addresses). */
@@ -144,6 +312,36 @@
   /* Hairline rules, the technical-drawing register the mark implies. */
   .tp-rule {
     border-color: color-mix(in oklab, currentColor 12%, transparent);
+  }
+
+  /* Vendor brand marks ship in two inks, and altering them is not ours to do —
+     so the page carries both files and shows whichever suits the ground. Same
+     three states as the palette, so a visitor on "system" gets the right one
+     rather than the light-mode default. */
+  .tp-mark-on-light {
+    display: block;
+  }
+
+  .tp-mark-on-dark {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .tp-mark-on-light {
+      display: none;
+    }
+
+    :root:not([data-theme='light']) .tp-mark-on-dark {
+      display: block;
+    }
+  }
+
+  :root[data-theme='dark'] .tp-mark-on-light {
+    display: none;
+  }
+
+  :root[data-theme='dark'] .tp-mark-on-dark {
+    display: block;
   }
 }
 

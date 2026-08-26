@@ -18,6 +18,19 @@
          makes no third-party request at all, so visiting an invoice link tells
          nobody but the host that it happened. See src/index.css. -->
     <title>TacitPay — private invoicing on Midnight</title>
+    <script>
+      // Stamp an explicit theme choice before first paint, or the page renders
+      // light for a frame and then flips. "system" stores nothing, so there is
+      // nothing to stamp and the media query in index.css owns it. Keep the key
+      // in step with src/lib/theme.ts.
+      try {
+        var tpTheme = localStorage.getItem('tacitpay:theme');
+        if (tpTheme === 'light' || tpTheme === 'dark')
+          document.documentElement.dataset.theme = tpTheme;
+      } catch (tpError) {
+        // Blocked site data: follow the system, which needs no stamp.
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
