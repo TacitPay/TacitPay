@@ -1,0 +1,55 @@
+---
+title: TacitPay
+description: Private invoicing & settlement on Midnight — private by default, provable on demand.
+hero:
+  title: Invoices that prove themselves.
+  tagline: Private invoicing & settlement on Midnight. What reaches the chain is a commitment and a status — the amount, the memo and both parties stay on your device.
+  image:
+    alt: The TacitPay mark — a public-ledger disc eclipsed by a shielded ring, meeting at the settlement node.
+    light: ../../assets/mark-light.svg
+    dark: ../../assets/mark-dark.svg
+  actions:
+    - text: Read the whitepaper
+      link: /whitepaper/
+      icon: open-book
+      variant: primary
+    - text: Open the app
+      link: https://app.tacitpay.xyz
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## The idea in one table
+
+A transparent chain publishes what you charged and who paid you. A fully anonymous one proves nothing to anyone. TacitPay holds both ends at once:
+
+| Data                    | Public ledger                        | Payer             | Merchant       |
+| ----------------------- | ------------------------------------ | ----------------- | -------------- |
+| Invoice amount          | **Hidden** (commitment only)         | Known (from link) | Known          |
+| Memo / line items       | Hidden (hash inside commitment)      | Known             | Known          |
+| Merchant identity       | Hidden (per-invoice tag, unlinkable) | Knows the sender  | —              |
+| Payer identity          | Hidden (per-invoice tag)             | —                 | Not from chain |
+| Invoice exists + status | **Public by design**                 | Public            | Public         |
+
+Anyone can verify an invoice settled. Nobody can see what it was for.
+
+<CardGrid>
+  <Card title="The disclosure line">
+    Exactly which fields cross onto the public ledger, and which are never sent at all. [Read the
+    concept →](/concepts/disclosure/)
+  </Card>
+  <Card title="The contract">
+    Six circuits in ~260 lines of Compact, with every assert and every disclosure listed. [Read the
+    reference →](/architecture/contract/)
+  </Card>
+  <Card title="Try it in minutes">
+    Create, pay and verify an invoice in the browser against the live Preview deployment. [Follow
+    the guide →](/guides/app/)
+  </Card>
+  <Card title="Live on Preview">
+    Deployed Aug 26 2026; the first full browser lifecycle — create, pay, withdraw between two
+    wallets — ran Aug 27. [Networks & deployments →](/reference/networks/)
+  </Card>
+</CardGrid>

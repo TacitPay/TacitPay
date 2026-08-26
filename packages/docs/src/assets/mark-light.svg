@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="5.5 8.5 30 23" fill="none">
+  <!-- The TacitPay mark on a light ground, same three shapes as the Logo
+       component: shielded ring, public-ledger disc, settlement node. -->
+  <circle cx="24" cy="20" r="9" stroke="#a1a1aa" stroke-width="2.25" />
+  <circle cx="16" cy="20" r="9" fill="#09090b" />
+  <circle cx="20" cy="20" r="2.25" fill="#fafafa" />
+</svg>
