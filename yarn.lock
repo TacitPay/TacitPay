@@ -2936,6 +2936,7 @@ __metadata:
     tw-animate-css: "npm:1.4.0"
     typescript: "npm:5.9.3"
     vite: "npm:8.2.2"
+    vite-plugin-wasm: "npm:3.6.0"
   languageName: unknown
   linkType: soft
 
@@ -5599,6 +5600,15 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 10c0/161599bf921cfaa41c85d2b01c871975ee99260f3e874c2d41c05890d41170297bdcf314bc5185e7a700de2034ac5b888e3efc8e9f35724f4918f53538d717c9
+  languageName: node
+  linkType: hard
+
+"vite-plugin-wasm@npm:3.6.0":
+  version: 3.6.0
+  resolution: "vite-plugin-wasm@npm:3.6.0"
+  peerDependencies:
+    vite: ^2 || ^3 || ^4 || ^5 || ^6 || ^7 || ^8
+  checksum: 10c0/7b18a7effc0341fb307feaeaaddea43c3886065227c416abc19ef3711c4c4dfef6f0a660241cbe9f84b9c69e3460e04b495c2740241cba0d15c4633a583920a2
   languageName: node
   linkType: hard
 
