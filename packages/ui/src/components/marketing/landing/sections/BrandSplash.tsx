@@ -1,5 +1,5 @@
 import { ArrowRight } from 'iconsax-reactjs';
-import { Link } from 'react-router-dom';
+import { AppLink } from '@/components/marketing/AppLink';
 
 import { SplashLockup } from '../SplashLockup';
 
@@ -210,7 +210,7 @@ export function BrandSplash() {
               The second action was a scroll cue down to `#record`; the primary
               nav still links there, so the anchor did not go anywhere. */}
           <div data-tp-splash-detail className="mt-9 flex w-full justify-center">
-            <Link
+            <AppLink
               to="/app"
               className="tp-action-flash group inline-flex h-12 w-full max-w-sm items-center justify-center gap-2 rounded-full bg-[var(--tp-split-action)] px-7 ring-1 ring-white/15 ring-inset text-xs font-semibold tracking-[0.12em] text-[var(--tp-split-action-ink)] uppercase transition-colors hover:bg-[var(--tp-split-action-hover)] focus-visible:ring-2 focus-visible:ring-[var(--tp-split-action-ink)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--tp-split-action)] focus-visible:outline-none sm:w-auto"
             >
@@ -221,7 +221,7 @@ export function BrandSplash() {
                 aria-hidden="true"
                 className="transition-transform group-hover:translate-x-0.5"
               />
-            </Link>
+            </AppLink>
           </div>
         </div>
       </div>

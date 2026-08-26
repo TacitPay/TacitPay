@@ -1,5 +1,5 @@
 import { ArrowRight, SearchNormal1 } from 'iconsax-reactjs';
-import { Link } from 'react-router-dom';
+import { AppLink } from '@/components/marketing/AppLink';
 
 import { Reveal } from '../shared';
 
@@ -65,7 +65,7 @@ export function FinalCta() {
           {/* Two doors, because the page has two kinds of reader by now: someone
               issuing an invoice, and someone who was sent one. */}
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
+            <AppLink
               to="/app"
               className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-8 text-xs font-semibold tracking-[0.12em] text-primary-foreground uppercase transition-colors hover:bg-primary/85 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
             >
@@ -76,14 +76,14 @@ export function FinalCta() {
                 aria-hidden="true"
                 className="transition-transform group-hover:translate-x-0.5"
               />
-            </Link>
-            <Link
+            </AppLink>
+            <AppLink
               to="/app#verify"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-tp-rule-strong px-7 text-xs font-medium tracking-[0.12em] text-tp-ink-muted uppercase transition-colors hover:border-tp-ink-faint hover:text-tp-ink focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-tp-surface focus-visible:outline-none"
             >
               Verify one you were sent
               <SearchNormal1 size={16} variant="Linear" aria-hidden="true" />
-            </Link>
+            </AppLink>
           </div>
         </Reveal>
       </div>

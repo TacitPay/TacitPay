@@ -21,6 +21,28 @@
       ],
       "destination": "/app",
       "permanent": false
+    },
+    {
+      "source": "/:page(app|merchant|pay|receipts|settings)",
+      "has": [
+        {
+          "type": "host",
+          "value": "tacitpay.xyz"
+        }
+      ],
+      "destination": "https://app.tacitpay.xyz/:page",
+      "permanent": false
+    },
+    {
+      "source": "/verify/:id",
+      "has": [
+        {
+          "type": "host",
+          "value": "tacitpay.xyz"
+        }
+      ],
+      "destination": "https://app.tacitpay.xyz/verify/:id",
+      "permanent": false
     }
   ],
   "headers": [

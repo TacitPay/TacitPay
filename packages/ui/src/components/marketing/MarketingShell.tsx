@@ -2,6 +2,7 @@ import { ArrowRight } from 'iconsax-reactjs';
 import { type ReactNode, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+import { AppLink } from '@/components/marketing/AppLink';
 import { Logo } from '@/components/Logo';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { startSmoothScroll } from '@/lib/smoothScroll';
@@ -9,35 +10,6 @@ import { startSmoothScroll } from '@/lib/smoothScroll';
 // Chrome for the public marketing surface at `/`. Deliberately not AppShell:
 // the app chrome carries wallet, network and proving state, none of which
 // belongs on a page you can read without connecting anything.
-
-// tacitpay.xyz is the marketing apex; the product lives on app.tacitpay.xyz.
-// Every other host (previews, localhost, the subdomain itself) stays SPA-routed.
-const APP_ORIGIN = 'https://app.tacitpay.xyz';
-const onMarketingApex = () =>
-  typeof window !== 'undefined' && window.location.hostname === 'tacitpay.xyz';
-
-function AppLink({
-  to,
-  className,
-  children,
-}: {
-  to: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  if (onMarketingApex()) {
-    return (
-      <a href={`${APP_ORIGIN}${to}`} className={className}>
-        {children}
-      </a>
-    );
-  }
-  return (
-    <Link to={to} className={className}>
-      {children}
-    </Link>
-  );
-}
 
 const NAV = [
   { href: '#record', label: 'The line' },

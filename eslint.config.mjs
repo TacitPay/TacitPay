@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig(
   {
-    ignores: [
+    ignores: ['.vercel/**', 
       '**/node_modules/**',
       '**/dist/**',
       'contracts/managed/**',

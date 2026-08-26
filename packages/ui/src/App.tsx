@@ -97,10 +97,27 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryS
   }
 }
 
+// SPA clicks never touch the server, so vercel.json's host redirects cannot
+// catch them: any app route rendering on the marketing apex hops itself to
+// app.tacitpay.xyz, fragment and query intact. Every other host is untouched.
+function ApexHostGuard() {
+  const location = useLocation();
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.hostname !== 'tacitpay.xyz') return;
+    if (location.pathname === '/') return;
+    window.location.replace(
+      `https://app.tacitpay.xyz${location.pathname}${location.search}${location.hash}`,
+    );
+  }, [location]);
+  return null;
+}
+
 export function App() {
   return (
     <AppErrorBoundary>
       <ScrollManager />
+      <ApexHostGuard />
       <Routes>
         {/* Public marketing surface — no wallet, no app chrome. */}
         <Route path="/" element={<HomePage />} />
