@@ -448,3 +448,108 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
   crossings dropped to 1.1–2.6 s and each crossing takes a random `timeScale`
   between 0.82 and 1.24, so no two are the same speed. Measured at roughly one
   crossing every 4.2–5.5 s, against 5.4–7.2 s before.
+
+- **D-021 (2026-08-25) — The splash carries two grounds, and everything on it is
+  drawn as a departure from one rather than as a colour.** The hero divides at a
+  vertical terminator: a light half for what the ledger shows, a dark half for
+  what only you can read. Public is always the light ground and private always
+  the dark one, so the mapping never lies; what turns over with the theme is
+  which side each lands on, which is what makes the odd half the dark panel on
+  paper and the light panel on the void.
+  - **Why `mix-blend-mode: difference` rather than a masked second copy.** The
+    wordmark, the promise, the terminator and both actions all cross the seam,
+    so each has to read on two grounds at once. The obvious fix — a second copy
+    of the hero's content in the opposite register, clipped to the far half —
+    would have put two of every `data-tp-*` hook in the document, and the load
+    resolve and the scrub select by attribute inside a `gsap.context`. Instead
+    `.tp-split-ink` re-points the register's own tokens and composites in
+    `difference`. Nothing inside the splash had to learn about the split,
+    because it was already written entirely in `--tp-*`.
+  - **The register values are near-complements, and that is not luck.** Light
+    and dark were built as inversions of each other, so a single value lands
+    within a step or two of both: `#ffffff` gives `#050505` on paper (against
+    `--tp-ink` `#09090B`) and `#F6F6F4` on the void (against `#FAFAFA`);
+    `#a8a8a8` gives `#525252` and `#9F9F9F` (against zinc-600 and zinc-400).
+  - **The ramp is 2%, and the width is load-bearing twice.** At a third of the
+    viewport, everything centred landed in a band of mid-grey where neither
+    register reads — the promise went muddy and the primary pill vanished into
+    it. At 6% the ramp still straddled the inner edge of both actions. At 2%
+    every mark sits on a ground that has already committed, and 30 px at 1512 is
+    still a soft edge rather than a cut.
+  - **The seam sits at 50%** — a true half, and the axis the whole hero hangs
+    off.
+  - **The splash carries ONE action, and it is the single exception to the rule
+    below.** A centred pill straddles the seam at every width (43.6–55.4% at
+    1512), so it is the only element that cannot be drawn as a departure from
+    one ground. It takes a literal mid grey with white type instead of
+    `--primary`: mid grey is the only kind of colour that reads against both
+    halves at once, at 4.5:1 on paper and 4.1:1 on the void while still carrying
+    white type at 4.6:1. Anything nearer either end buys contrast on one half at
+    exactly the cost of the other.
+    - **This is why the actions sit outside the difference group**, and why the
+      group moved from one wrapper around the whole hero onto the five leaves
+      that still want it (field, terminator, line ends, lockup, promise). Under
+      `difference` only ONE uniform tone is possible at a time, so a grey ground
+      and white type cannot both hold across the seam — the ground would stay
+      put and the type would flip halfway through the word.
+    - The second action was a scroll cue to `#record`; the primary nav still
+      links there, so the anchor did not go anywhere.
+  - **Nothing else crosses the terminator, and the layout exists to keep it that
+    way.** An element spanning both grounds changes colour halfway through
+    itself, and a word that changes colour mid-word reads as a rendering fault
+    rather than as a design. So the lockup is two equal columns split on the
+    seam, the name is STACKED — "Tacit" over "Pay" — so it fits inside one of
+    them, and the promise breaks at its own full stop. Measured at 1512: mark
+    31.4–48.1%, name 50.9–65.1%, clauses 2.9–48.1% and 50.9–96.1%.
+    - **Every attempt to cover the crossing instead of removing it failed, and
+      for two distinct reasons.** A pool of the page's own ground behind the
+      copy, a frosted pane, and a bowed seam all read as one-sided, because they
+      were built from one half's colour and so looked like that side bleeding
+      into the other. A neutral mid-grey plate fixes _that_ — grey belongs to
+      neither half — but it cannot work under `difference` at all, since white
+      differenced against mid-grey comes back as mid-grey; it would have forced
+      the whole centre column out of the blend group. Removing the crossing costs
+      nothing by comparison: the content stays in the group, and every colour
+      stays a token.
+    - **The mark is sized against the stacked name**, ~174px to its 179px at 1512. At its old size it read as a small badge parked beside a big word
+      rather than as half of one lockup.
+    - **The clauses turn out to be the public claim and the private one**, so
+      each takes the ground it describes and they swap with the grounds like the
+      line ends do. Pinning them would have put "Settlement anyone can verify"
+      under a label reading PRIVATE STATE in one of the two themes.
+    - **`direction: rtl` is the wrong tool for that swap.** Bidi moves a trailing
+      full stop to the FRONT of an LTR clause inside an RTL box, and both
+      sentences rendered as ".Numbers only you can read". Column order comes from
+      `--tp-split-flow` and the alignment from `--tp-seam-a` / `-b` instead.
+  - **Below `sm` the split is off entirely.** The arrangement above needs two
+    columns wide enough to hold a mark and a name, and a phone has none. With
+    the ground layer hidden the section falls back to its own `bg-tp-surface`,
+    and the difference group then resolves to exactly the register the rest of
+    the page uses — so the fallback needs no second set of colours.
+  - **Mirroring is CSS, not React.** `theme.ts` stores the _choice_, not the
+    resolved theme, so React would have had to resolve `system` itself against
+    `matchMedia` — a flash on first paint and a second source of truth beside
+    the media query. Four tokens do it instead (`--tp-split-rtl` / `-flow` /
+    `-dir` / `-flip`), declared in the same three blocks as every other
+    register. The line ends use `direction` and logical properties, so one
+    property reverses the row _and_ flips the leader and tick inside each end.
+  - **The grounds mirror; the lockup does not.** The line ends and the field
+    treatments have to turn over — a "public ledger" label sitting on the
+    private ground would simply be lying. Identity is the opposite case: the
+    mark and the wordmark hold one position in every register, because the one
+    thing on the page that must not move when the theme changes is what the
+    product is called. Mirroring it was tried first and looked strong, but it
+    put the splash mark in the opposite register from the header logo sixty
+    pixels above it. Pinning it also fixes that for free: the light half is on
+    the left on paper and on the right on the void, so the LEFT half is always
+    the one matching `--tp-surface`, and a lockup pinned there always renders
+    in the register the rest of the page is already in.
+  - **The scrub animates a CSS variable, not `x`.** The line ends leave outward,
+    and which way that physically is depends on the theme. `--tp-flank-x` is
+    animated instead and the element's own `transform` multiplies it by
+    `--tp-split-flip`, so GSAP never owns that transform and never hardcodes a
+    direction at setup that would be wrong the moment anyone touched the toggle.
+  - **The bottom fades over the last eighth**, revealing the section's own
+    `bg-tp-surface`, so the odd half dissolves into the page instead of butting
+    against the next section's ground. Taken over a quarter of the height it
+    stopped reading as a falloff and started reading as fog.

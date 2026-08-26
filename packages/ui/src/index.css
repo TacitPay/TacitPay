@@ -94,6 +94,88 @@
      until both land as the same event. */
   --tp-flash: 0.9;
   --tp-flash-mid: 0.36;
+
+  /* THE SPLASH SPLIT.
+
+     The hero divides at a vertical terminator: one ground for what the ledger
+     shows, one for what only you can read. Public is ALWAYS the light ground
+     and private ALWAYS the dark one, so the mapping never lies — what turns
+     over with the theme is which side each lands on. That is the inversion:
+     on paper the dark private panel is the half that departs from the page,
+     and on the void it is the light public one.
+
+     The two grounds are theme-invariant for the same reason. Only the four
+     orientation tokens below flip. */
+  --tp-public-ground: var(--color-zinc-50);
+  --tp-private-ground: var(--color-zinc-950);
+  /* Light: public reads first, on the left. `dir` points public-ward and
+     `back` private-ward, because a gradient direction cannot be negated the
+     way a flex direction can. `flip` is the ±1 the line ends multiply their
+     scroll travel by, so "outward" stays outward once the sides swap.
+
+     The LOCKUP is deliberately absent from this list. Identity does not move
+     with the theme — and because the light half is on the left on paper and on
+     the right on the void, the left half is always the one matching
+     `--tp-surface`, so a lockup pinned there also stays in the page's own
+     register and keeps agreeing with the header logo. */
+  --tp-split-rtl: ltr;
+  --tp-split-flow: row;
+  --tp-split-dir: to right;
+  --tp-split-back: to left;
+  --tp-split-flip: 1;
+  /* The promise breaks at its own full stop, one clause per ground, so each
+     half sits on the side it is describing. The clauses therefore turn over
+     with the grounds exactly as the line ends do, and these are the two
+     alignments that swap with them — each clause hugs the terminator.
+
+     Alignment cannot come from `direction` here, which was the obvious reach:
+     bidi moves a trailing full stop to the FRONT of an LTR clause inside an
+     RTL box, and both sentences came out reading ".Numbers only you can read". */
+  --tp-seam-a: right;
+  --tp-seam-b: left;
+
+  /* Ink for the split hero, and the reason it needs its own set.
+
+     Every mark on the splash lands on one ground or the other, and the layout
+     is arranged so that stays true — but WHICH ground differs per element, and
+     the terminator and its travelling flash cross both at once. So nothing here
+     is drawn as a colour; each mark is a departure from whatever is behind it,
+     and the section composites in `difference`. One set of values then reads
+     correctly on both halves, because |value − ground| lands within a step or
+     two of the register the rest of the page already uses:
+
+         #ffffff  on paper → #050505   (against --tp-ink  #09090B)
+         #ffffff  on void  → #F6F6F4   (against --tp-ink  #FAFAFA)
+         #a8a8a8  on paper → #525252   (against zinc-600  #52525B)
+         #a8a8a8  on void  → #9F9F9F   (against zinc-400  #A1A1AA)
+
+     That near-complement is not a coincidence — the two registers were built
+     as inversions of each other — and it is what lets the hero carry two
+     grounds without a second, masked copy of its own content. */
+  --tp-split-ink: #ffffff;
+  --tp-split-ink-muted: #a8a8a8;
+  --tp-split-ink-faint: #898989;
+  --tp-split-rule: #1e1e1e;
+  --tp-split-rule-strong: #363636;
+  /* Zero leaves the ground exactly as it is, which is what a "surface"
+     coloured hole in a differenced drawing has to be. */
+  --tp-split-hole: #000000;
+  --tp-split-mark-ring: #696969;
+
+  /* The one action sits ON the terminator — a single centred pill straddles it
+     at every width — so unlike everything else here it cannot be drawn as a
+     departure from one ground. It needs a literal colour that reads against
+     BOTH, and a mid grey is the only kind that can: roughly equidistant from
+     the two grounds (4.5:1 on paper, 4.1:1 on the void) while still carrying
+     white type at 4.6:1. Anything nearer either end buys contrast on one half
+     at exactly the cost of the other, which is why it is not `--primary`.
+
+     This is also why the actions sit OUTSIDE the difference group: under
+     `difference` only one uniform tone is possible at a time, so a grey ground
+     and white type cannot both hold across the seam. */
+  --tp-split-action: var(--color-zinc-500);
+  --tp-split-action-hover: #64646d;
+  --tp-split-action-ink: #ffffff;
 }
 
 /* ---------------------------------------------------------------------------
@@ -159,6 +241,17 @@
     --tp-glow: 250 250 250;
     --tp-flash: 0.5;
     --tp-flash-mid: 0.16;
+
+    /* Mirrored: the light public half moves to the right, and the lockup,
+       the two field treatments and the line ends all turn over with it. The
+       grounds themselves do not change — see the light register. */
+    --tp-split-rtl: rtl;
+    --tp-split-flow: row-reverse;
+    --tp-split-dir: to left;
+    --tp-split-back: to right;
+    --tp-split-flip: -1;
+    --tp-seam-a: left;
+    --tp-seam-b: right;
   }
 }
 
@@ -213,6 +306,17 @@
   --tp-glow: 250 250 250;
   --tp-flash: 0.5;
   --tp-flash-mid: 0.16;
+
+  /* Mirrored: the light public half moves to the right, and the lockup, the
+     two field treatments and the line ends all turn over with it. The grounds
+     themselves do not change — see the light register. */
+  --tp-split-rtl: rtl;
+  --tp-split-flow: row-reverse;
+  --tp-split-dir: to left;
+  --tp-split-back: to right;
+  --tp-split-flip: -1;
+  --tp-seam-a: left;
+  --tp-seam-b: right;
 }
 
 @theme inline {
@@ -306,6 +410,133 @@
    logo's own monochrome zinc so the brand and the product look like one thing.
    --------------------------------------------------------------------------- */
 @layer components {
+  /* The splash's two grounds, divided at a vertical terminator.
+
+     A 2% ramp rather than a hard edge, because the ask was a seamless blend —
+     but no wider, and the width is load-bearing twice over. An early attempt
+     ramped across a third of the viewport and everything centred (the promise,
+     the actions, the middle of the wordmark) landed in a band of mid-grey where
+     neither register reads. A 6% ramp still straddled the inner edge of both
+     actions. At 2% every mark on the page sits on a ground that has already
+     committed, so nothing here is ever low-contrast — and 30px at 1512 is
+     still a soft edge rather than a cut.
+
+     The seam sits at 50%: a true half, and also the 0.8% gap BETWEEN the two
+     actions at every width from 640 up, so the terminator never cuts a button.
+
+     The bottom fades out to nothing over the last eighth, which reveals the
+     section's own `bg-tp-surface` underneath — that is what dissolves the odd
+     half back into the page rather than butting it against the next section's
+     ground. Short on purpose: taken over a quarter of the height it stops
+     reading as a falloff and starts reading as fog. */
+  .tp-split {
+    background-image: linear-gradient(
+      var(--tp-split-dir),
+      var(--tp-public-ground) 0 49%,
+      var(--tp-private-ground) 51% 100%
+    );
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 96%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 96%);
+  }
+
+  /* Everything drawn ON the split, composited as a departure from whichever
+     ground is behind it. Re-pointing the register's own tokens is the whole
+     trick: the splash was already written entirely in `--tp-*`, so not one
+     element in it has to know the hero now has two grounds.
+
+     `--tp-flash` takes the light value in both themes on purpose. Under
+     `difference` a low alpha resolves toward mid-grey on BOTH sides, so the
+     travelling flash needs the heavier weighting to land as an event at all. */
+  .tp-split-ink {
+    mix-blend-mode: difference;
+
+    --tp-ink: var(--tp-split-ink);
+    --tp-ink-muted: var(--tp-split-ink-muted);
+    --tp-ink-faint: var(--tp-split-ink-faint);
+    --tp-rule: var(--tp-split-rule);
+    --tp-rule-strong: var(--tp-split-rule-strong);
+    --tp-surface: var(--tp-split-hole);
+    --tp-mark-ring: var(--tp-split-mark-ring);
+    --tp-glow: 255 255 255;
+    --tp-flash: 0.9;
+    --tp-flash-mid: 0.36;
+
+    /* The actions are pills with their own ground, so they invert whole: a
+       near-white pill with knockout text on the void, near-black on paper. */
+    --primary: var(--tp-split-ink);
+    --primary-foreground: var(--tp-split-hole);
+    --ring: var(--tp-split-ink-faint);
+  }
+
+  /* The one action, lit on hover by the page's OWN gesture rather than a
+     borrowed gloss. A commitment crossing the terminator is already an event
+     this page knows how to draw — a soft elliptical halo travelling through the
+     line, not a diagonal band of shine — so the button reuses that shape and
+     the hover reads as part of the same world.
+
+     One pass per hover, not a loop: it should read as something crossing, not
+     as an idle shimmer. Leaving and re-entering replays it.
+
+     The persistent hover state stays a colour shift. The flash is a one-shot,
+     so on its own it would leave a hovered button looking identical to a resting
+     one — which is an affordance problem, not a style one. */
+  .tp-action-flash {
+    position: relative;
+    overflow: hidden;
+    /* A concentric hairline standing off the pill — always, not on hover. It is
+       the mark's own grammar: the brand is a solid disc with a shielded ring
+       held off it, and this is that shape wrapped around the action.
+
+       Anything drawn OUTSIDE the pill lands on both grounds at once, so the ring
+       is mixed from the pill's own grey rather than given a light or dark value.
+       Mid grey is darker than the light half and lighter than the dark one, so
+       it reads on both — the same reason the pill itself is grey. Mixed from the
+       token so the two cannot drift apart.
+
+       `outline` rather than `box-shadow`, because Tailwind's `ring-*` utilities
+       compose into `box-shadow` and the focus ring would fight it. Outline
+       follows the border radius, and the button turns its own outline off. */
+    outline: 1px solid color-mix(in srgb, var(--tp-split-action) 55%, transparent);
+    outline-offset: 4px;
+    transition: background-color 0.2s ease;
+  }
+
+  .tp-action-flash::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Parked off the left edge, so nothing shows at rest. */
+    transform: translateX(-130%);
+    background: radial-gradient(
+      ellipse 22% 140% at center,
+      rgb(255 255 255 / 0.5) 0%,
+      rgb(255 255 255 / 0.2) 40%,
+      transparent 72%
+    );
+  }
+
+  .tp-action-flash:hover::after,
+  .tp-action-flash:focus-visible::after {
+    animation: tp-action-flash 0.72s ease-out;
+  }
+
+  @keyframes tp-action-flash {
+    from {
+      transform: translateX(-130%);
+    }
+    to {
+      transform: translateX(130%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tp-action-flash:hover::after,
+    .tp-action-flash:focus-visible::after {
+      animation: none;
+    }
+  }
+
   /* Paper grain — keeps large flat areas from reading as dead screen space. */
   .tp-grain::before {
     content: '';

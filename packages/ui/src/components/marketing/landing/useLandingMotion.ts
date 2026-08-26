@@ -113,10 +113,26 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
           { opacity: 0.72, scale: 0.965, yPercent: -6, ...held },
           0,
         );
+      // The line ends leave the way they came in — outward, off the page. Which
+      // way that physically is depends on the theme, because the splash mirrors
+      // its two grounds, so the distance is animated as a CSS variable and the
+      // element's own `transform` applies `--tp-split-flip` to it. Animating
+      // `x` here would hardcode a direction at setup time and then be wrong for
+      // the rest of the session the moment anyone touched the theme toggle.
       if (publicFlank)
-        scrub.fromTo(publicFlank, { x: 0, autoAlpha: 1 }, { x: -44, autoAlpha: 0, ...held }, 0);
+        scrub.fromTo(
+          publicFlank,
+          { '--tp-flank-x': '0px', autoAlpha: 1 },
+          { '--tp-flank-x': '-44px', autoAlpha: 0, ...held },
+          0,
+        );
       if (privateFlank)
-        scrub.fromTo(privateFlank, { x: 0, autoAlpha: 1 }, { x: 44, autoAlpha: 0, ...held }, 0);
+        scrub.fromTo(
+          privateFlank,
+          { '--tp-flank-x': '0px', autoAlpha: 1 },
+          { '--tp-flank-x': '44px', autoAlpha: 0, ...held },
+          0,
+        );
       // The field drifts slower than the page, which reads as depth rather
       // than as movement — about one grid square across the whole splash.
       if (fields.length)
