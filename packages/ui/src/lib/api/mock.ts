@@ -1,5 +1,5 @@
 // Mock adapter — replaced by @tacitpay/api (PRD §8) once the Wave 1 contract lands; the interface must not drift from PRD §8.1.
-import { NETWORK_IDS } from './deployment';
+import { endpointsFor, NETWORK_IDS } from './deployment';
 import {
   PROOF_STAGES,
   type InvoiceLinkPayload,
@@ -17,7 +17,6 @@ export const MOCK_CONTRACT_ADDRESS =
   '7a8c13e7f0b24d5a9c1e4376a8b2d4f6091c3e5a7b9d2f406183a5c7e9b1d3f5';
 
 const STORAGE_KEY = 'tacitpay.mock-state.v1';
-const TOKEN = 'NIGHT';
 const HEX_32 = /^[0-9a-f]{64}$/i;
 const BASE64URL = /^[A-Za-z0-9_-]+$/;
 
@@ -176,7 +175,11 @@ export function decodeInvoiceLink(
   const amount = BigInt(amountText);
   if (amount <= 0n) throw new Error('Amount must be positive');
 
-  if (record.token !== TOKEN && (typeof record.token !== 'string' || !HEX_32.test(record.token))) {
+  const tokenSymbol = endpointsFor(expected.network).tokenSymbol;
+  if (
+    record.token !== tokenSymbol &&
+    (typeof record.token !== 'string' || !HEX_32.test(record.token))
+  ) {
     throw new Error('Invoice link field “token” is not valid.');
   }
   if (typeof record.memo !== 'string' || record.memo.length > 280) {
@@ -199,7 +202,8 @@ export function decodeInvoiceLink(
   };
 }
 
-function seedState(): PersistedState {
+function seedState(network: InvoiceNetwork): PersistedState {
+  const token = endpointsFor(network).tokenSymbol;
   const now = Math.floor(Date.now() / 1000);
   return {
     version: 1,
@@ -207,7 +211,7 @@ function seedState(): PersistedState {
       {
         invoiceId: '11'.repeat(32),
         amount: '1250000',
-        token: TOKEN,
+        token,
         memo: 'Logo design — final',
         salt: 'a1'.repeat(32),
         createdAt: now - 2 * 60 * 60,
@@ -218,7 +222,7 @@ function seedState(): PersistedState {
       {
         invoiceId: '22'.repeat(32),
         amount: '8750000',
-        token: TOKEN,
+        token,
         memo: 'Q3 research sprint',
         salt: 'b2'.repeat(32),
         createdAt: now - 7 * 24 * 60 * 60,
@@ -229,7 +233,7 @@ function seedState(): PersistedState {
       {
         invoiceId: '33'.repeat(32),
         amount: '24000000',
-        token: TOKEN,
+        token,
         memo: 'Product launch retainer',
         salt: 'c3'.repeat(32),
         createdAt: now - 14 * 24 * 60 * 60,
@@ -242,7 +246,7 @@ function seedState(): PersistedState {
       {
         invoiceId: '33'.repeat(32),
         amount: '24000000',
-        token: TOKEN,
+        token,
         memo: 'Product launch retainer',
         paidAt: now - 13 * 24 * 60 * 60,
         txId: 'd3'.repeat(32),
@@ -251,21 +255,21 @@ function seedState(): PersistedState {
   };
 }
 
-function loadState(): PersistedState {
+function loadState(network: InvoiceNetwork): PersistedState {
   try {
     const value = localStorage.getItem(STORAGE_KEY);
-    if (!value) return seedState();
+    if (!value) return seedState(network);
     const parsed = JSON.parse(value) as Partial<PersistedState>;
     if (
       parsed.version !== 1 ||
       !Array.isArray(parsed.invoices) ||
       !Array.isArray(parsed.receipts)
     ) {
-      return seedState();
+      return seedState(network);
     }
     return parsed as PersistedState;
   } catch {
-    return seedState();
+    return seedState(network);
   }
 }
 
@@ -278,10 +282,11 @@ class MockTacitPayApi implements TacitPayApi {
   readonly contractAddress = MOCK_CONTRACT_ADDRESS;
   readonly role = 'merchant' as const;
 
-  private state = loadState();
+  private state: PersistedState;
   private readonly watchers = new Map<string, Set<ObservableObserver<InvoiceStatus>>>();
 
   constructor(private readonly options: MockApiOptions) {
+    this.state = loadState(options.network);
     this.persist();
   }
 
@@ -356,7 +361,7 @@ class MockTacitPayApi implements TacitPayApi {
       const invoice: StoredInvoice = {
         invoiceId: sandboxId(),
         amount: input.amount.toString(),
-        token: TOKEN,
+        token: endpointsFor(this.options.network).tokenSymbol,
         memo: input.memo.trim(),
         salt: sandboxId(),
         createdAt: now,

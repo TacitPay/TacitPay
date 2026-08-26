@@ -12,6 +12,10 @@ export type Endpoints = {
   indexerUrl: string;
   indexerWsUrl: string;
   proofServerUrl: string;
+  tokenSymbol: string;
+  tokenDecimals: number;
+  settlementLane: 'shielded' | 'unshielded';
+  paymentTokenType?: string;
 };
 
 /** Reads config/networks.json, the same table the CLI and the network tests use. */
@@ -21,6 +25,10 @@ export const endpointsFor = (network: InvoiceNetwork): Endpoints => {
     indexerUrl: config.indexerUrl,
     indexerWsUrl: config.indexerWsUrl,
     proofServerUrl: config.proofServerUrl,
+    tokenSymbol: config.tokenSymbol,
+    tokenDecimals: config.tokenDecimals,
+    settlementLane: config.settlementLane as 'shielded' | 'unshielded',
+    paymentTokenType: 'paymentTokenType' in config ? config.paymentTokenType : undefined,
   };
 };
 

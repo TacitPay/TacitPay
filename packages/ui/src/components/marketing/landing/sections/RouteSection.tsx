@@ -60,7 +60,7 @@ export function RouteSection() {
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               role="img"
-              aria-label="An invoice travels one rail through four stations: create, which writes a commitment; share, which puts the details in a link fragment; settle, which is a shielded transfer marking the status paid; and verify, which anyone can read without a wallet."
+              aria-label="An invoice travels one rail through four stations: create, which writes a commitment; share, which puts the details in a link fragment; settle, which is an on-chain settlement marking the status paid; and verify, which anyone can read without a wallet."
               className="min-w-[62rem]"
             >
               {/* The rail: a graduated track, not a bare line. The bays are

@@ -23,7 +23,7 @@ export const ROUTE = {
   stations: [
     { x: 180, label: 'Create', value: 'a commitment, never the amount' },
     { x: 476, label: 'Share', value: 'details ride in the link fragment' },
-    { x: 772, label: 'Settle', value: 'a shielded transfer marks it paid' },
+    { x: 772, label: 'Settle', value: 'an on-chain settlement marks it paid' },
     { x: 1020, label: 'Verify', value: 'checked by anyone, with no wallet' },
   ],
 } as const;

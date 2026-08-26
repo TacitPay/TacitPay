@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/table';
 import { WalletGate } from '@/components/WalletGate';
 import { type InvoiceView, useTacitPay } from '@/lib/api';
+import { endpointsFor } from '@/lib/api/deployment';
 import { getErrorMessage } from '@/lib/errors';
 import { formatDateTime, parseAmount, toUnixSeconds } from '@/lib/format';
 import { useProving } from '@/lib/proving-context';
@@ -50,7 +51,8 @@ function NewInvoiceDialog({
   onOpenChange(open: boolean): void;
   onCreated(): void;
 }) {
-  const { api, proofStage } = useTacitPay();
+  const { api, network, proofStage } = useTacitPay();
+  const tokenSymbol = endpointsFor(network).tokenSymbol;
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
   const [expiry, setExpiry] = useState('');
@@ -132,7 +134,7 @@ function NewInvoiceDialog({
         ) : (
           <form onSubmit={submit} className="space-y-4" noValidate>
             <div className="space-y-1.5">
-              <Label htmlFor="invoice-amount">Amount in NIGHT</Label>
+              <Label htmlFor="invoice-amount">Amount in {tokenSymbol}</Label>
               <Input
                 id="invoice-amount"
                 type="text"

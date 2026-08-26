@@ -81,7 +81,7 @@ export function ErrorState({
               Try again
             </Button>
           ) : null}
-          {message.startsWith('Your wallet has NIGHT') ? (
+          {message.startsWith('Your wallet has the invoice token') ? (
             <Button asChild variant="outline" size="sm">
               <a
                 href="https://docs.midnight.network/guides/acquire-tokens"

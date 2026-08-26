@@ -15,7 +15,7 @@ export function getErrorMessage(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
 
   if (message.includes('Wallet.InsufficientFunds')) {
-    return 'Your wallet has NIGHT but no DUST yet; register for DUST and wait for a spendable coin';
+    return 'Your wallet has the invoice token but no DUST yet; register for DUST and wait for a spendable coin';
   }
   if (/proof server|ECONNREFUSED|failed to fetch|networkerror/iu.test(message)) {
     return 'The proof server is unreachable. Start it at localhost:6300 and try again.';
