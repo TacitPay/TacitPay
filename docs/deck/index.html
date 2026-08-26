@@ -11,13 +11,20 @@
      The mark is a public disc and a shielded ring; colour would be a third
      thing competing with the only distinction that matters here. */
   :root {
+    /* These mirror the app's own --tp-* set value for value, so the deck and
+       the product are provably the same design rather than two takes on it.
+       --glow is raw channels because the terminator is one colour at a dozen
+       alphas: near-black ink on paper, silver on the void. */
     --ground: #fafafa;
-    --surface: #f4f4f5;
+    --surface: #ffffff;
     --ink: #09090b;
-    --muted: #71717a;
+    --muted: #52525b;
+    --faint: #71717a;
     --rule: #e4e4e7;
-    --redact: #18181b;
-    --redact-ink: #a1a1aa;
+    --rule-strong: #d4d4d8;
+    --redact: #d4d4d8;
+    --redact-ink: #71717a;
+    --glow: 9 9 11;
 
     --sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
     --serif: 'Instrument Serif', ui-serif, Georgia, serif;
@@ -29,22 +36,28 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
       --ground: #09090b;
-      --surface: #18181b;
+      --surface: #141418;
       --ink: #fafafa;
       --muted: #a1a1aa;
+      --faint: #71717a;
       --rule: #27272a;
-      --redact: #e4e4e7;
-      --redact-ink: #52525b;
+      --rule-strong: #3f3f46;
+      --redact: #3f3f46;
+      --redact-ink: #a1a1aa;
+      --glow: 250 250 250;
     }
   }
   :root[data-theme='dark'] {
     --ground: #09090b;
-    --surface: #18181b;
+    --surface: #141418;
     --ink: #fafafa;
     --muted: #a1a1aa;
+    --faint: #71717a;
     --rule: #27272a;
-    --redact: #e4e4e7;
-    --redact-ink: #52525b;
+    --rule-strong: #3f3f46;
+    --redact: #3f3f46;
+    --redact-ink: #a1a1aa;
+    --glow: 250 250 250;
   }
 
   * {
@@ -90,19 +103,19 @@
     position: absolute;
     top: var(--pad);
     right: var(--pad);
-    font-family: var(--mono);
     font-size: 0.72rem;
+    font-weight: 500;
     letter-spacing: 0.08em;
-    color: var(--muted);
+    color: var(--faint);
     font-variant-numeric: tabular-nums;
   }
 
   .eyebrow {
-    font-family: var(--mono);
     font-size: 0.7rem;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.16em;
-    color: var(--muted);
+    letter-spacing: 0.14em;
+    color: var(--faint);
   }
 
   h1,
@@ -158,8 +171,8 @@
     inset: 0;
     display: grid;
     place-items: center;
-    font-family: var(--mono);
     font-size: 0.6em;
+    font-weight: 500;
     letter-spacing: 0.1em;
     color: var(--redact-ink);
   }
@@ -191,12 +204,11 @@
     vertical-align: top;
   }
   th {
-    font-family: var(--mono);
     font-weight: 500;
     font-size: 0.68rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
+    letter-spacing: 0.12em;
+    color: var(--faint);
   }
 
   ul {
@@ -224,11 +236,11 @@
     display: block;
   }
   .stat .k {
-    font-family: var(--mono);
     font-size: 0.68rem;
+    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
+    letter-spacing: 0.12em;
+    color: var(--faint);
   }
 
   .card {
@@ -238,6 +250,7 @@
     padding: clamp(1rem, 2.5vw, 1.6rem);
   }
 
+  /* Mono earns its place: this is a value the chain actually stores. */
   .hash {
     font-family: var(--mono);
     font-size: 0.72rem;
@@ -269,18 +282,161 @@
     outline: 2px solid var(--ink);
     outline-offset: 3px;
   }
+  /* ---------------------------------------------------------------- identity
+     The signature opening, carried over from the product's own splash: the
+     lockup sits on the terminator — the line where the public ledger meets
+     private state — and the line fades behind it rather than striking through.
+     The mark is painted ring-first, disc over it, exactly as the app does. */
+  .slide--title {
+    align-items: center;
+    text-align: center;
+  }
+  .slide--title p {
+    margin-inline: auto;
+  }
+
+  .lockup-row {
+    position: relative;
+    /* The title slide centres its children, which would otherwise shrink this
+       row to the width of the lockup and leave the terminator as a visible
+       box around it rather than a line across the slide. */
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: clamp(1rem, 4vh, 2.5rem);
+  }
+  .beam {
+    position: absolute;
+    inset-inline: calc(var(--pad) * -1);
+    top: 50%;
+    height: clamp(4rem, 8vw, 8rem);
+    translate: 0 -50%;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      #000 0%,
+      transparent 24%,
+      transparent 76%,
+      #000 100%
+    );
+    mask-image: linear-gradient(to right, #000 0%, transparent 24%, transparent 76%, #000 100%);
+  }
+  /* Gradients, not flat fills: a filled rectangle reads as a grey slab with
+     hard top and bottom edges. Only the hairline keeps a defined edge. */
+  .beam::before,
+  .beam::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+  }
+  .beam::before {
+    inset-block: 0;
+    background: linear-gradient(to bottom, transparent, rgb(var(--glow) / 0.07) 50%, transparent);
+  }
+  .beam::after {
+    top: 50%;
+    height: 1px;
+    translate: 0 -50%;
+    background: rgb(var(--glow) / 0.7);
+  }
+
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(0.7rem, 2vw, 1.3rem);
+  }
+  .lockup svg {
+    height: clamp(2.75rem, 5.5vw, 4.5rem);
+    width: auto;
+    flex-shrink: 0;
+  }
+  .wordmark {
+    font-size: clamp(2.2rem, 5.4vw, 4.5rem);
+    font-weight: 600;
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+  .wordmark span {
+    font-weight: 400;
+    color: var(--faint);
+  }
+  h1.promise {
+    font-family: var(--sans);
+    font-size: clamp(1.05rem, 1rem + 0.5vw, 1.35rem);
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: var(--muted);
+    max-width: 34ch;
+    margin-inline: auto;
+  }
+
+  /* ------------------------------------------------------------- built on
+     Vendor marks are the vendors' own files, unaltered. Each ships in two
+     inks and the deck shows whichever suits the ground — same three states as
+     the palette, so "system" resolves too. */
+  .marks {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: clamp(1.5rem, 5vw, 3.5rem);
+    padding-top: 0.5rem;
+  }
+  .marks img {
+    height: 1.6rem;
+    width: auto;
+  }
+  .mark-on-light {
+    display: block;
+  }
+  .mark-on-dark {
+    display: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .mark-on-light {
+      display: none;
+    }
+    :root:not([data-theme='light']) .mark-on-dark {
+      display: block;
+    }
+  }
+  :root[data-theme='dark'] .mark-on-light {
+    display: none;
+  }
+  :root[data-theme='dark'] .mark-on-dark {
+    display: block;
+  }
 </style>
 
 <main class="deck" id="deck" tabindex="0">
-  <section class="slide">
+  <section class="slide slide--title">
     <span class="num">01 / 12</span>
     <span class="eyebrow">Midnight Buildathon 2026 · Wave 1</span>
-    <h1>Get paid on-chain<br />without publishing<br />your books.</h1>
-    <p class="lede">
-      TacitPay is a protocol for private invoicing and settlement on Midnight. Anyone can verify an
-      invoice was settled. Nobody can see what it was for.
+
+    <div class="lockup-row">
+      <div class="beam" aria-hidden="true"></div>
+      <div class="lockup">
+        <svg
+          viewBox="112 82 256 176"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <circle cx="280" cy="170" r="80" stroke="var(--faint)" stroke-width="5" />
+          <circle cx="200" cy="170" r="80" fill="var(--ink)" />
+          <circle cx="240" cy="170" r="15" fill="var(--ground)" />
+        </svg>
+        <span class="wordmark">Tacit<span>Pay</span></span>
+      </div>
+    </div>
+
+    <h1 class="promise">Settlement anyone can verify. Numbers only you can read.</h1>
+    <p class="lede muted">
+      TacitPay is a protocol for private invoicing and settlement on Midnight. Get paid on-chain
+      without publishing your books.
     </p>
-    <p class="muted mono" style="font-size: 0.75rem">github.com/Marcussy34/tacitpay · Apache-2.0</p>
+    <p class="hash">github.com/Marcussy34/tacitpay · Apache-2.0</p>
   </section>
 
   <section class="slide">
@@ -333,6 +489,16 @@
     <p class="muted">
       Wave 1 targets shielded tNIGHT and bridged tUSDM on Preview. The contract is token-agnostic —
       the payment token is fixed at deploy.
+    </p>
+    <div class="marks">
+      <img class="mark-on-light" src="brand/midnight-on-light.svg" alt="Midnight" />
+      <img class="mark-on-dark" src="brand/midnight-on-dark.svg" alt="" aria-hidden="true" />
+      <img class="mark-on-light" src="brand/cardano-on-light.svg" alt="Cardano" />
+      <img class="mark-on-dark" src="brand/cardano-on-dark.svg" alt="" aria-hidden="true" />
+    </div>
+    <p class="muted" style="font-size: 0.85rem">
+      Midnight is Cardano's first partner chain, so it inherits the security of a large, mature
+      network rather than bootstrapping its own.
     </p>
   </section>
 
