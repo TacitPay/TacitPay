@@ -132,3 +132,49 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
   - **Verified** with the shim deleted, not bypassed: 60 integration tests
     green against the live devnet, offline suites unchanged, sandbox seeding
     working.
+
+- **D-013 (2026-08-24) — the browser wallet and Midnight provider slots are an
+  adapter over the DApp Connector, not a second implementation.**
+  `packages/api/src/providers/browser.ts`. Verified against the shipped type
+  definitions of `@midnight-ntwrk/dapp-connector-api@4.0.1`, not from docs.
+  - **The two interfaces do not line up, and the gaps are the whole design.**
+    Midnight.js wants `balanceTx(tx: UnboundTransaction) => FinalizedTransaction`
+    and `submitTx(tx) => TransactionId`. The connector offers
+    `balanceUnsealedTransaction(tx: string) => {tx: string}` and
+    `submitTransaction(tx: string) => void`. So: transactions cross as strings,
+    and submission returns nothing at all.
+  - **The transaction id is derived locally, and it must be a _watchable_ one.**
+    `midnight-js-contracts` feeds whatever `submitTx` returns straight into
+    `publicDataProvider.watchForTxData`. `Transaction.transactionHash()` is
+    explicitly documented as unusable for that, because merging changes it;
+    `identifiers()` is the watchable set. We return `identifiers().at(-1)`,
+    which is exactly what the official `WalletFacade.submitTransaction` returns
+    (`wallet-sdk-facade/dist/index.js:322`) — a mirror, not a guess. Submission
+    is refused outright if the balanced transaction carries no identifier,
+    rather than submitting something the caller could never watch for.
+  - **Bech32m keys are normalised with the library's own helpers.**
+    `getShieldedAddresses()` returns Bech32m; `WalletProvider` wants hex.
+    `parseCoinPublicKeyToHex` / `parseEncPublicKeyToHex` in
+    `@midnight-ntwrk/midnight-js-utils` exist for precisely this and pass hex
+    through unchanged, so the adapter stays correct if a wallet ever reports raw
+    hex instead.
+  - **The wire encoding is hex, and this was verified rather than assumed.**
+    `@midnight-ntwrk/dapp-connector-api` types the parameter only as
+    `tx: string`. The receiving side of that same interface is implemented in
+    midnight-js itself —
+    `testkit-js/src/wallet/dapp-connector-wallet-adapter.ts` — and it settles
+    all three directions:
+    `balanceUnsealedTransaction` does
+    `LedgerTransaction.deserialize('signature', 'proof', 'pre-binding', fromHex(tx))`;
+    it returns `{ tx: toHex(finalized.serialize()) }`; and `submitTransaction`
+    does `LedgerTransaction.deserialize('signature', 'proof', 'binding', fromHex(tx))`.
+    So the markers TacitPay uses in both directions match the reference
+    implementation exactly. Both conversions still go through a single pair of
+    functions in `browser.ts`, so the encoding stays stated in one place.
+    (`@midnightntwrk/dapp-connector-api@4.0.1`'s own mock names the parameter
+    `hexTx`, and 1AM's published typings label the methods "hex-based".)
+  - **`ttl` is dropped deliberately.** The connector takes no such argument; the
+    wallet owns the time-to-live of the inputs it selects.
+  - **`hintUsage` is called up front** with the exact method list TacitPay uses,
+    so a wallet can gather every permission in one prompt instead of
+    interrupting mid-payment. A wallet that does not implement it still works.
