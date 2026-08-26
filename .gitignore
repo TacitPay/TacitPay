@@ -35,6 +35,8 @@ deployments/undeployed*.json
 .vite/
 .firecrawl/
 .serena/
+# Astro's generated type cache (packages/docs)
+.astro/
 # Node-wallet private state written by CLI runs — never commit
 midnight-level-db/
 .vercel

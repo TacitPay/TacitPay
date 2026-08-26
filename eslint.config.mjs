@@ -6,12 +6,15 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig(
   {
-    ignores: ['.vercel/**', 
+    ignores: [
+      '.vercel/**',
       '**/node_modules/**',
       '**/dist/**',
       'contracts/managed/**',
       '.yarn/**',
       '.firecrawl/**',
+      // Astro's generated type cache (packages/docs)
+      '**/.astro/**',
     ],
   },
   {
