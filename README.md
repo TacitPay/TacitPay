@@ -83,6 +83,26 @@ yarn env:down
 
 `yarn demo:seed` funds two wallets (including DUST, waiting until they can actually transact), deploys a contract, and leaves three invoices in known states — one OPEN, one PAID, one WITHDRAWN. It prints the contract address, the invoice IDs, and a ready-to-open `/pay#…` link, so the whole product is explorable in minutes without hand-driving a wallet. Re-running reuses the sandbox in seconds; `--reset` starts fresh.
 
+### Pointing the app at a real contract
+
+Out of the box the app runs on an in-memory mock, so every screen is explorable
+with no chain at all. To connect it to one, open `/settings` → **Contract
+connection**, paste a deployed contract address (`yarn demo:seed` prints one for
+a local devnet), connect a wallet, and unlock your private state with a
+passphrase.
+
+That passphrase encrypts invoice bodies, salts and memos in this browser. It is
+never transmitted and cannot be recovered — see D-014. For a public deployment,
+bake the address in at build time instead:
+
+```bash
+VITE_TACITPAY_CONTRACT_PREVIEW=<address> yarn workspace @tacitpay/ui run build
+```
+
+The chain code is behind a dynamic import, so a visitor to the marketing page
+downloads a 23 kB entry chunk and never fetches the Midnight stack unless they
+connect.
+
 ### Proving: you choose who generates the proof
 
 Generating a ZK proof requires the private invoice data, so whoever proves it sees it. TacitPay never operates a prover — instead it feature-detects, in this order:
@@ -97,11 +117,11 @@ The active tier is shown in the app. Full reasoning: PRD §4.1 and decision D-01
 
 The unit matrix is **U-01…U-28** (PRD §11.2). Wave 1's rows are live; the Wave 2/3 rows stay pre-registered as vitest todos so progress is visible in every run.
 
-| Suite                        | Result                                                                  |
-| ---------------------------- | ----------------------------------------------------------------------- |
-| `contracts` (unit)           | **20 passed**, 10 todo — U-01…U-17 plus U-17b, all real; 2 sanity tests |
-| `packages/api` (unit)        | **59 passed**, 1 todo — link codec, amounts, errors, private state      |
-| `packages/api` (integration) | **60 passed** against a live devnet in 117s — `TACITPAY_INT=1`          |
+| Suite                        | Result                                                                                        |
+| ---------------------------- | --------------------------------------------------------------------------------------------- |
+| `contracts` (unit)           | **20 passed**, 10 todo — U-01…U-17 plus U-17b, all real; 2 sanity tests                       |
+| `packages/api` (unit)        | **66 passed**, 1 todo — link codec, amounts, errors, private state, the DApp Connector bridge |
+| `packages/api` (integration) | **67 passed** against a live devnet in 120s — `TACITPAY_INT=1`                                |
 
 Every Wave 1 row runs offline in the pure-JS runtime — including the coin circuits (`receiveShielded`, `insertCoin`, `sendShielded`), so **nothing is deferred to the integration layer**. U-17 sweeps the serialized public state after a full lifecycle and asserts the amount (in four encodings), the memo hash, the salt and both secrets are absent. U-17b pins the Variant A exposure window below, so it stays a tested limitation rather than an assumption.
 
@@ -140,6 +160,8 @@ Stated openly per PRD §4.5:
 - **Payment timing is correlatable** — an observer learns "some invoice was paid at time T", never the amount or the parties.
 - **Anonymity sets are small on a young network** — inherent to any new chain.
 - **The merchant learns who the payer is** — off-chain, because they sent them the link. Normal commerce, not a chain leak.
+- **The browser wallet path has not yet met a real wallet extension** — every provider is built against the shipped `dapp-connector-api@4.0.1` type definitions and unit tested, and the whole stack builds, but no browser wallet has driven it end to end. The wire format itself is verified: hex encoding and transaction markers match midnight-js's own `DAppConnectorWalletAdapter`, the receiving side of the same interface (D-013). A funded Preview wallet settles the rest.
+- **A forgotten private-state passphrase loses invoice bodies** — the chain still proves the invoice existed and was settled; the amount, memo and salt are gone. Export/import is the Wave 2 mitigation (D-014).
 - **Variant A escrow leaks while it holds the coin** — and more than value: the escrowed coin's nonce is public, so after a withdrawal an observer who guesses the merchant's Zswap key can confirm it against the withdrawal's coin commitment, linking that merchant's withdrawals in transaction history. Withdrawing does not undo it. Wave 2's Variant B escrow removes the exposure; test U-17b pins the current behaviour meanwhile.
 
 ---
