@@ -31,6 +31,7 @@ const RESOLVE = {
 
 const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
   let loops: MotionCleanup[] = [];
+  let disposed = false;
 
   const context = gsap.context(() => {
     const splash = root.querySelector<HTMLElement>('[data-tp-splash]');
@@ -38,6 +39,7 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
     const lockup = root.querySelector<HTMLElement>('[data-tp-lockup]');
     const publicFlank = root.querySelector<HTMLElement>('[data-tp-flank="public"]');
     const privateFlank = root.querySelector<HTMLElement>('[data-tp-flank="private"]');
+    const fields = gsap.utils.toArray<HTMLElement>('[data-tp-field]', root);
 
     // ---------------------------------------------------------- load resolve
     if (splash && beam && lockup) {
@@ -95,6 +97,9 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
         .to(lockup, { opacity: 0.72, scale: 0.965, yPercent: -6, ease: 'none' }, 0);
       if (publicFlank) scrub.to(publicFlank, { x: -44, autoAlpha: 0, ease: 'none' }, 0);
       if (privateFlank) scrub.to(privateFlank, { x: 44, autoAlpha: 0, ease: 'none' }, 0);
+      // The field drifts slower than the page, which reads as depth rather
+      // than as movement — about one grid square across the whole splash.
+      if (fields.length) scrub.to(fields, { yPercent: -4, opacity: 0.35, ease: 'none' }, 0);
     }
 
     // --------------------------------------------------------------- reveals
@@ -117,7 +122,21 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
     loops.push(animateTerminatorPulse(root));
   }, root);
 
+  // ScrollTrigger caches every start and end at creation time, and the document
+  // is not done growing then: web fonts reflow the copy and late images add
+  // height. With stale measurements the splash scrub can sit pinned at its END
+  // state on a page nobody has scrolled — terminator squeezed to nothing, line
+  // ends faded out, which reads as the hero simply missing. Re-measure once the
+  // page has actually settled.
+  const refresh = () => {
+    if (!disposed) ScrollTrigger.refresh();
+  };
+  window.addEventListener('load', refresh);
+  document.fonts?.ready.then(refresh).catch(() => undefined);
+
   return () => {
+    disposed = true;
+    window.removeEventListener('load', refresh);
     context.revert();
     loops.forEach((cleanup) => cleanup());
   };

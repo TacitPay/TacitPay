@@ -22,6 +22,11 @@ interface Foundation {
   /** Logo heights are normalised by eye, not by box: the two lockups have
    *  different amounts of padding baked into their artboards. */
   readonly heightClass: string;
+  /** Intrinsic ratio, so the images reserve their space before they load. An
+   *  image that resizes after load moves the whole document, and anything that
+   *  measured scroll positions beforehand is then wrong. */
+  readonly width: number;
+  readonly height: number;
   readonly role: string;
   readonly detail: string;
   readonly href: string;
@@ -32,6 +37,8 @@ const FOUNDATIONS: readonly Foundation[] = [
     name: 'Midnight',
     file: 'midnight',
     heightClass: 'h-7',
+    width: 251,
+    height: 55,
     role: 'The dual ledger',
     detail:
       'Two states at once — a public ledger anyone can read, and a private state that never leaves your device. Zero-knowledge proofs let the first verify the second without ever receiving it.',
@@ -41,6 +48,8 @@ const FOUNDATIONS: readonly Foundation[] = [
     name: 'Cardano',
     file: 'cardano',
     heightClass: 'h-[1.6rem]',
+    width: 1250,
+    height: 251,
     role: 'Inherited security',
     detail:
       'Midnight is its first partner chain, which means it inherits the security of a large, mature network instead of bootstrapping its own — and stays firewalled from it.',
@@ -67,11 +76,15 @@ export function BuiltOnSection() {
                   {/* Both inks are present; CSS picks the one for this ground. */}
                   <img
                     src={`/brand/${item.file}-on-light.svg`}
+                    width={item.width}
+                    height={item.height}
                     alt={`${item.name} logo`}
                     className={`tp-mark-on-light w-auto ${item.heightClass}`}
                   />
                   <img
                     src={`/brand/${item.file}-on-dark.svg`}
+                    width={item.width}
+                    height={item.height}
                     alt=""
                     aria-hidden="true"
                     className={`tp-mark-on-dark w-auto ${item.heightClass}`}
@@ -79,7 +92,7 @@ export function BuiltOnSection() {
                 </div>
 
                 <div>
-                  <h3 className="font-mono text-[0.6875rem] tracking-[0.2em] text-tp-ink uppercase">
+                  <h3 className="text-[0.6875rem] font-medium tracking-[0.14em] text-tp-ink uppercase">
                     {item.role}
                   </h3>
                   <p className="mt-3 leading-7 text-tp-ink-muted">{item.detail}</p>
@@ -89,7 +102,7 @@ export function BuiltOnSection() {
                   href={item.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-auto font-mono text-[0.6875rem] tracking-[0.12em] text-tp-ink-faint uppercase underline underline-offset-4 transition-colors hover:text-tp-ink"
+                  className="mt-auto text-[0.6875rem] font-medium tracking-[0.12em] text-tp-ink-faint uppercase underline underline-offset-4 transition-colors hover:text-tp-ink"
                 >
                   Read the docs ↗
                 </a>
