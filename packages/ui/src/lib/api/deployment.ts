@@ -1,4 +1,28 @@
+import networkEndpoints from '@config/networks.json';
+
 import type { InvoiceNetwork } from './types';
+
+/** `local` in the UI is Midnight's `undeployed` network id. */
+export const NETWORK_IDS = {
+  local: 'undeployed',
+  preview: 'preview',
+} as const satisfies Record<InvoiceNetwork, string>;
+
+export type Endpoints = {
+  indexerUrl: string;
+  indexerWsUrl: string;
+  proofServerUrl: string;
+};
+
+/** Reads config/networks.json, the same table the CLI and the network tests use. */
+export const endpointsFor = (network: InvoiceNetwork): Endpoints => {
+  const config = networkEndpoints[NETWORK_IDS[network]];
+  return {
+    indexerUrl: config.indexerUrl,
+    indexerWsUrl: config.indexerWsUrl,
+    proofServerUrl: config.proofServerUrl,
+  };
+};
 
 const STORAGE_KEY = 'tacitpay.contract-address.v1';
 

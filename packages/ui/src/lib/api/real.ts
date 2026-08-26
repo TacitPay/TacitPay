@@ -16,8 +16,7 @@ import {
   type TacitPayProviders,
   type TacitPayRole,
 } from '@tacitpay/api';
-import networkEndpoints from '@config/networks.json';
-
+import { endpointsFor, NETWORK_IDS } from './deployment';
 import type {
   InvoiceLinkPayload,
   InvoiceNetwork,
@@ -29,26 +28,9 @@ import type {
   TacitPayApi,
 } from './types';
 
-/** `local` in the UI is Midnight's `undeployed` network id. */
-const NETWORK_IDS: Record<InvoiceNetwork, NetworkId> = {
-  local: 'undeployed',
-  preview: 'preview',
-};
-
 const UI_NETWORKS: Partial<Record<NetworkId, InvoiceNetwork>> = {
   undeployed: 'local',
   preview: 'preview',
-};
-
-type Endpoints = { indexerUrl: string; indexerWsUrl: string; proofServerUrl: string };
-
-export const endpointsFor = (network: InvoiceNetwork): Endpoints => {
-  const config = networkEndpoints[NETWORK_IDS[network]];
-  return {
-    indexerUrl: config.indexerUrl,
-    indexerWsUrl: config.indexerWsUrl,
-    proofServerUrl: config.proofServerUrl,
-  };
 };
 
 const STATUS_NAMES: Record<number, InvoiceStatus> = {
