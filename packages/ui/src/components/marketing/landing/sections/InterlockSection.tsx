@@ -48,7 +48,6 @@ export function InterlockSection() {
               role="img"
               aria-label="An invoice runs one route past three gates: createInvoice writes a commitment, payInvoice checks the preimage and the expiry, and withdraw is proven from the merchant secret. When the expiry gate holds, the invoice diverts to cancelInvoice and the escrow returns to the payer."
               className="min-w-[62rem]"
-              fontFamily="var(--font-mono)"
             >
               {/* ------------------------------------------------- the two rails */}
               <line
@@ -94,6 +93,7 @@ export function InterlockSection() {
                     fill={ink}
                     fontSize="12.5"
                     textAnchor="middle"
+                    fontFamily="var(--font-mono)"
                   >
                     {gate.circuit}
                   </text>
@@ -107,14 +107,10 @@ export function InterlockSection() {
                     {gate.check}
                   </text>
 
-                  {/* Authored eclipsed — the rest state is a route that passed. */}
-                  <circle
-                    data-tp-gate-disc={index}
-                    cx={gate.x - INTERLOCK.gateRest}
-                    cy={INTERLOCK.mainY}
-                    r={INTERLOCK.radius}
-                    fill={ink}
-                  />
+                  {/* Each gate IS the mark, so it obeys the mark's paint order:
+                      the shielded ring is a background line and the public disc
+                      sits in front of it. Authored eclipsed, because the rest
+                      state is a route that passed. */}
                   <circle
                     data-tp-gate-ring={index}
                     cx={gate.x + INTERLOCK.gateRest}
@@ -122,6 +118,13 @@ export function InterlockSection() {
                     r={INTERLOCK.radius}
                     stroke="var(--tp-mark-ring)"
                     strokeWidth="2.5"
+                  />
+                  <circle
+                    data-tp-gate-disc={index}
+                    cx={gate.x - INTERLOCK.gateRest}
+                    cy={INTERLOCK.mainY}
+                    r={INTERLOCK.radius}
+                    fill={ink}
                   />
                   <circle
                     data-tp-gate-node={index}
@@ -174,7 +177,7 @@ export function InterlockSection() {
                 y={INTERLOCK.divertY - 12}
                 fill={muted}
                 fontSize="10.5"
-                letterSpacing="1.5"
+                fontFamily="var(--font-mono)"
               >
                 {INTERLOCK.divertCircuit}
               </text>
@@ -209,12 +212,12 @@ export function InterlockSection() {
               <p className={`font-mono text-sm ${step.held ? 'text-tp-warn' : 'text-tp-ink'}`}>
                 {step.circuit}
               </p>
-              <p className="mt-1.5 font-mono text-[0.8125rem] text-tp-ink-muted">{step.check}</p>
+              <p className="mt-1.5 text-sm text-tp-ink-muted">{step.check}</p>
             </li>
           ))}
         </ol>
 
-        <p className="mt-5 max-w-2xl font-mono text-[0.6875rem] leading-5 tracking-[0.1em] text-tp-ink-faint uppercase">
+        <p className="mt-5 max-w-2xl text-[0.6875rem] leading-5 font-medium tracking-[0.12em] text-tp-ink-faint uppercase">
           {`Every fourth run, ${divertGate.circuit} holds and the escrow returns to the payer.`}
         </p>
       </div>

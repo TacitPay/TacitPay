@@ -17,7 +17,7 @@ export function FinalCta() {
           </p>
           <Link
             to="/app"
-            className="group mt-10 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-8 font-mono text-xs font-semibold tracking-[0.14em] text-primary-foreground uppercase transition-colors hover:bg-primary/85 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+            className="group mt-10 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-8 text-xs font-semibold tracking-[0.12em] text-primary-foreground uppercase transition-colors hover:bg-primary/85 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             Get started
             <ArrowRight

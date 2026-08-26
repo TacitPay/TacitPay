@@ -13,11 +13,13 @@ export const ROUTE = {
   railY: 120,
   railStart: 120,
   railEnd: 1124,
+  // Captions read as prose, not as machine output: the corridor instrument is
+  // where the ledger's own field names and hashes belong.
   stations: [
-    { x: 180, label: 'Create', value: 'commitment 0x41d9\u20267e02' },
-    { x: 480, label: 'Share', value: 'link #fragment \u00b7 never sent' },
-    { x: 780, label: 'Settle', value: 'shielded transfer \u00b7 PAID' },
-    { x: 1060, label: 'Verify', value: 'read by anyone \u00b7 no wallet' },
+    { x: 180, label: 'Create', value: 'a commitment, never the amount' },
+    { x: 480, label: 'Share', value: 'details ride in the link fragment' },
+    { x: 780, label: 'Settle', value: 'a shielded transfer marks it paid' },
+    { x: 1060, label: 'Verify', value: 'checked by anyone, with no wallet' },
   ],
 } as const;
 

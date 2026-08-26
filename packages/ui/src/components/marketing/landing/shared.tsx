@@ -18,10 +18,16 @@ export function Reveal({ children, className }: { children: ReactNode; className
   );
 }
 
-/** The mono microtype register: eyebrows, scale labels, and instrument chrome. */
+/**
+ * The microtype register: eyebrows, scale labels, and instrument chrome.
+ *
+ * Sans, not mono. Mono on this surface means one thing — a value the chain
+ * actually stores, or an identifier the toolchain names — and spending it on
+ * labels made every diagram read like a terminal beside a hero that does not.
+ */
 export function MicroLabel({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <p className={cn('font-mono text-[0.6875rem] tracking-[0.18em] uppercase', className)}>
+    <p className={cn('text-[0.6875rem] font-medium tracking-[0.14em] uppercase', className)}>
       {children}
     </p>
   );
@@ -32,39 +38,25 @@ export function SectionIntro({
   eyebrow,
   title,
   lede,
-  tone = 'surface',
   className,
 }: {
   eyebrow: string;
   title: string;
   lede?: string;
-  /** `invert` is the one chapter set on the opposite ground. */
-  tone?: 'surface' | 'invert';
   className?: string;
 }) {
-  const inverted = tone === 'invert';
   return (
     <Reveal className={className}>
-      <MicroLabel className={inverted ? 'text-tp-invert-ink-muted' : 'text-tp-ink-faint'}>
-        {eyebrow}
-      </MicroLabel>
+      <MicroLabel className="text-tp-ink-faint">{eyebrow}</MicroLabel>
       <h2
         className={cn(
-          'mt-5 font-display text-4xl leading-[1.08] tracking-tight text-balance sm:text-5xl',
-          inverted ? 'text-tp-invert-ink' : 'text-tp-ink',
+          'mt-5 font-display text-4xl leading-[1.08] tracking-tight text-balance sm:text-5xl text-tp-ink',
         )}
       >
         {title}
       </h2>
       {lede ? (
-        <p
-          className={cn(
-            'mt-6 max-w-2xl text-lg leading-8',
-            inverted ? 'text-tp-invert-ink-muted' : 'text-tp-ink-muted',
-          )}
-        >
-          {lede}
-        </p>
+        <p className={cn('mt-6 max-w-2xl text-lg leading-8 text-tp-ink-muted')}>{lede}</p>
       ) : null}
     </Reveal>
   );
@@ -112,7 +104,7 @@ export function LoopPanel({
           <MicroLabel className="hidden text-tp-ink-faint sm:block">{note}</MicroLabel>
         </div>
 
-        <div className="flex items-center gap-2.5 font-mono text-[0.6875rem] tracking-[0.12em] text-tp-ink-faint uppercase">
+        <div className="flex items-center gap-2.5 text-[0.6875rem] font-medium tracking-[0.12em] text-tp-ink-faint uppercase">
           <button
             type="button"
             data-tp-loop-toggle

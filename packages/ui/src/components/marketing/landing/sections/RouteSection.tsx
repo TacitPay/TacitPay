@@ -41,7 +41,6 @@ export function RouteSection() {
               role="img"
               aria-label="An invoice travels one rail through four stations: create, which writes a commitment; share, which puts the details in a link fragment; settle, which is a shielded transfer marking the status paid; and verify, which anyone can read without a wallet."
               className="min-w-[62rem]"
-              fontFamily="var(--font-mono)"
             >
               {/* The rail, and the progress the invoice has made along it. */}
               <line
@@ -139,7 +138,7 @@ export function RouteSection() {
               <MicroLabel className="text-tp-ink">
                 {`${String(index + 1).padStart(2, '0')} · ${station.label}`}
               </MicroLabel>
-              <p className="mt-2 font-mono text-sm text-tp-ink-muted">{station.value}</p>
+              <p className="mt-2 text-sm text-tp-ink-muted">{station.value}</p>
             </li>
           ))}
         </ol>

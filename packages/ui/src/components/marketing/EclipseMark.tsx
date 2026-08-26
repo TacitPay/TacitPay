@@ -12,22 +12,22 @@ const NODE = { cx: (DISC.cx + RING.cx) / 2, cy: 170, r: 15 };
 interface EclipseMarkProps {
   /** Renders leader lines and labels. Off gives just the mark. */
   annotated?: boolean;
-  /** Inverts for dark surfaces: the disc goes light, the node goes dark. */
-  inverted?: boolean;
   className?: string;
 }
 
-export function EclipseMark({
-  annotated = true,
-  inverted = false,
-  className = '',
-}: EclipseMarkProps) {
-  const discFill = inverted ? '#fafafa' : '#09090b';
-  const nodeFill = inverted ? '#09090b' : '#ffffff';
-  const ringStroke = inverted ? '#52525b' : '#a1a1aa';
-  const hairline = inverted ? '#3f3f46' : '#d4d4d8';
-  const labelInk = inverted ? '#e4e4e7' : '#18181b';
-  const labelMuted = inverted ? '#71717a' : '#a1a1aa';
+export function EclipseMark({ annotated = true, className = '' }: EclipseMarkProps) {
+  // Tokens, not an `inverted` flag. The flag meant the caller had to know what
+  // ground it was on, and once the section it lives in started following the
+  // theme, it stopped knowing — leaving a near-black disc on a near-black
+  // ground. Reading the tokens means the mark turns over on its own.
+  const discFill = 'var(--tp-ink)';
+  // The node is the ground punched out of the disc, so it takes the colour of
+  // the surface this mark actually sits on.
+  const nodeFill = 'var(--tp-surface-alt)';
+  const ringStroke = 'var(--tp-mark-ring)';
+  const hairline = 'var(--tp-rule-strong)';
+  const labelInk = 'var(--tp-ink)';
+  const labelMuted = 'var(--tp-ink-faint)';
 
   return (
     <svg
@@ -89,16 +89,11 @@ export function EclipseMark({
       />
 
       {annotated && (
-        <g
-          fontFamily="var(--font-mono)"
-          className="tp-rise"
-          style={{ animationDelay: '760ms' }}
-          letterSpacing="0.09em"
-        >
+        <g className="tp-rise" style={{ animationDelay: '760ms' }} letterSpacing="0.09em">
           <text x="26" y="60" fill={labelInk} fontSize="13">
             PUBLIC LEDGER
           </text>
-          <text x="26" y="94" fill={labelMuted} fontSize="12" letterSpacing="0.02em">
+          <text x="26" y="94" fill={labelMuted} fontSize="12" fontFamily="var(--font-mono)">
             status · commitment
           </text>
 
@@ -111,7 +106,7 @@ export function EclipseMark({
             fill={labelMuted}
             fontSize="12"
             textAnchor="end"
-            letterSpacing="0.02em"
+            fontFamily="var(--font-mono)"
           >
             amount · memo · parties
           </text>
@@ -119,14 +114,7 @@ export function EclipseMark({
           <text x={NODE.cx} y="308" fill={labelInk} fontSize="13" textAnchor="middle">
             VERIFIED SETTLEMENT
           </text>
-          <text
-            x={NODE.cx}
-            y="330"
-            fill={labelMuted}
-            fontSize="12"
-            textAnchor="middle"
-            letterSpacing="0.02em"
-          >
+          <text x={NODE.cx} y="330" fill={labelMuted} fontSize="12" textAnchor="middle">
             anyone can check it
           </text>
         </g>

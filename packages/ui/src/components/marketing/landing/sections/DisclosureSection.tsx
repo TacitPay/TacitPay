@@ -48,8 +48,7 @@ export function DisclosureSection() {
               xmlns="http://www.w3.org/2000/svg"
               role="img"
               aria-label="Eight invoice fields approach the chain boundary. Invoice id, status, expiry and commitment cross it and appear on the public ledger. Amount, memo, merchant and payer stop at the boundary, and the ledger receives a blank bar in their place."
-              className="min-w-[62rem] font-mono"
-              fontFamily="var(--font-mono)"
+              className="min-w-[62rem]"
             >
               {/* ------------------------------------------------- column heads */}
               <text
@@ -126,10 +125,22 @@ export function DisclosureSection() {
               {/* --------------------------------------------------- the rows */}
               {CORRIDOR.rows.map((row, index) => (
                 <g key={row.key}>
-                  <text x={CORRIDOR.keyX} y={row.y} fill={muted} fontSize="13">
+                  <text
+                    x={CORRIDOR.keyX}
+                    y={row.y}
+                    fill={muted}
+                    fontSize="13"
+                    fontFamily="var(--font-mono)"
+                  >
                     {row.key}
                   </text>
-                  <text x={CORRIDOR.valueX} y={row.y} fill={ink} fontSize="13">
+                  <text
+                    x={CORRIDOR.valueX}
+                    y={row.y}
+                    fill={ink}
+                    fontSize="13"
+                    fontFamily="var(--font-mono)"
+                  >
                     {row.value}
                   </text>
 
@@ -155,6 +166,7 @@ export function DisclosureSection() {
                       y={row.y}
                       fill={ink}
                       fontSize="13"
+                      fontFamily="var(--font-mono)"
                     >
                       {row.value}
                     </text>
@@ -201,7 +213,7 @@ export function DisclosureSection() {
               </dl>
             </div>
           ))}
-          <p className="mt-4 font-mono text-[0.6875rem] tracking-[0.1em] text-tp-ink-faint uppercase">
+          <p className="mt-4 text-[0.6875rem] font-medium tracking-[0.12em] text-tp-ink-faint uppercase">
             What the chain holds. Illustrative fields.
           </p>
         </div>

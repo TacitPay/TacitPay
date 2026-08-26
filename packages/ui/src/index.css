@@ -81,10 +81,6 @@
   --tp-rule-strong: var(--color-zinc-300);
   --tp-redact: var(--color-zinc-300);
   --tp-warn: var(--color-amber-700);
-  --tp-invert-surface: var(--color-zinc-950);
-  --tp-invert-ink: var(--color-zinc-50);
-  --tp-invert-ink-muted: var(--color-zinc-400);
-  --tp-invert-rule: var(--color-zinc-800);
   /* The shielded ring of the mark, which is its own brand value. */
   --tp-mark-ring: var(--color-zinc-400);
   /* The terminator is one colour at a dozen alphas, so it needs raw channels
@@ -151,11 +147,6 @@
     --tp-rule-strong: var(--color-zinc-700);
     --tp-redact: var(--color-zinc-700);
     --tp-warn: var(--color-amber-500);
-    /* The inverted chapter cannot go lighter here, so it goes deeper instead. */
-    --tp-invert-surface: #050506;
-    --tp-invert-ink: var(--color-zinc-50);
-    --tp-invert-ink-muted: var(--color-zinc-400);
-    --tp-invert-rule: var(--color-zinc-800);
     --tp-mark-ring: var(--color-zinc-500);
     --tp-glow: 250 250 250;
   }
@@ -208,11 +199,6 @@
   --tp-rule-strong: var(--color-zinc-700);
   --tp-redact: var(--color-zinc-700);
   --tp-warn: var(--color-amber-500);
-  /* The inverted chapter cannot go lighter here, so it goes deeper instead. */
-  --tp-invert-surface: #050506;
-  --tp-invert-ink: var(--color-zinc-50);
-  --tp-invert-ink-muted: var(--color-zinc-400);
-  --tp-invert-rule: var(--color-zinc-800);
   --tp-mark-ring: var(--color-zinc-500);
   --tp-glow: 250 250 250;
 }
@@ -248,10 +234,6 @@
   --color-tp-rule-strong: var(--tp-rule-strong);
   --color-tp-redact: var(--tp-redact);
   --color-tp-warn: var(--tp-warn);
-  --color-tp-invert-surface: var(--tp-invert-surface);
-  --color-tp-invert-ink: var(--tp-invert-ink);
-  --color-tp-invert-ink-muted: var(--tp-invert-ink-muted);
-  --color-tp-invert-rule: var(--tp-invert-rule);
   --color-tp-mark-ring: var(--tp-mark-ring);
   /* Typography follows the mark: a precise grotesque for interface text, an
      editorial serif for display, and a technical mono for anything the chain
@@ -380,9 +362,67 @@
     animation: tp-eclipse 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
+  /* The measuring field drifts by exactly one grid cell and loops, so the seam
+     never shows. Both halves move toward the terminator, which is the page's
+     whole argument: the line is where the two sides meet.
+
+     Transform, not background-position: a repeating gradient repainted every
+     frame across most of the viewport janks on a modest machine, and this has
+     to stay smooth while the scroll parallax is also running. */
+  @keyframes tp-field-inward {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(2.75rem);
+    }
+  }
+
+  @keyframes tp-field-outward {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-2.75rem);
+    }
+  }
+
+  .tp-field-inward {
+    animation: tp-field-inward 24s linear infinite;
+  }
+
+  .tp-field-outward {
+    animation: tp-field-outward 24s linear infinite;
+  }
+
+  /* Probes circling the mark in the "cannot see" chapter. They orbit the
+     shielded ring and never cross it, which is the chapter's whole point, so
+     the motion is an argument rather than an ambient flourish.
+
+     transform-box is pinned to the view-box so the origin below is in the same
+     user units as the mark's own geometry — the orbit centre is the settlement
+     node, not the middle of the artboard. */
+  @keyframes tp-orbit {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .tp-orbit {
+    animation: tp-orbit linear infinite;
+    transform-box: view-box;
+    transform-origin: 240px 170px;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .tp-rise,
-    .tp-eclipse {
+    .tp-eclipse,
+    .tp-field-inward,
+    .tp-field-outward,
+    .tp-orbit {
       animation: none;
     }
   }
