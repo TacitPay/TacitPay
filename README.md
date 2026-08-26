@@ -60,6 +60,13 @@ TacitPay uses Midnight's dual-ledger model to hold both ends:
 
 The only values ever `disclose()`d are on the allowed-public list in PRD §4.3. The eleven privacy invariants (INV-1…INV-11) each get a test — see [`docs/PRIVACY.md`](./docs/PRIVACY.md).
 
+<a href="./docs/tacitpay-privacy-map-dark.png">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/tacitpay-privacy-map-dark.png">
+    <img src="./docs/tacitpay-privacy-map.png" alt="Who sees what — TacitPay's four data layers">
+  </picture>
+</a>
+
 ## Dual-ledger design
 
 | Layer                                    | Holds                                                                                                  |

@@ -94,6 +94,16 @@ document most likely to be stale.
 
 ## 2. Circuit sequences
 
+The whole lifecycle at a glance — the dashed line is the device/chain boundary,
+and only hashes, proofs and status ever cross it:
+
+<a href="./tacitpay-invoice-lifecycle-dark.png">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./tacitpay-invoice-lifecycle-dark.png">
+    <img src="./tacitpay-invoice-lifecycle.png" alt="One invoice, end to end">
+  </picture>
+</a>
+
 Four circuits, four diagrams. In each, the block marked `contract.callTx.<name>`
 is one call in `packages/api/src/api.ts` — it is expanded here because that is
 where the six providers actually do their work.
