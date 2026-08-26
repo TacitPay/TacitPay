@@ -13,10 +13,11 @@ export type LoopTimeline = ReturnType<typeof gsap.timeline>;
 /** Matches the `data-tp-loop` value on the panel wrapping each instrument. */
 export type LoopName =
   | 'invoice-route'
-  | 'disclosure-corridor'
   | 'circuit-interlock'
-  // Has no panel and no pause control; `getLoopUi` returns nulls for all of it.
-  | 'cannot-see-dial';
+  // These two have no panel and no pause control; `getLoopUi` returns nulls
+  // for all of it.
+  | 'cannot-see-dial'
+  | 'chain-ledger';
 
 export interface LoopUi {
   readonly panel: HTMLElement | null;
@@ -30,8 +31,9 @@ export interface LoopUi {
 }
 
 /** Finds the chrome around an instrument. Every part is optional by design —
- *  an asset still animates if its panel has no pause button. */
-export const getLoopUi = (asset: SVGSVGElement, loop: LoopName): LoopUi => {
+ *  an asset still animates if its panel has no pause button. `Element` rather
+ *  than `SVGSVGElement`: the chain-ledger card is plain HTML. */
+export const getLoopUi = (asset: Element, loop: LoopName): LoopUi => {
   const panel = asset.closest<HTMLElement>(`[data-tp-loop="${loop}"]`);
   const phase = panel?.querySelector<HTMLElement>('[data-tp-loop-phase]') ?? null;
   const value = panel?.querySelector<HTMLElement>('[data-tp-loop-value]') ?? null;
@@ -55,7 +57,7 @@ export const getLoopUi = (asset: SVGSVGElement, loop: LoopName): LoopUi => {
  * into view must not start it moving again.
  */
 export const connectLoop = (
-  asset: SVGSVGElement,
+  asset: Element,
   timeline: LoopTimeline,
   ui: LoopUi,
   restPhase: string,

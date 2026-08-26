@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { RefObject } from 'react';
 
+import { animateChainLedger } from './motion/chainLedger';
 import { ASSETS } from './motion/registry';
 import type { MotionCleanup } from './motion/liveLoop';
 import { animateTerminatorPulse } from './motion/terminatorPulse';
@@ -219,6 +220,9 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
       const animate = ASSETS[asset.dataset.tpAsset ?? ''];
       return animate ? animate(asset) : () => undefined;
     });
+    // Not in the registry: these find their own targets, and the ledger card
+    // is HTML rather than an SVG instrument.
+    loops.push(animateChainLedger(root));
     loops.push(animateTerminatorPulse(root));
   }, root);
 
