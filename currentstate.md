@@ -10,7 +10,7 @@ stale.
 
 Related documents: [`PRD.md`](./PRD.md) is the product spec and the source of
 truth for intent. [`docs/DECISIONS.md`](./docs/DECISIONS.md) records why things
-are the way they are, D-001 through D-015.
+are the way they are, D-001 through D-016.
 [`docs/plans/wave-1.md`](./docs/plans/wave-1.md) tracks execution and holds the
 Preview runbook. [`docs/PRIVACY.md`](./docs/PRIVACY.md) and
 [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) are the deep versions of §3 and
@@ -197,9 +197,19 @@ time, or from a value pasted into Settings and stored per network — a stored o
 wins, so a judge can point the app at their own local deployment.
 
 The chain code sits behind a dynamic import, so a visitor to the marketing page
-never downloads it: the entry chunk is **23.1 kB** and the Midnight stack is a
-separate **866 kB** chunk plus ~11.5 MB of WASM, fetched only when a page
-actually reads the chain.
+never downloads it — verified by grepping the built chunks, not assumed: neither
+the Midnight stack (**486 kB / 121 kB gzip**) nor the wallet adapter
+(**104 kB / 32 kB gzip**) appears anywhere in the entry graph, and the ~11.5 MB
+of WASM is fetched only when a page actually reads the chain.
+
+What a first visit does cost is **184 kB gzip of JavaScript and 12 kB gzip of
+CSS**, across the entry chunk and the modules `index.html` preloads with it.
+Roughly 20 kB of that is GSAP with ScrollTrigger, which the landing page needs
+(D-016) and which `/app` pays for too, because `HomePage` is deliberately not
+lazy. Most of the rest is app code — `AppShell`, `AppLayout`, `card`, `tooltip`,
+`buffer` — dragged into the marketing entry graph by static imports in
+`App.tsx`. That is pre-existing and worth revisiting; it is not urgent, and it
+is not something to refactor in the week before a demo.
 
 Two things `real.ts` has to reconcile (D-013, D-014): the library binds one
 instance to one role, so it runs a merchant and a payer instance and dispatches
@@ -210,6 +220,35 @@ at timings.
 Wallet discovery (`src/lib/wallet.ts`) scans `window.midnight` and matches on
 `rdns` or name — no hardcoded wallet keys — and treats every injected value as
 untrusted.
+
+**The marketing surface at `/`** (`src/components/marketing/`) is its own
+thing: one chapter grammar built on the terminator — the edge of the eclipse,
+where the public ledger meets private state (D-016). It opens on identity alone
+against that line, then narrows into five chapters: the boundary, the route an
+invoice travels, the contract that enforces it, what makes the whole thing
+possible (Midnight's dual ledger, and the Cardano security it inherits), and
+what stays unseeable either way. Three of those carry a live instrument built on GSAP + ScrollTrigger; each
+runs only while on screen, stops with the browser tab, has a real pause control,
+and is labelled illustrative. Below `xl` each one is replaced by a compact
+static twin rather than a diagram the reader has to drag sideways.
+
+Motion never owns visibility. Every tween is a `from`, so the resting state is
+what the markup already says, and turning on reduced motion tears the whole
+system down and leaves the page exactly as it reads with JavaScript disabled —
+including the instruments, which author their _finished_ state so that visitor
+gets the answer and not just the question.
+
+**Light and dark are token-level** (`src/index.css`, `src/lib/theme.ts`). The
+light palette sits on bare `:root`; the dark one is redefined under both
+`@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) }` and
+`:root[data-theme='dark']`, so all three visitor states resolve — explicit
+light, explicit dark, and the default "system", which stamps nothing at all.
+Only an explicit choice is stored, so clearing it is how someone goes back to
+following their OS, and `index.html` stamps it before first paint so the page
+never renders light and then flips. Every surface follows the theme, splash
+included — the terminator is drawn from a raw channel triple (`--tp-glow`)
+rather than a colour token, because it is one colour at a dozen alphas, and it
+inverts from near-black ink on paper to silver on the void.
 
 ### 3.5 Proving — the part users feel
 
@@ -372,18 +411,19 @@ it, in [`docs/PRIVACY.md`](./docs/PRIVACY.md).
 
 ## 7. Decisions worth knowing
 
-Full text in [`docs/DECISIONS.md`](./docs/DECISIONS.md), D-001 through D-015.
+Full text in [`docs/DECISIONS.md`](./docs/DECISIONS.md), D-001 through D-016.
 
-| ID    | Decision                                                                                                                        |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------- |
-| D-003 | Repo is private during development — **must be public before Sep 16**                                                           |
-| D-008 | No CI, by owner decision; the same gates run locally before every push                                                          |
-| D-010 | Three-tier feature-detected proving; both Lace and 1AM; Docker optional. A TacitPay-hosted prover is explicitly rejected        |
-| D-011 | Midnight.js pinned at 4.1.1; wallet SDK from the un-hyphenated scope                                                            |
-| D-012 | `onchain-runtime-v3` pinned to a single instance via `resolutions`                                                              |
-| D-013 | Browser slots adapt the DApp Connector; hex wire format; tx id derived as `identifiers().at(-1)`; connector scope IS hyphenated |
-| D-014 | Private state encrypted with a typed passphrase, not a wallet signature — a forgotten passphrase loses invoice bodies           |
-| D-015 | Public reads are a separate wallet-free entry point; Vite needs `vite-plugin-wasm` or the WASM never initialises                |
+| ID    | Decision                                                                                                                                   |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| D-003 | Repo is private during development — **must be public before Sep 16**                                                                      |
+| D-008 | No CI, by owner decision; the same gates run locally before every push                                                                     |
+| D-010 | Three-tier feature-detected proving; both Lace and 1AM; Docker optional. A TacitPay-hosted prover is explicitly rejected                   |
+| D-011 | Midnight.js pinned at 4.1.1; wallet SDK from the un-hyphenated scope                                                                       |
+| D-012 | `onchain-runtime-v3` pinned to a single instance via `resolutions`                                                                         |
+| D-013 | Browser slots adapt the DApp Connector; hex wire format; tx id derived as `identifiers().at(-1)`; connector scope IS hyphenated            |
+| D-014 | Private state encrypted with a typed passphrase, not a wallet signature — a forgotten passphrase loses invoice bodies                      |
+| D-015 | Public reads are a separate wallet-free entry point; Vite needs `vite-plugin-wasm` or the WASM never initialises                           |
+| D-016 | The landing is one chapter grammar on the terminator; light/dark is token-level with three states, and the splash stays near-black in both |
 
 **Three of these will save someone a day each.** D-012: two copies of a
 WASM-backed module in one process fail `instanceof` against each other, and the

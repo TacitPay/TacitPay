@@ -252,3 +252,95 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     and WITHDRAWN from a real chain in a browser, on a cold load, in both the
     dev server and the production build, with no wallet extension involved.
     `packages/api/test/observer.int.test.ts` pins the same path headlessly.
+
+- **D-016 (2026-08-24) — the marketing page at `/` is one chapter grammar built
+  on a terminator, and the whole interface carries a light and a dark register
+  driven by tokens rather than by a class on `<body>`.**
+  The old landing was a conventional two-column hero followed by stacked
+  sections. It read as a brochure, not as a protocol.
+  - **The first viewport is identity alone.** One optically centred lockup on
+    the terminator — the edge of the eclipse, where the public ledger meets
+    private state — with no cards, no telemetry and no claims. The product
+    interface starts after the first scroll. The line is annotated at both ends
+    with the real field names — `status · commitment` on the public side,
+    `amount · memo · parties` on the private one — matching the mark's own
+    geometry (solid disc left, shielded ring right) and EclipseMark's own
+    callouts. An earlier version put a fake ledger tape and fake redaction bars
+    out there instead; it read as decoration pretending to be data, told the
+    visitor nothing, and was cut. Both ends are hidden below `xl`.
+  - **The splash follows the theme like every other surface.** It was pinned
+    near-black at first, on the reasoning that an eclipse needs a dark ground.
+    That was wrong in practice: it left light mode opening on a black screen,
+    which reads as a bug rather than as a choice. The terminator is therefore
+    drawn from `--tp-glow`, a raw channel triple rather than a colour token,
+    because it is one colour at a dozen alphas — near-black ink on paper, silver
+    on the void. Nothing in the header straddles two grounds any more, so the
+    tone tracking it needed is gone.
+  - **The mark is painted ring-first, disc over it, everywhere.** `Logo.tsx`
+    always had it right and says so in its comments — the shielded ring is a
+    _background_ line. `SplashLockup` and `EclipseMark` both drew the ring last,
+    which lays its stroke across the face of the public disc, so the display
+    mark quietly disagreed with the header logo at every size.
+  - **Motion is enhancement and never owns visibility.** Every tween is a
+    `from`, so the resting state is what the markup already says. Turning on
+    reduced motion tears the whole system down and leaves the page exactly as it
+    reads without JavaScript — which is why the instruments author their
+    _finished_ state (route complete, chain column populated) and the timelines
+    dim them back down to start a run. Authoring `opacity="0"` on a landed value
+    would have left that visitor the instrument's question and none of its
+    answer.
+  - **Three instruments, three registers.** The disclosure corridor and the
+    invoice route are open tape — straight rules, values attached to the track.
+    The circuit interlock is the only rounded panel on the page, and its gates
+    are the mark itself: a disc and a ring that close into an eclipse when a
+    check passes. Every fourth run the expiry gate holds and the invoice takes
+    `cancelInvoice`, because a cancelled invoice is an outcome the contract
+    supports rather than a failure of it. Each loop runs only while on screen,
+    stops with the browser tab, carries a real pause control, and is labelled
+    illustrative. Stages carry ordinals, never timings: nothing here is measured.
+  - **The `Built on` chapter names the enabling property, not the stack.** The
+    versions this runs on belong in the repository, not on a landing page. What
+    that chapter carries is the one capability TacitPay is built out of — a
+    chain holding a public ledger beside a private state, able to prove one to
+    the other — and where its security comes from. The Cardano relationship is
+    quoted from Midnight's own docs rather than paraphrased from memory:
+    Midnight is Cardano's _first partner chain_, inheriting its security and
+    firewalled from it. Both docs pages are linked from the chapter so the
+    claims are checkable.
+  - **Vendor brand marks are vendored, unaltered, and served from this origin.**
+    `public/brand/` holds the Midnight and Cardano lockups in both inks, and CSS
+    picks the one that suits the ground. Hotlinking them would have made the
+    visitor's browser announce the visit to two more hosts — the same reason the
+    fonts are self-hosted. Midnight's CDN refuses scripted clients, so its
+    dark-ground file is the official light-ground file with only the ink
+    swapped, which is exactly the difference between the vendor's own two
+    variants.
+  - **Wide instruments get a compact static twin, not a horizontal drag.** Below
+    `xl` the corridor would show only its own setup — the chain column, which is
+    the entire point, would sit off the edge of a phone — so small screens get
+    the conclusion as a list instead.
+  - **Both registers are token-level.** `index.css` defines the light palette on
+    bare `:root`, redefines it under
+    `@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) }`,
+    and again under `:root[data-theme='dark']`, so the visitor's three states —
+    explicit light, explicit dark, and the default "system", which stamps
+    nothing — all resolve. The two dark blocks are identical on purpose. A small
+    `--tp-*` set sits on top for the marketing surface; sections and SVG
+    instruments name those tokens rather than a zinc step that only works in one
+    register. `src/lib/theme.ts` stores only an explicit choice, so clearing it
+    is how the visitor goes back to following the OS, and `index.html` stamps
+    that choice before first paint so the page never renders light and flips.
+  - **Two defects this surfaced, both invisible to the gate.** `Logo` defaulted
+    `badge` to `'Preview'`, so omitting the prop stamped a network name on the
+    mark; and `useTheme`'s cycle closed over the _rendered_ theme, so a click
+    landing before React re-rendered advanced from a stale value and appeared to
+    do nothing. It now reads the store.
+  - **Cost:** GSAP with ScrollTrigger adds roughly 20 kB gzip to the first-visit
+    chunk. `HomePage` is deliberately not lazy — `/` is the surface a stranger
+    hits first — so `/app` pays it too; the chain, wallet and proving code stays
+    split behind the lazy routes.
+  - **Prior art:** the chapter grammar, the visibility-gated loop contract, and
+    the scrub that compresses the hero into the system are adapted from the
+    txBet landing page. The geometry is not: txBet's furniture is a vertical
+    gate because its thesis is a timing window; TacitPay's is a horizontal
+    terminator because its thesis is a boundary.
