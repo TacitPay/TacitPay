@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { DetailSkeleton, EmptyState, ErrorState } from '@/components/DataStates';
 import { PageHeader } from '@/components/PageHeader';
+import { SandboxBanner } from '@/components/SandboxBanner';
 import { PrivateAmount } from '@/components/PrivateAmount';
 import { ProofStepper } from '@/components/ProofStepper';
 import { ProvingUnavailableNotice } from '@/components/ProvingUnavailableNotice';
@@ -154,6 +155,8 @@ export function PayPage() {
         title="Review before you pay"
         description="The private payload is read from this page's URL fragment and is never sent to a server."
       />
+
+      <SandboxBanner />
 
       {loading ? (
         <DetailSkeleton />

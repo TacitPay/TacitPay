@@ -57,6 +57,13 @@ function wait(milliseconds: number) {
   return new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds));
 }
 
+/** Sandbox ids are deliberately unmistakable: a 12345… banner with a random
+ *  tail for uniqueness. Chain output never looks like this, so a screenshot of
+ *  sandbox data can no longer pass for the real thing. */
+function sandboxId() {
+  return '12345'.repeat(9) + randomHex().slice(0, 19);
+}
+
 function randomHex(bytes = 32) {
   const values = crypto.getRandomValues(new Uint8Array(bytes));
   return Array.from(values, (value) => value.toString(16).padStart(2, '0')).join('');
@@ -347,15 +354,15 @@ class MockTacitPayApi implements TacitPayApi {
 
     return this.runProof(() => {
       const invoice: StoredInvoice = {
-        invoiceId: randomHex(),
+        invoiceId: sandboxId(),
         amount: input.amount.toString(),
         token: TOKEN,
         memo: input.memo.trim(),
-        salt: randomHex(),
+        salt: sandboxId(),
         createdAt: now,
         expiresAt: input.expiresAt ?? 0,
         status: 'OPEN',
-        txId: randomHex(),
+        txId: sandboxId(),
       };
       this.state.invoices.unshift(invoice);
       this.persist();
@@ -370,7 +377,7 @@ class MockTacitPayApi implements TacitPayApi {
 
     return this.runProof(() => {
       invoice.status = 'WITHDRAWN';
-      invoice.txId = randomHex();
+      invoice.txId = sandboxId();
       this.persist();
       this.emit(invoice);
       return { txId: invoice.txId };
@@ -385,7 +392,7 @@ class MockTacitPayApi implements TacitPayApi {
 
     return this.runProof(() => {
       invoice.status = 'CANCELLED';
-      invoice.txId = randomHex();
+      invoice.txId = sandboxId();
       this.persist();
       this.emit(invoice);
       return { txId: invoice.txId };
@@ -424,7 +431,7 @@ class MockTacitPayApi implements TacitPayApi {
 
     return this.runProof(() => {
       invoice.status = 'PAID';
-      const txId = randomHex();
+      const txId = sandboxId();
       invoice.txId = txId;
       this.state.receipts.unshift({
         invoiceId: invoice.invoiceId,

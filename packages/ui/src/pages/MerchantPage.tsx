@@ -4,6 +4,7 @@ import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { CopyButton } from '@/components/CopyButton';
 import { EmptyState, ErrorState, TableSkeleton } from '@/components/DataStates';
 import { PageHeader } from '@/components/PageHeader';
+import { SandboxBanner } from '@/components/SandboxBanner';
 import { PrivateAmount } from '@/components/PrivateAmount';
 import { ProofStepper } from '@/components/ProofStepper';
 import { ProvingUnavailableNotice } from '@/components/ProvingUnavailableNotice';
@@ -266,6 +267,8 @@ function MerchantDashboard() {
           </Button>
         }
       />
+
+      <SandboxBanner />
 
       <NewInvoiceDialog
         open={dialogOpen}

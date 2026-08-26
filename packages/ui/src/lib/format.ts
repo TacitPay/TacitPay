@@ -1,7 +1,5 @@
 const UNITS_PER_NIGHT = 1_000_000n;
 
-export const EXPLORER_URL = 'https://preview.midnightexplorer.com/';
-
 export function formatAmount(amount: bigint, token = 'NIGHT') {
   const sign = amount < 0n ? '-' : '';
   const absolute = amount < 0n ? -amount : amount;

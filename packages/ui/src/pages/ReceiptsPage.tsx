@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { EmptyState, ErrorState, TableSkeleton } from '@/components/DataStates';
 import { PageHeader } from '@/components/PageHeader';
+import { SandboxBanner } from '@/components/SandboxBanner';
 import { PrivateAmount } from '@/components/PrivateAmount';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -109,6 +110,7 @@ export function ReceiptsPage() {
         title="Your receipts"
         description="Receipts are kept in private payer state; only settlement status is public."
       />
+      <SandboxBanner />
       <WalletGate
         title="Connect a payer wallet"
         description="Connect the wallet that paid your invoices to unlock its private receipts."
