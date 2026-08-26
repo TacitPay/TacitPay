@@ -553,3 +553,28 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     `bg-tp-surface`, so the odd half dissolves into the page instead of butting
     against the next section's ground. Taken over a quarter of the height it
     stopped reading as a falloff and started reading as fog.
+
+- **D-020 (2026-08-26) — Preview browser payments go `receiveUnshielded`;
+  shielding is platform-blocked upstream.** The `payInvoice` circuit consumes a
+  shielded coin, and no path exists on Preview to obtain one: faucet and
+  bridged tUSDM funds arrive unshielded, Lace refuses the crossing in its send
+  flow, and the SDK's designed conversion — `WalletFacade.initSwap` with
+  unshielded inputs and a shielded output — builds, signs and **proves**, then
+  is rejected by the node with `1010: Invalid Transaction: Custom error: 199`
+  (`EffectsCheckFailure(AllCommitmentsSubsetCheckFailure)`). Reproduced twice
+  on 2026-08-26 against current Preview, through both the local and the
+  hosted preview proof server, ruling the prover out.
+  - The signature matches midnightntwrk/midnight-node #1206, which is closed
+    administratively — "TO DO / Not started" labels, no linked fix — with the
+    sister effects-check issue #1374 reportedly open. Empirically the behaviour
+    stands on Preview today.
+  - Consequence: PRD §16.2's risk-table mitigation stops being a contingency
+    and becomes the Wave 1 road — a `receiveUnshielded` payment path for
+    Preview browser payers (and unshielded tUSDM), with the shielded path kept
+    intact as the flagship: it works today on the local devnet (genesis holds
+    shielded funds) and lights up on Preview the moment the node accepts
+    shielding mints.
+  - `transferTransaction` is NOT a substitute — it sources each output from
+    its own pool and correctly reports insufficient shielded funds; `initSwap`
+    is the right API, confirmed by community field notes (nightforge.jp error
+    decoder, YAMORI wallet's error-199 handling).

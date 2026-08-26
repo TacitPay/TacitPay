@@ -115,14 +115,16 @@ took, in order:
   yet unlocked (passphrase + "Connect to contract"), writes silently run on
   the in-memory mock with plausible-looking ids. A loud sandbox banner and
   obviously-fake stub ids are queued.
-- **Paying needs shielded tNIGHT, and no shielding path exists in wallets
-  today** — the faucet dispenses transparent tNIGHT; `payInvoice` consumes a
-  shielded coin, so balancing hangs for a faucet-only payer. Lace's send
-  refuses transparent→shielded, and the SDK's `transferTransaction` rejects
-  shielded outputs without existing shielded funds. PRD §16.2's risk table
-  anticipated exactly this; the candidate mitigations are a deeper SDK
-  shielding spike and the `receiveUnshielded` circuit path. The local devnet
-  pay leg works because genesis holds pre-shielded funds.
+- **Paying needs shielded tNIGHT, and shielding is platform-blocked on
+  Preview (D-020)** — the faucet dispenses transparent tNIGHT; `payInvoice`
+  consumes a shielded coin. Lace refuses the crossing, `transferTransaction`
+  correctly reports insufficient shielded funds, and the designed conversion —
+  `WalletFacade.initSwap` — builds, signs, proves, and is then rejected by the
+  node: `1010: Custom error: 199`, the `AllCommitmentsSubsetCheckFailure`
+  signature of midnight-node #1206, reproduced through both the local and
+  hosted preview provers. PRD §16.2's `receiveUnshielded` fallback is now the
+  Wave 1 road for Preview browser payments; the shielded path stays the
+  flagship on the local devnet, where genesis holds pre-shielded funds.
 - **Identifiers ≠ hashes** — wallets report the ledger transaction
   _identifier_; explorers index the _hash_. Both resolve via the indexer's
   `transactions(offset: {identifier|hash})`.

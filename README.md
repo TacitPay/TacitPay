@@ -132,16 +132,16 @@ Preview (block 587,108) — confirmed independently by the CLI's ledger read and
 the public explorer. Two things that first contact taught, worth knowing before
 you test:
 
-- **Paying needs _shielded_ tNIGHT — and shielding on Preview is an open
-  question.** The faucet dispenses transparent tNIGHT; the `payInvoice`
-  circuit consumes a shielded coin, so a faucet-funded payer sits at
-  "Balancing fees" forever. As of Aug 26 no wallet-exposed conversion exists:
-  Lace's send refuses the crossing, and the wallet SDK's `transferTransaction`
-  rejects shielded outputs from a transparent balance ("Insufficient funds").
-  The two candidate roads — anticipated in PRD §16.2 and its risk table — are
-  a deeper SDK shielding spike and the `receiveUnshielded` fallback circuit
-  path. On the local devnet the pay leg works today because the genesis wallet
-  holds pre-shielded funds.
+- **Paying needs _shielded_ tNIGHT — and shielding is blocked on Preview by
+  an upstream node bug (D-020).** The faucet dispenses transparent tNIGHT; the
+  `payInvoice` circuit consumes a shielded coin. The SDK's designed conversion
+  (`WalletFacade.initSwap`) builds, signs and proves, and Preview's node then
+  rejects it with `Custom error: 199` — the
+  `AllCommitmentsSubsetCheckFailure` signature of midnight-node #1206 —
+  through either proof server. Until upstream ships shielding, Preview browser
+  payments take PRD §16.2's `receiveUnshielded` path (in progress), and the
+  full shielded flow is demonstrated on the local devnet, where genesis holds
+  pre-shielded funds.
 - **The app only reports success the ledger can confirm.** Every mutation polls
   the contract's public state through the app's own indexer connection and
   fails loudly if the transaction never lands — a wallet's optimistic "submitted"
