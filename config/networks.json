@@ -6,7 +6,10 @@
     "indexerWsUrl": "ws://127.0.0.1:8088/api/v4/graphql/ws",
     "proofServerUrl": "http://127.0.0.1:6300",
     "faucetUrl": null,
-    "explorerUrl": null
+    "explorerUrl": null,
+    "tokenSymbol": "tNIGHT",
+    "tokenDecimals": 6,
+    "settlementLane": "shielded"
   },
   "preview": {
     "label": "Preview — primary public target; tUSDM is bridged here",
@@ -15,7 +18,11 @@
     "indexerWsUrl": "wss://indexer.preview.midnight.network/api/v4/graphql/ws",
     "proofServerUrl": "http://localhost:6300",
     "faucetUrl": "https://midnight-tmnight-preview.nethermind.dev/",
-    "explorerUrl": "https://preview.midnightexplorer.com/"
+    "explorerUrl": "https://preview.midnightexplorer.com/",
+    "tokenSymbol": "tUSDM",
+    "tokenDecimals": 6,
+    "settlementLane": "unshielded",
+    "paymentTokenType": "003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73"
   },
   "preprod": {
     "label": "Preprod — secondary testnet; no tUSDM",
@@ -24,7 +31,10 @@
     "indexerWsUrl": "wss://indexer.preprod.midnight.network/api/v4/graphql/ws",
     "proofServerUrl": "http://localhost:6300",
     "faucetUrl": "https://midnight-tmnight-preprod.nethermind.dev/",
-    "explorerUrl": "https://preprod.midnightexplorer.com/"
+    "explorerUrl": "https://preprod.midnightexplorer.com/",
+    "tokenSymbol": "tNIGHT",
+    "tokenDecimals": 6,
+    "settlementLane": "unshielded"
   },
   "mainnet": {
     "label": "Mainnet — Wave 3 stretch target (USDM)",
@@ -33,6 +43,10 @@
     "indexerWsUrl": "wss://indexer.mainnet.midnight.network/api/v4/graphql/ws",
     "proofServerUrl": "http://localhost:6300",
     "faucetUrl": null,
-    "explorerUrl": "https://midnightexplorer.com/"
+    "explorerUrl": "https://midnightexplorer.com/",
+    "tokenSymbol": "USDM",
+    "tokenDecimals": 6,
+    "settlementLane": "unshielded",
+    "paymentTokenType": "8c2c22bc0c37fa999d0611cb5c570f587938ac5ffc8b0925143dad4c0764e94b"
   }
 }

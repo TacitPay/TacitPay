@@ -592,3 +592,52 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     design-intended route for public-network payments, and a contract-minted
     shielded wrapper token is the design-intended way to "shield" — a Wave 2
     candidate.
+
+- **D-022 (2026-08-26) — Preview settles in bridged USDM through the new
+  unshielded lane; sponsored DUST is adopted as the Wave 2 fee story; the
+  compiler holds at 0.31.1.** Three linked calls made the night the unshielded
+  lane was built:
+  - **Token: USDM, not tNIGHT.** Invoices should be denominated in a
+    stablecoin (PRD product intent from day one). USDM (Moneta Digital)
+    reaches Midnight Preview over VIA Labs' lock-and-mint bridge
+    (`@via-labs-tech/usdm-bridge`, PRD §16.2 has the live-verified
+    parameters) as unshielded token type
+    `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`,
+    6 decimals. The bridge mints to unshielded recipients ONLY (its own type
+    declaration: "Destination Midnight unshielded address") — verified in the
+    published package source, consistent with the faucet ("rejects shielded
+    addresses") and with D-020's no-self-shield finding. So the unshielded
+    lane is not a compromise bolted onto USDM; it is the only lane USDM can
+    use today, and the lane the network's on-ramps are built for.
+  - **Contract design.** Two new circuits mirror the shielded pair:
+    `payInvoiceUnshielded` (same commitment checks, then
+    `receiveUnshielded(paymentToken, amount)`) and
+    `withdrawUnshielded(invoiceId, to: UserAddress)` (same witness-secret
+    authorization, then `sendUnshielded`). A public `unshieldedOwed` map is
+    the pool marker — an id present there was paid from the public pool, an
+    id in `escrow` from the shielded pool — and each withdraw circuit asserts
+    its own marker so funds can never exit through the wrong pool. Disclosure
+    is honest by construction: an unshielded payment's amount and addresses
+    are public on the ledger anyway (the envelope stays sealed; the cash is
+    visible — PRD §4.5), while memo and party tags stay committed.
+  - **Sponsored DUST = Wave 2, documented now.** The official
+    `guides/dust-sponsorship.md` pattern (user proves + balances value and
+    binds first; sponsor adds a `['dust']`-only fee offer and submits) gives
+    payers a gasless first click. It covers FEES only — it is not a shielding
+    mechanism and does not move value — and it needs an always-on sponsor
+    wallet service, which the current static deployment cannot host. Adopted
+    as the Wave 2 onboarding feature (see BACKLOG); named in the pitch as the
+    web²-feel roadmap line. Reference implementation:
+    `midnightntwrk/example-private-party` (`SPONSORSHIP.md`).
+  - **Compiler stays 0.31.1 for Wave 1.** The official support matrix pins
+    Compact toolchain 0.31.1 for every listed environment; 0.34.0 shipped
+    2026-08-25 (one day old), its breaking changes (secp256k1 types, Opaque
+    runtime checks, stdlib `add`/`mul` removal) touch nothing in
+    `tacitpay.compact`, and a probe compile proved 0.31.1 already ships the
+    full unshielded stdlib (`receiveUnshielded`, `sendUnshielded`,
+    `UserAddress`, balance comparators). Upgrading mid-wave buys nothing and
+    un-pins us from the tested matrix. Revisit after Wave 1.
+  - Noticed, not fixed: the log numbers D-020 and D-021 each exist twice
+    (splash-era 08-24/25 entries vs the payments D-020 above). References
+    elsewhere use the payments meaning; renumbering history would break
+    them, so the collision stays documented here instead.

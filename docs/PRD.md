@@ -1108,9 +1108,9 @@ Retainers and subscriptions — the primary persona's actual income shape — wi
 - **Compact Contract Compatibility:**
   - `tacitpay.compact` is 100% token-agnostic: the constructor takes `paymentToken: Bytes<32>`, and `payInvoice` asserts `coin.color == paymentToken`.
   - Deploying an instance with `paymentToken = 0x003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73` instantly enables native USDM settlement on Preview without any contract logic modifications.
-- **SDK vs. Wallet Extension Execution:**
-  - At the **Code / SDK level (`@midnight-ntwrk/wallet-sdk`)**, transaction building, shielding/unshielding, and payment execution are completely automated and programmatic.
-  - End-user browser wallet interactions (Lace) follow the standard DApp Connector flow, with unshielded fallback routing (`receiveUnshielded`) maintained as an architecture option if browser extensions differ from low-level SDK shielding capabilities.
+- **SDK vs. Wallet Extension Execution (corrected 2026-08-26 — see DECISIONS D-020 correction + D-022):**
+  - At the **Code / SDK level (`@midnight-ntwrk/wallet-sdk`)**, transaction building and payment execution are automated and programmatic. Shielding is **not**: the SDK exposes no self-shield primitive (`initSwap` is a documented two-party exchange), so bridged USDM stays unshielded — on public networks that is the only pool it can occupy. The earlier claim that shielding/unshielding were "completely automated" predated this audit and was wrong.
+  - End-user browser wallet interactions (Lace) follow the standard DApp Connector flow. `receiveUnshielded` is no longer a contingency: it is the Wave 1 settlement lane (D-022), with USDM as the Preview payment token via `deploy --token 003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`.
 
 ### 16.3 Mobile
 
