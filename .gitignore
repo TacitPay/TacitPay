@@ -11,7 +11,10 @@ coverage/
 
 # Compact compiler output. Whether keys/zkir get committed is a Day-2 decision
 # after the first real compile (PRD §13 note; docs/DECISIONS.md D-002).
-contracts/managed/
+# contracts/managed is COMMITTED deliberately (D-022 era, Vercel Git builds):
+# the compiled contract module + prover keys must exist in a fresh clone, and
+# regenerating keys remotely risks mismatching the deployed verifier.
+# contracts/managed/
 
 # Yarn 4
 .pnp.*
