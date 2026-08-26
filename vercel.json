@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "yarn workspace @tacitpay/ui run build",
+  "buildCommand": "yarn build",
   "outputDirectory": "packages/ui/dist",
   "installCommand": "yarn install --immutable",
   "framework": null,
