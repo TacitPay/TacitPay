@@ -89,8 +89,10 @@ parties' real secret keys.
   in-circuit is a Wave 2 candidate.
 - **Escrowed funds have no exit without the merchant** until Wave 2 refunds.
   Keep Wave 1 on testnet.
-- **The browser wallet path has not yet run against a real wallet extension.**
+- **The browser _write_ path has not yet run against a real wallet extension.**
   Every provider is implemented and unit-tested against the shipped connector
-  type definitions, the wire encoding is verified against midnight-js's own
-  reference adapter, and the whole stack builds and bundles — but the end-to-end
-  browser run waits on a funded Preview wallet.
+  type definitions and the wire encoding is verified against midnight-js's own
+  reference adapter, but no wallet has signed or submitted anything. That run
+  waits on a funded Preview wallet.
+  The browser _read_ path is proven: public verification reads a real contract
+  on a real chain in a browser, dev and production builds alike (D-015).

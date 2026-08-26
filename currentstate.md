@@ -250,13 +250,20 @@ Verified versions (see D-011; **never pin these from memory**):
   Keep Wave 1 on testnet.
 - **Payment timing is correlatable.** An observer learns "some invoice was paid
   at time T", never the amount or the parties.
-- **The browser wallet path has never met a real wallet extension.** Every
+- **The browser _write_ path has never met a real wallet extension.** Every
   provider is built against the shipped `dapp-connector-api@4.0.1` type
-  definitions and unit tested, and the whole stack builds and bundles, but no
-  browser wallet has driven it. The wire format is no longer part of that
-  uncertainty: the hex encoding and the transaction markers were verified
-  against midnight-js's own `DAppConnectorWalletAdapter`, the receiving side of
-  the same interface (D-013). What remains untested is the extension itself.
+  definitions and unit tested, but no browser wallet has signed or submitted
+  anything. The wire format is not part of that uncertainty: the hex encoding
+  and the transaction markers were verified against midnight-js's own
+  `DAppConnectorWalletAdapter`, the receiving side of the same interface
+  (D-013). What remains untested is the extension itself.
+
+  The browser _read_ path, by contrast, is now proven: `/verify/<id>` reads a
+  real contract on a real chain, in a browser, on a cold load, in both the dev
+  server and the production build (D-015). Getting there surfaced three defects
+  that every offline check had passed — uninitialised WASM, LevelDB dragged into
+  a wallet-free page, and a stale response overwriting a newer one.
+
 - **A forgotten private-state passphrase loses invoice bodies.** The chain still
   proves an invoice existed and was settled; the amount, memo and salt are gone.
   Export/import is the Wave 2 mitigation (D-014).
