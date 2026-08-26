@@ -10,7 +10,12 @@ interface TacitPayContextValue {
   network: InvoiceNetwork;
   setNetwork(network: InvoiceNetwork): void;
   proofStage: ProofStage | null;
+  setProofStage(stage: ProofStage | null): void;
   clearProofStage(): void;
+  /** True once a chain-backed API has replaced the mock. */
+  live: boolean;
+  /** Installed by LiveApiGate once a wallet, a contract and a prover are all available. */
+  setLiveApi(api: TacitPayApi | null): void;
 }
 
 const TacitPayContext = createContext<TacitPayContextValue | null>(null);
@@ -33,12 +38,14 @@ interface TacitPayProviderProps {
 export function TacitPayProvider({ children, api: injectedApi }: TacitPayProviderProps) {
   const [network, setNetworkState] = useState<InvoiceNetwork>(getInitialNetwork);
   const [proofStage, setProofStage] = useState<ProofStage | null>(null);
+  const [liveApi, setLiveApi] = useState<TacitPayApi | null>(null);
 
   const mockApi = useMemo(
     () => createMockTacitPayApi({ network, onProofStage: setProofStage }),
     [network],
   );
-  const api = injectedApi ?? mockApi;
+  // Explicit injection wins (tests, Storybook), then a live chain-backed API, then the mock.
+  const api = injectedApi ?? liveApi ?? mockApi;
 
   const setNetwork = useCallback((nextNetwork: InvoiceNetwork) => {
     try {
@@ -46,14 +53,25 @@ export function TacitPayProvider({ children, api: injectedApi }: TacitPayProvide
     } catch {
       // Display selection can remain session-only when storage is unavailable.
     }
+    // A live API is bound to one network's endpoints and contract, so it cannot survive.
+    setLiveApi(null);
     setNetworkState(nextNetwork);
   }, []);
 
   const clearProofStage = useCallback(() => setProofStage(null), []);
 
   const value = useMemo(
-    () => ({ api, network, setNetwork, proofStage, clearProofStage }),
-    [api, clearProofStage, network, proofStage, setNetwork],
+    () => ({
+      api,
+      network,
+      setNetwork,
+      proofStage,
+      setProofStage,
+      clearProofStage,
+      live: injectedApi === undefined && liveApi !== null,
+      setLiveApi,
+    }),
+    [api, clearProofStage, injectedApi, liveApi, network, proofStage, setNetwork],
   );
 
   return <TacitPayContext.Provider value={value}>{children}</TacitPayContext.Provider>;
