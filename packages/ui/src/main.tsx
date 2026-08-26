@@ -12,6 +12,7 @@ import { Toaster } from './components/ui/sonner';
 import { TooltipProvider } from './components/ui/tooltip';
 import './index.css';
 import { TacitPayProvider } from './lib/api';
+import { LiveApiProvider } from './lib/api/live';
 import { ProvingSessionProvider } from './lib/proving-context';
 
 createRoot(document.getElementById('root')!).render(
@@ -19,10 +20,12 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <TacitPayProvider>
         <ProvingSessionProvider>
-          <TooltipProvider>
-            <App />
-            <Toaster closeButton position="bottom-right" richColors />
-          </TooltipProvider>
+          <LiveApiProvider>
+            <TooltipProvider>
+              <App />
+              <Toaster closeButton position="bottom-right" richColors />
+            </TooltipProvider>
+          </LiveApiProvider>
         </ProvingSessionProvider>
       </TacitPayProvider>
     </BrowserRouter>
