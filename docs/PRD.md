@@ -824,6 +824,14 @@ Wallets come from `@midnight-ntwrk/wallet-sdk` (`WalletFacade`) seeded from `TAC
 | U-26 | Wave 2: refund — withdraw on REFUNDABLE throws; claimRefund on WITHDRAWN throws | pass |
 | U-27 | Wave 2: series — child id/salt derivation deterministic; children share no public value (INV-11; api-layer test) | pass |
 | U-28 | Wave 3: proveReceivablesAtLeast counts only OPEN, unexpired invoices; PAID/expired excluded | pass |
+| U-29 | payInvoiceUnshielded with correct preimage | status PAID, unshieldedOwed entry holds the amount, payerTag set, no escrow entry |
+| U-30 | payInvoiceUnshielded with wrong amount in preimage | throws "Invoice details do not match" |
+| U-31 | payInvoiceUnshielded on PAID invoice | throws "Invoice is not open" |
+| U-32 | withdrawUnshielded by owner after unshielded pay | WITHDRAWN, owed entry removed |
+| U-33 | withdrawUnshielded by non-owner secret | throws "Not the invoice owner" |
+| U-34 | withdrawUnshielded on a shielded-paid invoice | throws "Paid shielded - use withdraw" |
+| U-35 | shielded withdraw on an unshielded-paid invoice | throws "Paid unshielded - use withdrawUnshielded" |
+| U-36 | payInvoiceUnshielded on unknown id | throws "Unknown invoice" |
 
 > **VERIFY (Day 2):** how coin-handling circuits (`receiveShielded`, `insertCoin`, `sendShielded`) are exercised in the JS runtime without a network — i.e. what the `CircuitContext`/Zswap local state must contain (see `createCircuitContext`, `emptyZswapLocalState`, `createZswapInput/Output` in https://docs.midnight.network/api-reference/compact-runtime and the "Use Compact contracts from JavaScript" guide). If coin circuits cannot be unit-tested offline, cover U-05/U-07/U-08/U-12 in the integration layer and say so in the README test section.
 
