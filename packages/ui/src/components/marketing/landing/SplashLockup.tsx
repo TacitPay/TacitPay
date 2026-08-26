@@ -99,7 +99,7 @@ export function SplashLockup({ className = '' }: { className?: string }) {
           cy={RING.cy}
           r={RING.r}
           stroke="var(--tp-mark-ring)"
-          strokeWidth="5"
+          strokeWidth="7"
           strokeDasharray={RING_LENGTH}
           strokeDashoffset={0}
         />
