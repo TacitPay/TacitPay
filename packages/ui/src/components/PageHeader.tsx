@@ -14,8 +14,12 @@ export function PageHeader({
   return (
     <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="max-w-2xl space-y-2">
+        {/* Same eyebrow treatment as the marketing page: mono, wide-tracked,
+            muted. Emphasis comes from the letterforms, not from colour. */}
         {eyebrow ? (
-          <p className="text-sm font-semibold tracking-wide text-primary uppercase">{eyebrow}</p>
+          <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
+            {eyebrow}
+          </p>
         ) : null}
         <h1 className="text-3xl font-semibold tracking-tight text-balance md:text-4xl">{title}</h1>
         <p className="text-base leading-7 text-muted-foreground">{description}</p>

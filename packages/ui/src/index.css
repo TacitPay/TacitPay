@@ -1,34 +1,56 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* The palette IS the logo's palette. Every neutral resolves to Tailwind's own
+   zinc scale rather than a hand-transcribed approximation, so the app and the
+   marketing page at / are provably the same colours — the mark uses zinc-950
+   for the public-ledger disc and zinc-400 for the shielded ring, and nothing
+   in the interface may drift away from that.
+
+   Previously these neutrals carried a teal cast (hue ~194–220) and the accent
+   was a teal that appeared nowhere in the brand. */
 :root {
-  --background: oklch(0.985 0.004 205);
-  --foreground: oklch(0.22 0.018 220);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.018 220);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.018 220);
-  --primary: oklch(0.43 0.09 194);
-  --primary-foreground: oklch(0.985 0.004 205);
-  --secondary: oklch(0.955 0.01 205);
-  --secondary-foreground: oklch(0.3 0.03 210);
-  --muted: oklch(0.955 0.008 215);
-  --muted-foreground: oklch(0.47 0.025 218);
-  --accent: oklch(0.935 0.018 194);
-  --accent-foreground: oklch(0.32 0.06 194);
-  --destructive: oklch(0.54 0.19 27);
-  --border: oklch(0.9 0.012 215);
-  --input: oklch(0.87 0.015 215);
-  --ring: oklch(0.53 0.1 194);
+  --background: var(--color-zinc-50);
+  --foreground: var(--color-zinc-950);
+  --card: #ffffff;
+  --card-foreground: var(--color-zinc-950);
+  --popover: #ffffff;
+  --popover-foreground: var(--color-zinc-950);
+
+  /* Primary is the disc: near-black on near-white, the same pairing the
+     marketing CTA uses. */
+  --primary: var(--color-zinc-950);
+  --primary-foreground: var(--color-zinc-50);
+
+  --secondary: var(--color-zinc-100);
+  --secondary-foreground: var(--color-zinc-800);
+  --muted: var(--color-zinc-100);
+  --muted-foreground: var(--color-zinc-500);
+
+  /* Selected and hover surfaces stay neutral; emphasis comes from contrast,
+     never from hue. */
+  --accent: var(--color-zinc-100);
+  --accent-foreground: var(--color-zinc-900);
+
+  --destructive: var(--color-red-600);
+  --border: var(--color-zinc-200);
+  --input: var(--color-zinc-300);
+  --ring: var(--color-zinc-400);
   --radius: 0.625rem;
-  --status-open-bg: oklch(0.94 0.035 235);
-  --status-open-fg: oklch(0.37 0.09 238);
-  --status-paid-bg: oklch(0.94 0.045 155);
-  --status-paid-fg: oklch(0.35 0.09 155);
-  --status-withdrawn-bg: oklch(0.94 0.025 292);
-  --status-withdrawn-fg: oklch(0.4 0.075 292);
-  --status-cancelled-bg: oklch(0.95 0.03 25);
-  --status-cancelled-fg: oklch(0.43 0.12 25);
+
+  /* Status is the one place colour is allowed, because it is information
+     rather than decoration: a merchant scanning a table needs PAID and
+     CANCELLED to separate at a glance. Kept to the low-saturation end of
+     Tailwind's scale so the chips read as labels inside a neutral interface
+     rather than competing with it. */
+  --status-open-bg: var(--color-blue-50);
+  --status-open-fg: var(--color-blue-700);
+  --status-paid-bg: var(--color-emerald-50);
+  --status-paid-fg: var(--color-emerald-700);
+  --status-withdrawn-bg: var(--color-violet-50);
+  --status-withdrawn-fg: var(--color-violet-700);
+  --status-cancelled-bg: var(--color-zinc-100);
+  --status-cancelled-fg: var(--color-zinc-600);
 }
 
 @theme inline {

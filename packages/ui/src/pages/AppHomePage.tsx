@@ -76,7 +76,7 @@ export function AppHomePage() {
   return (
     <div className="space-y-10">
       <section className="max-w-2xl space-y-3 pt-2">
-        <p className="text-sm font-semibold tracking-wide text-primary uppercase">
+        <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
           {network === 'preview' ? 'Preview network' : 'Local devnet'}
         </p>
         <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
