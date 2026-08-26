@@ -1,6 +1,19 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* Fonts are self-hosted, not loaded from a CDN. A product whose claim is that
+   no server sees the invoice must not make the visitor's browser announce the
+   visit to Google on the way in. These are the same three families and the same
+   weights the old <link> requested; each file carries unicode-range, so a
+   browser still downloads only the subsets it actually renders. */
+@import '@fontsource/instrument-sans/400.css';
+@import '@fontsource/instrument-sans/500.css';
+@import '@fontsource/instrument-sans/600.css';
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
 /* The palette IS the logo's palette. Every neutral resolves to Tailwind's own
    zinc scale rather than a hand-transcribed approximation, so the app and the
    marketing page at / are provably the same colours — the mark uses zinc-950

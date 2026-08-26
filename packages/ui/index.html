@@ -14,14 +14,9 @@
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
-    <!-- TODO(pre-submission): self-host these. A privacy product should not make
-         visitors' browsers announce themselves to a third-party font CDN. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fonts are bundled from @fontsource and served from this origin. The page
+         makes no third-party request at all, so visiting an invoice link tells
+         nobody but the host that it happened. See src/index.css. -->
     <title>TacitPay — private invoicing on Midnight</title>
   </head>
   <body>
