@@ -21,7 +21,8 @@ export function PrivateAmount({
   // Links may carry the raw 64-hex token type; render the network's display
   // symbol instead (break-all keeps even unknown hex inside the card).
   const { network } = useTacitPay();
-  const label = displayToken(token, endpointsFor(network));
+  const endpoints = endpointsFor(network);
+  const label = displayToken(token, endpoints);
   return (
     <span className={cn('inline-flex items-center gap-1 tabular-nums', className)}>
       <span className={cn('font-medium break-all', prominent && 'text-2xl tracking-tight')}>
@@ -37,7 +38,11 @@ export function PrivateAmount({
             <Lock size={15} variant="Linear" aria-hidden="true" />
           </button>
         </TooltipTrigger>
-        <TooltipContent>Not visible on chain</TooltipContent>
+        <TooltipContent>
+          {endpoints.settlementLane === 'unshielded'
+            ? 'Never stored on the ledger. On this network the payment transfer itself is public.'
+            : 'Not visible on chain'}
+        </TooltipContent>
       </Tooltip>
     </span>
   );
