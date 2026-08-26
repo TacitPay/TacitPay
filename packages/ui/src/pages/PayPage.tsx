@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { WalletGate } from '@/components/WalletGate';
 import { type InvoiceLinkPayload, type InvoiceStatus, useTacitPay } from '@/lib/api';
+import { useLive } from '@/lib/api/live';
 import { getErrorMessage } from '@/lib/errors';
 import { formatDateTime } from '@/lib/format';
 import { useProving } from '@/lib/proving-context';
@@ -80,46 +81,64 @@ function PayAction({
 
 export function PayPage() {
   const { api } = useTacitPay();
+  const { observer } = useLive();
+  // The status check before paying is a PUBLIC read, so it needs no wallet: read the
+  // chain directly whenever a contract is configured, exactly as VerifyPage does.
+  // Through the mock alone, a link minted by the CLI always came back "not found",
+  // because the mock only knows the invoices it created itself.
+  const source = observer ?? api;
   const location = useLocation();
   const [data, setData] = useState<PayInvoiceData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [paymentTxId, setPaymentTxId] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setData(null);
-    setPaymentTxId(null);
-    try {
-      if (!location.hash) {
-        throw new Error('This page needs an invoice payload after the # fragment.');
+  // `run.cancelled` guards against an out-of-order response: the mock answers first,
+  // then the chain-backed observer arrives and re-runs the load — without the guard the
+  // slower stale reply can overwrite the newer, correct one (see VerifyPage).
+  const load = useCallback(
+    async (run: { cancelled: boolean } = { cancelled: false }) => {
+      setLoading(true);
+      setError(null);
+      setData(null);
+      setPaymentTxId(null);
+      try {
+        if (!location.hash) {
+          throw new Error('This page needs an invoice payload after the # fragment.');
+        }
+        const payload = api.decodeLink(location.hash);
+        const publicState = await source.getInvoiceStatus(payload.id);
+        if (run.cancelled) return;
+        setData({ payload, publicState });
+      } catch (loadError) {
+        if (run.cancelled) return;
+        setError(getErrorMessage(loadError));
+      } finally {
+        if (!run.cancelled) setLoading(false);
       }
-      const payload = api.decodeLink(location.hash);
-      const publicState = await api.getInvoiceStatus(payload.id);
-      setData({ payload, publicState });
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-    } finally {
-      setLoading(false);
-    }
-  }, [api, location.hash]);
+    },
+    [api, location.hash, source],
+  );
 
   useEffect(() => {
-    void load();
+    const run = { cancelled: false };
+    void load(run);
+    return () => {
+      run.cancelled = true;
+    };
   }, [load]);
 
   const invoiceId = data?.payload.id;
   const invoiceExists = data?.publicState.exists;
   useEffect(() => {
     if (!invoiceId || !invoiceExists) return;
-    const subscription = api.watchInvoice(invoiceId).subscribe((status) => {
+    const subscription = source.watchInvoice(invoiceId).subscribe((status) => {
       setData((current) =>
         current ? { ...current, publicState: { ...current.publicState, status } } : current,
       );
     });
     return () => subscription.unsubscribe();
-  }, [api, invoiceExists, invoiceId]);
+  }, [invoiceExists, invoiceId, source]);
 
   return (
     <>

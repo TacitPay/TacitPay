@@ -1,4 +1,5 @@
 // Mock adapter — replaced by @tacitpay/api (PRD §8) once the Wave 1 contract lands; the interface must not drift from PRD §8.1.
+import { NETWORK_IDS } from './deployment';
 import {
   PROOF_STAGES,
   type InvoiceLinkPayload,
@@ -117,6 +118,10 @@ function getFragment(link: string) {
 export function encodeInvoiceLink(payload: InvoiceLinkPayload, origin = window.location.origin) {
   const serializable = {
     ...payload,
+    // The wire format speaks Midnight's network ids ('undeployed'), UI payloads speak
+    // the app's own ('local'). Translate on the way out so mock-minted links carry the
+    // same encoding the CLI mints — decodeInvoiceLink translates on the way back in.
+    net: NETWORK_IDS[payload.net],
     amount: payload.amount.toString(),
   };
   return `${origin}/pay#${toBase64Url(JSON.stringify(serializable))}`;
@@ -124,7 +129,7 @@ export function encodeInvoiceLink(payload: InvoiceLinkPayload, origin = window.l
 
 export function decodeInvoiceLink(
   link: string,
-  expected: { network: InvoiceNetwork; contractAddress: string },
+  expected: { network: InvoiceNetwork },
 ): InvoiceLinkPayload {
   let parsed: unknown;
   try {
@@ -142,14 +147,20 @@ export function decodeInvoiceLink(
   const record = asRecord(parsed);
   if (record.v !== 1) throw new Error('This invoice link version is not supported.');
 
-  if (record.net !== expected.network) {
-    throw new Error(`This invoice is for ${String(record.net)}, not ${expected.network}.`);
+  // Links carry Midnight's own network id, where the local devnet is called
+  // "undeployed" — the UI calls that same chain "local". Translate before comparing,
+  // as the wallet-backed adapter does (real.ts uiNetwork); comparing raw rejected
+  // every link the CLI mints for a local devnet as foreign.
+  if (record.net !== NETWORK_IDS[expected.network]) {
+    const shown = record.net === 'undeployed' ? 'local' : String(record.net);
+    throw new Error(`This invoice is for ${shown}, not ${expected.network}.`);
   }
 
+  // Format-checked but deliberately NOT compared against MOCK_CONTRACT_ADDRESS: the
+  // mock stands in for no particular contract, so equality against its fictional
+  // address would reject every real link. The wallet-backed path still enforces
+  // that the link's contract matches the one actually connected.
   const contract = readHex(record, 'contract');
-  if (contract !== expected.contractAddress.toLowerCase()) {
-    throw new Error('This invoice belongs to a different TacitPay contract.');
-  }
 
   const amountText = record.amount;
   if (typeof amountText !== 'string' || !/^[0-9]+$/u.test(amountText)) {
@@ -390,10 +401,7 @@ class MockTacitPayApi implements TacitPayApi {
   }
 
   decodeLink(link: string) {
-    return decodeInvoiceLink(link, {
-      network: this.options.network,
-      contractAddress: this.contractAddress,
-    });
+    return decodeInvoiceLink(link, { network: this.options.network });
   }
 
   async payInvoice(payload: InvoiceLinkPayload) {

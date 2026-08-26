@@ -22,6 +22,22 @@ export interface LiveObserver {
   watchInvoice(invoiceId: string): Observable<InvoiceStatus>;
 }
 
+// The ledger's InvoiceStatus is a NUMERIC enum (OPEN = 0 … CANCELLED = 3); the UI speaks
+// the string union above. Written as literals so the ledger module stays out of this
+// chunk — the wallet-backed adapter applies the same translation in real.ts.
+const STATUS_NAMES: Record<number, InvoiceStatus> = {
+  0: 'OPEN',
+  1: 'PAID',
+  2: 'WITHDRAWN',
+  3: 'CANCELLED',
+};
+
+const statusName = (status: number): InvoiceStatus => {
+  const name = STATUS_NAMES[status];
+  if (name === undefined) throw new Error(`Unknown invoice status ${String(status)}`);
+  return name;
+};
+
 export type LiveState =
   /** No contract address is configured for this network, so there is nothing to connect to. */
   | { readonly status: 'unconfigured' }
@@ -89,8 +105,33 @@ export function LiveApiProvider({ children }: { children: ReactNode }) {
           indexerHttpUrl: endpoints.indexerUrl,
           indexerWsUrl: endpoints.indexerWsUrl,
         });
+        // The api's observer returns the ledger's numeric statuses; translate them to
+        // the UI's string union here. This wrapper replaces an `as unknown as` cast
+        // that let the raw digits through — /verify rendered "1" instead of "PAID".
+        const raw = createObserverApi(providers, contractAddress);
+        const mapped: LiveObserver = {
+          contractAddress: raw.contractAddress,
+          getInvoiceStatus: async (invoiceId) => {
+            const result = await raw.getInvoiceStatus(invoiceId);
+            return { ...result, status: statusName(result.status) };
+          },
+          watchInvoice: (invoiceId) => {
+            const source = raw.watchInvoice(invoiceId);
+            return {
+              subscribe(next) {
+                const emit = typeof next === 'function' ? next : next.next.bind(next);
+                const fail = typeof next === 'function' ? undefined : next.error?.bind(next);
+                const subscription = source.subscribe({
+                  next: (status) => emit(statusName(status)),
+                  error: (cause: unknown) => fail?.(cause),
+                });
+                return { unsubscribe: () => subscription.unsubscribe() };
+              },
+            };
+          },
+        };
         if (!cancelled) {
-          setObserver(createObserverApi(providers, contractAddress) as unknown as LiveObserver);
+          setObserver(mapped);
         }
       } catch (error) {
         // A failed observer leaves the page on mock data rather than blanking it, but it
