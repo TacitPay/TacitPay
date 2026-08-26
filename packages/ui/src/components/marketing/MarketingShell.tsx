@@ -27,7 +27,12 @@ export function MarketingShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-tp-surface text-tp-ink">
       <header className="sticky top-0 z-40 border-b border-tp-rule/80 bg-tp-surface/85 backdrop-blur-md">
-        <div className="mx-auto grid h-16 max-w-[92rem] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center px-5 sm:px-8">
+        {/* Three columns only once there is a nav to centre. Below `lg` the nav
+            is `display: none`, which removes it from the grid altogether — and
+            grid auto-placement then drops the actions into the MIDDLE column,
+            where they overhang the logo by about 20px at 390. A flex row has no
+            such trap: logo left, actions right, nothing to centre. */}
+        <div className="mx-auto flex h-16 max-w-[92rem] items-center justify-between px-5 sm:px-8 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
           <Link
             to="/"
             aria-label="TacitPay home"
@@ -48,11 +53,15 @@ export function MarketingShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2.5 justify-self-end">
+          {/* Tighter below `sm` only. At 320 — the width index.css declares as
+              the floor — the logo, the toggle and this button are 4px wider
+              than the bar, and the button lands on the wordmark. Everything
+              from 640 up keeps the roomier spacing. */}
+          <div className="flex items-center gap-2 justify-self-end sm:gap-2.5">
             <ThemeToggle />
             <Link
               to="/app"
-              className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-[0.6875rem] font-semibold tracking-[0.12em] text-primary-foreground uppercase transition-colors hover:bg-primary/85"
+              className="group inline-flex h-9 items-center gap-1 rounded-full bg-primary px-3 text-[0.6875rem] font-semibold tracking-[0.12em] text-primary-foreground uppercase transition-colors hover:bg-primary/85 sm:gap-1.5 sm:px-4"
             >
               Launch app
               <ArrowRight
