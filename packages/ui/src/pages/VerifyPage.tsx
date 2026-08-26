@@ -9,6 +9,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { type InvoiceStatus, useTacitPay } from '@/lib/api';
+import { useLive } from '@/lib/api/live';
 import { getErrorMessage } from '@/lib/errors';
 import { formatDateTime } from '@/lib/format';
 
@@ -35,44 +36,69 @@ function VisibilityItem({ children }: { children: string }) {
 export function VerifyPage() {
   const { invoiceId = '' } = useParams<{ invoiceId: string }>();
   const { api } = useTacitPay();
+  const { observer } = useLive();
+  // Public verification needs no wallet, so it reads the chain directly whenever a contract
+  // is configured — never the mock, even if the rest of the app has not been connected.
+  const source = observer ?? api;
   const [publicState, setPublicState] = useState<PublicInvoiceState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      if (!/^[0-9a-f]{64}$/iu.test(invoiceId)) {
-        throw new Error('Invoice IDs must be 64 hexadecimal characters.');
+  /**
+   * `run.cancelled` guards against an out-of-order response. The source can change
+   * mid-flight — the mock answers first, then the chain-backed observer replaces it — and
+   * without this the slower reply wins and overwrites the newer, correct one. That showed
+   * up as a verification page reporting "unknown invoice" for an invoice that plainly
+   * exists, then being right after any navigation.
+   */
+  const load = useCallback(
+    async (run: { cancelled: boolean } = { cancelled: false }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        if (!/^[0-9a-f]{64}$/iu.test(invoiceId)) {
+          throw new Error('Invoice IDs must be 64 hexadecimal characters.');
+        }
+        const status = await source.getInvoiceStatus(invoiceId);
+        if (run.cancelled) return;
+        setPublicState(status);
+      } catch (loadError) {
+        if (run.cancelled) return;
+        setError(getErrorMessage(loadError));
+        setPublicState(null);
+      } finally {
+        if (!run.cancelled) setLoading(false);
       }
-      setPublicState(await api.getInvoiceStatus(invoiceId));
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-      setPublicState(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [api, invoiceId]);
+    },
+    [invoiceId, source],
+  );
 
   useEffect(() => {
-    void load();
+    const run = { cancelled: false };
+    void load(run);
+    return () => {
+      run.cancelled = true;
+    };
   }, [load]);
 
   useEffect(() => {
     if (!publicState?.exists) return;
-    const subscription = api.watchInvoice(invoiceId).subscribe((status) => {
+    const subscription = source.watchInvoice(invoiceId).subscribe((status) => {
       setPublicState((current) => (current ? { ...current, status } : current));
     });
     return () => subscription.unsubscribe();
-  }, [api, invoiceId, publicState?.exists]);
+  }, [invoiceId, publicState?.exists, source]);
 
   return (
     <>
       <PageHeader
         eyebrow="Public verification"
         title="Invoice status"
-        description="No wallet is required. This page reads only the public contract state."
+        description={
+          observer
+            ? 'No wallet is required. This page reads the live contract state directly.'
+            : 'No wallet is required. This page reads only the public contract state.'
+        }
       />
 
       {loading ? (
