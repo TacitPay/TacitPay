@@ -456,13 +456,16 @@ export function SettingsPage() {
         </TabsList>
 
         <TabsContent value="network" className="space-y-6">
-          <LiveConnectionCard />
-
+          {/* Network comes first because everything below is scoped to it: the
+              contract address is stored per network, and switching tears down any
+              live connection. Asking for an address first invites saving it against
+              the wrong chain. */}
           <Card>
             <CardHeader>
-              <CardTitle>Network display</CardTitle>
+              <CardTitle>Network</CardTitle>
               <CardDescription>
-                This selector changes the visible demo network. It does not switch a chain provider.
+                Choose this first. The contract address below is saved per network, and switching
+                disconnects anything already connected.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -472,19 +475,21 @@ export function SettingsPage() {
                   value="preview"
                   selected={network === 'preview'}
                   title="Preview"
-                  description="Midnight Preview network for judge demos."
+                  description="Midnight's public test network. The target for judge demos."
                   onSelect={setNetwork}
                 />
                 <NetworkChoice
                   value="local"
                   selected={network === 'local'}
                   title="Local"
-                  description="Local development display using the undeployed wallet network ID."
+                  description="A devnet on this machine, via yarn env:up. Midnight calls it undeployed."
                   onSelect={setNetwork}
                 />
               </fieldset>
             </CardContent>
           </Card>
+
+          <LiveConnectionCard />
 
           <ProvingSettings />
         </TabsContent>
