@@ -128,6 +128,34 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
         );
     }
 
+    // ------------------------------------------------------ closing eclipse
+    // The splash resolves its mark on load; the closer resolves the same mark
+    // on arrival, so the eclipse is only whole once the argument above it has
+    // been made. `fromTo` with `immediateRender: false` for the same reason the
+    // splash scrub uses it: a `to` would sample whatever the DOM happened to
+    // hold on its first render and could record the parted ring as the resting
+    // state, leaving the mark permanently broken on a remount.
+    const cta = root.querySelector<HTMLElement>('[data-tp-cta]');
+    const ctaRing = root.querySelector<HTMLElement>('[data-tp-cta-ring]');
+    if (cta && ctaRing) {
+      gsap.fromTo(
+        ctaRing,
+        { xPercent: 9, opacity: 0.25 },
+        {
+          xPercent: 0,
+          opacity: 1,
+          ease: 'none',
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: cta,
+            start: 'top bottom',
+            end: 'center center',
+            scrub: 0.6,
+          },
+        },
+      );
+    }
+
     // --------------------------------------------------------------- reveals
     gsap.utils.toArray<HTMLElement>('[data-tp-reveal]', root).forEach((element) => {
       gsap.from(element, {
