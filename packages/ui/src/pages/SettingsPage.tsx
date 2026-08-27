@@ -444,7 +444,6 @@ export function SettingsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Configuration"
         title="Settings"
         description="Choose the network and where private proofs are generated."
       />

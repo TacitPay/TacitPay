@@ -211,7 +211,6 @@ export function PaymentsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Payment"
         title="Your payments"
         description="Open an invoice link to pay it, and keep the receipts of everything you have settled."
       />

@@ -8,7 +8,6 @@ import { PrivateAmount } from '@/components/PrivateAmount';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { type InvoiceView, type ReceiptView, useTacitPay } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { formatDateTime } from '@/lib/format';
@@ -25,15 +24,20 @@ function EntryCard({
   icon,
   title,
   description,
+  door,
   children,
 }: {
   icon: ReactNode;
   title: string;
   description: string;
-  children: ReactNode;
+  door: ReactNode;
+  children?: ReactNode;
 }) {
   return (
-    <Card className="h-full">
+    // Every card ends on the same floor: the door is pinned to the bottom, so
+    // the three primary buttons share one baseline no matter how much the
+    // card above them carries.
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <div className="mb-3 flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground">
           {icon}
@@ -41,7 +45,10 @@ function EntryCard({
         <CardTitle>{title}</CardTitle>
         <CardDescription className="leading-6">{description}</CardDescription>
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent className="flex flex-1 flex-col gap-3">
+        {children}
+        <div className="mt-auto">{door}</div>
+      </CardContent>
     </Card>
   );
 }
@@ -93,23 +100,37 @@ function HomeChooser() {
           icon={<WalletMoney size={22} variant="Linear" aria-hidden="true" />}
           title="I'm a merchant"
           description="Create private invoices, track settlement, and withdraw paid funds."
-        >
-          <Button asChild className="w-full justify-between">
-            <Link to="/invoices">
-              Open your invoices
-              <ArrowRight size={17} variant="Linear" aria-hidden="true" />
-            </Link>
-          </Button>
-        </EntryCard>
+          door={
+            <Button asChild className="w-full justify-between">
+              <Link to="/invoices">
+                Open your invoices
+                <ArrowRight size={17} variant="Linear" aria-hidden="true" />
+              </Link>
+            </Button>
+          }
+        />
 
         <EntryCard
           icon={<Link21 size={22} variant="Linear" aria-hidden="true" />}
-          title="I have an invoice link"
+          title="I have payments"
           description="Paste the private payment link you received. Its payload stays after # and never reaches a server."
+          door={
+            <Button asChild className="w-full justify-between">
+              <Link to="/payments">
+                Open your payments
+                <ArrowRight size={17} variant="Linear" aria-hidden="true" />
+              </Link>
+            </Button>
+          }
         >
-          <form onSubmit={openInvoice} className="space-y-3" noValidate>
-            <div className="space-y-1.5">
-              <Label htmlFor="invoice-link">Invoice link</Label>
+          {/* The paste path in the verification bar's own miniature: input
+              and submit as one quiet instrument, so it cannot fight the
+              primary door on the card's floor. */}
+          <form onSubmit={openInvoice} noValidate>
+            <label htmlFor="invoice-link" className="sr-only">
+              Invoice link
+            </label>
+            <div className="flex items-center gap-1.5 rounded-lg border bg-background p-1 focus-within:ring-2 focus-within:ring-ring">
               <Input
                 id="invoice-link"
                 type="text"
@@ -120,21 +141,28 @@ function HomeChooser() {
                 value={invoiceLink}
                 onChange={(event) => setInvoiceLink(event.target.value)}
                 aria-invalid={linkError ? true : undefined}
-                aria-describedby={linkError ? 'invoice-link-error' : 'invoice-link-help'}
+                aria-describedby={linkError ? 'invoice-link-error' : undefined}
+                className="h-9 flex-1 border-0 bg-transparent px-2 shadow-none focus-visible:ring-0 dark:bg-transparent"
               />
-              {linkError ? (
-                <p id="invoice-link-error" role="alert" className="text-sm text-destructive">
-                  {linkError}
-                </p>
-              ) : (
-                <p id="invoice-link-help" className="text-xs text-muted-foreground">
-                  The private payload must follow the # fragment.
-                </p>
-              )}
+              {/* Secondary's own hover only nudges the grey, which reads as
+                  dead on a card. Hovering flips the chip to primary instead —
+                  an unmistakable "this clicks", and a preview of the door it
+                  opens. */}
+              <Button
+                type="submit"
+                variant="secondary"
+                size="sm"
+                className="h-9 shrink-0 transition-colors hover:bg-primary hover:text-primary-foreground"
+                disabled={!invoiceLink.trim()}
+              >
+                Open
+              </Button>
             </div>
-            <Button type="submit" className="w-full" disabled={!invoiceLink.trim()}>
-              Open invoice
-            </Button>
+            {linkError ? (
+              <p id="invoice-link-error" role="alert" className="mt-2 text-sm text-destructive">
+                {linkError}
+              </p>
+            ) : null}
           </form>
         </EntryCard>
 
@@ -142,14 +170,15 @@ function HomeChooser() {
           icon={<Verify size={22} variant="Linear" aria-hidden="true" />}
           title="Verify an invoice"
           description="Check a public invoice status without connecting a wallet or revealing private details."
-        >
-          <Button asChild variant="outline" className="w-full justify-between">
-            <Link to="/verification">
-              Open verification
-              <ArrowRight size={17} variant="Linear" aria-hidden="true" />
-            </Link>
-          </Button>
-        </EntryCard>
+          door={
+            <Button asChild className="w-full justify-between">
+              <Link to="/verification">
+                Open verification
+                <ArrowRight size={17} variant="Linear" aria-hidden="true" />
+              </Link>
+            </Button>
+          }
+        />
       </section>
     </div>
   );

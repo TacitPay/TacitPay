@@ -351,6 +351,15 @@
     @apply border-border;
   }
 
+  /* Tailwind v4 leaves native buttons on the arrow cursor. Every enabled
+     button here is a door or a control, so all of them get the hand — one
+     rule, instead of a cursor-pointer sprinkled per component. Disabled
+     buttons keep the arrow: they are not clickable and must not claim it. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
   html {
     min-width: 320px;
     background: var(--background);

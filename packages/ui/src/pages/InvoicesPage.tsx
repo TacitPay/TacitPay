@@ -347,7 +347,6 @@ export function InvoicesPage() {
           learns what this section is. The action only appears once a wallet
           is here to act with — a dead button is worse than none. */}
       <PageHeader
-        eyebrow="Invoice"
         title="Your invoices"
         description="Create private payment requests and follow their public settlement status."
         action={
