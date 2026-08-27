@@ -1,12 +1,11 @@
 # App IA: the lifecycle re-cut
 
 **Date:** 2026-08-27
-**Status:** IMPLEMENTED 2026-08-27 per the plan at
-`docs/superpowers/plans/2026-08-27-app-ia-lifecycle-recut.md`. All gates green
-(typecheck, lint, format, build) and the browser pass proved both frozen URLs
-against real preview-chain data. Uncommitted — awaiting Marcus's own browser
-test and his word to commit. The design below was approved section-by-section
-on 2026-08-27; the one OPEN question resolved (Verification gets the nav slot).
+**Status:** SHIPPED. Implemented per the plan at
+`docs/superpowers/plans/2026-08-27-app-ia-lifecycle-recut.md`, committed as
+198c980 and live on app.tacitpay.xyz, then iterated live under Marcus's
+direction through cdb5baa — see "Post-approval iterations" at the end of this
+file; for those, the code and SESSION-STATE §15 are the source of truth.
 **Owner decisions in this doc were made by Marcus in the brainstorming sessions
 of 2026-08-27.**
 
@@ -231,3 +230,23 @@ promise it; this settled only how people reach it.
 - `PageHeader` for section headings (eyebrow + title + lede).
 - `DataStates` for empty/loading/error shapes.
 - `SandboxBanner` for the simulated-data notice.
+
+## Post-approval iterations (2026-08-27 evening, Marcus-directed)
+
+The approved design above shipped as written, then evolved live under
+Marcus's direction — the code and SESSION-STATE §15 are the source of truth
+for these, not the sections above:
+
+- The dashboard no longer uses the three status strips; it MIRRORS the
+  chooser: Invoices (with AWAITING PAYMENT / READY TO WITHDRAW groups),
+  Payments (RECENT), Verification — one door per card, "Welcome back,
+  <address>" as the heading.
+- Verification kept its nav slot AND gained a chooser/dashboard card; the
+  explorer-style /verification page replaced the card-form treatment.
+- An amber caution register (--sandbox-*) marks everything provisional;
+  networks are named with their kind ("Testnet · Preview" / "Devnet · Local").
+- The header wallet pill grew a hover peek (addresses, balances, official
+  NIGHT/USDM marks, Disconnect).
+- NEXT, not yet designed: a /profile page behind the wallet pill's click
+  ("profile, dashboard statistics… perhaps some settings"). Design before
+  building; it likely retires the connected half of the wallet dialog.
