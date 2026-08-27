@@ -171,7 +171,13 @@ function AddressRow({ label, value }: { label: string; value: string }) {
 // Cardano address comes from Lace's OTHER connector (window.cardano, CIP-30)
 // and only when that side is already authorized — a hover must never pop an
 // approval window.
-function WalletPeek({ connection }: { connection: WalletConnection }) {
+function WalletPeek({
+  connection,
+  onDisconnect,
+}: {
+  connection: WalletConnection;
+  onDisconnect(): void;
+}) {
   const { network } = useTacitPay();
   const known = endpointsFor(network);
   const [balances, setBalances] = useState<PeekBalances | 'loading'>('loading');
@@ -337,6 +343,15 @@ function WalletPeek({ connection }: { connection: WalletConnection }) {
           />
         </>
       )}
+
+      <Separator />
+
+      {/* The way out, without the dialog's ceremony: same clear-and-null the
+          dialog performs, one hover away. */}
+      <Button type="button" variant="outline" size="sm" className="w-full" onClick={onDisconnect}>
+        <LogoutCurve size={16} variant="Linear" aria-hidden="true" />
+        Disconnect
+      </Button>
     </div>
   );
 }
@@ -411,7 +426,7 @@ export function WalletButton() {
             </HoverCardTrigger>
           </DialogTrigger>
           <HoverCardContent align="end" className="w-96">
-            <WalletPeek connection={connection} />
+            <WalletPeek connection={connection} onDisconnect={disconnect} />
           </HoverCardContent>
         </HoverCard>
       ) : (
