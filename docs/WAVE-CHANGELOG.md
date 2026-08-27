@@ -254,3 +254,34 @@ took, in order:
   supersession note; ARCHITECTURE/PRIVACY/CURRENT-STATE/demo script updated),
   vendored agent skills gitignored, and the last orphaned helper
   (`getWalletProvingCapability`) removed with the dialog that used it.
+
+### Field notes — Aug 28, 2026, 03:00 (an external audit arrives, and the roadmap answers)
+
+- **An external product audit landed** — eleven points against a hard
+  definition of "complete product". Full triage in `docs/AUDIT-RESPONSE.md`:
+  every point verified against official Midnight docs, sorted into
+  already-true / ships-this-week / Wave 2 core / Wave 3 / deliberately-not,
+  and folded into the PRD (new §3.5 definition of complete; §14.2/§14.3
+  re-ordered by dated addenda; new specs §15.8 secure links v2, §15.9
+  encrypted backup, §15.10 webhooks + embeddable checkout).
+- **Three audit close-outs shipped inside Wave 1**, all UI-only so the frozen
+  contract, payload schema and storage layer stay untouched in demo week:
+  the pay page now runs a read-only **preflight** (invoice-pool balance +
+  DUST, shortfall explained in token terms with the real funding path,
+  advisory only); the create dialog says **"anyone holding this link can
+  read the amount and memo and pay"** at the copy moment; and the Settings
+  backup card states the true loss model under a "Coming in Wave 2" tag
+  instead of a toast that over-promised.
+- **The headline re-order:** Wave 2's theme widens from "Developers and
+  agents" to _the product completes_ — shielded wrapper and settlement
+  enforcement first, then funds safety (milestones, refunds, timeout escape),
+  then the zero-setup payer (sponsored DUST per the official guide), then
+  secure links and encrypted backup; SDK/MCP still in-wave, riding on a
+  complete core. Wave 3 absorbs the business layer: real invoice documents,
+  accounting exports, the independent contract audit and the business-model
+  decision.
+- **One assumption corrected by the official wallet matrix:** Lace does not
+  prove in-browser (it needs a local proof server); 1AM proves in-browser
+  via WASM with no extra setup. The app's runtime Proving chip already
+  resolves this per wallet, which is why nothing in the product had it wrong
+  — only our own field intuition did.

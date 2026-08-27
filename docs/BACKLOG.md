@@ -59,17 +59,23 @@ notes). Wave 1 items are marked; the rest is Wave 2 planning input:
   the register-NIGHT-and-wait-for-DUST wall a first-time payer hits; needs a
   small always-on sponsor wallet service, so it lands with the first backend
   component.
-- **[Wave 1 polish] Pay-page balance pre-check** — detect a payer with no
-  spendable balance of the invoice token (USDM on Preview) before
-  "Balancing fees" spins forever, and say why in token terms.
-- **[Wave 1 polish] Balancing-stage timeout** — the truth gate covers
-  post-submit; the wallet-side balancing call needs its own honest timeout.
+- **[SHIPPED 2026-08-28] Pay-page balance pre-check** — the pay page now
+  reads the connected wallet's balance in the invoice's settlement pool plus
+  its DUST, and explains a shortfall in token terms with the funding path
+  (advisory only; the wallet stays the authority). Part of the audit
+  close-out — see docs/AUDIT-RESPONSE.md.
+- **[Wave 2 — deliberately not pre-demo] Balancing-stage timeout** — the
+  truth gate covers post-submit; the wallet-side balancing call needs its own
+  honest timeout. Deferred on 2026-08-28: it edits the live pay call path in
+  demo week, and the shipped pre-check removes the common cause of the
+  forever-spin. Lands with the Wave 2 zero-setup bundle.
 - **Transaction-hash deep links** — wallets report ledger identifiers,
   explorers index hashes; resolve id → hash via the indexer's
   `transactions(offset:{identifier})` and deep-link the success dialog.
-- **Orphaned private-state records** — a way to clear local invoice records
-  whose ids never reached any chain (tonight's ghosts linger as OPEN rows in
-  the sandbox store).
+- **[Wave 2] Orphaned private-state records** — a way to clear local invoice
+  records whose ids never reached any chain (tonight's ghosts linger as OPEN
+  rows in the sandbox store). Promoted to the Wave 2 funds-safety batch by
+  the 2026-08-28 audit.
 - **Password-field accessibility nit** — the passphrase form triggers the
   Chrome "password forms should have username fields" advisory.
 - **[Wave 2] UI smoke tests** — packages/ui ships with no test runner at all;
@@ -86,12 +92,32 @@ notes). Wave 1 items are marked; the rest is Wave 2 planning input:
   (security review caught sessionStorage spilling to disk — see D-023), so
   one fresh prompt remains. **[Wave 2]** Sealed-token unlock (WebCrypto
   non-extractable key) to remove that last step without storing a secret.
-- **[Wave 1 polish] The pay button must refuse the sandbox** — with a live
-  network's invoice open and the contract session locked, Pay runs against
-  the mock and reports "Unknown invoice"; the banner warns but should not be
-  the only guard. Disable Pay and point at Settings until the session is live.
+- **[SHIPPED] The pay button must refuse the sandbox** — live in PayPage as
+  the `needsLiveSession` guard: a real network's invoice with the contract
+  session locked renders a "this invoice lives on a real network" card that
+  points at Settings instead of the Pay button.
 - **[Post-buildathon] Marketing site as its own Next.js repo** — considered
   Aug 27 and deliberately deferred: the host split + lazy-loaded landing give
   the lean-app outcome inside one repo, and the bespoke GSAP landing would
   cost a risky port for no judge-visible value mid-wave. Revisit when real
   SEO/SSR traffic exists.
+
+Added 2026-08-28, from the external product audit (full triage in
+docs/AUDIT-RESPONSE.md — the eleven points land as PRD amendments, not as
+parking-lot entries, so this block is mostly pointers):
+
+- **Promoted straight into the PRD:** secure links v2 (§15.8), encrypted
+  backup/export/import (§15.9 — supersedes the "Encrypted cross-device
+  private-state backup" entry above), webhooks + embeddable checkout
+  (§15.10), the re-ordered Wave 2 build order (§14.2 addendum), the Wave 3
+  business layer — invoice documents, reconciliation/accounting, trust track
+  (§14.3 addendum), and the seven-condition definition of complete (§3.5).
+- **[Wave 2] Protocol version registry + migration policy** — contract
+  upgrades must state what happens to old invoice links; the compatibility
+  answer belongs in docs, not in support threads.
+- **[Wave 3] Business-model decision** — free protocol + paid hosting vs
+  hosted checkout vs sponsored-transaction network vs self-hosted enterprise;
+  decides who funds sponsored DUST; required before mainnet value.
+- **Re-affirmed rejections** (audit agrees): cards, gift instruments, oracle
+  conversion, custodial checkout, in-app AI assistant, super-app surface —
+  not before the core loop is complete.

@@ -4,7 +4,9 @@
 current; for everything that landed after the original 2026-08-24 snapshot —
 the unshielded settlement lane on Preview (D-020/D-022), the domains and docs
 site, and the lifecycle IA re-cut — the running record is
-[`docs/WAVE-CHANGELOG.md`](./WAVE-CHANGELOG.md).
+[`docs/WAVE-CHANGELOG.md`](./WAVE-CHANGELOG.md). The Aug 28 external product
+audit and its triage (what ships when, and why) live in
+[`docs/AUDIT-RESPONSE.md`](./AUDIT-RESPONSE.md).
 
 This document is the fast way to understand what exists without reading the
 codebase. Every claim points at the file or command that proves it, so treat it

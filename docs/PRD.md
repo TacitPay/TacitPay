@@ -187,6 +187,23 @@ On transparent chains, every stablecoin payment permanently publishes: who paid 
 - Wave 2: a milestone invoice approved and withdrawn, a refund offered and claimed, and a second retainer period paid from one standing series link — all in the video.
 - Wave 3: a "receivables ≥ X" claim verified on `/audit/<id>` alongside the revenue proof.
 
+### 3.5 Definition of complete (adopted 2026-08-28 from the external product audit — see docs/AUDIT-RESPONSE.md)
+
+TacitPay is a complete product — rather than an excellent protocol demo — when
+all seven hold at once:
+
+1. A new merchant creates a real invoice in under three minutes.
+2. A client with no Midnight expertise pays without configuring a contract or
+   prover and without waiting for DUST.
+3. Failed or expired payments cannot trap funds.
+4. Both parties can restore their records on a new device.
+5. The merchant receives confirmation while the app is closed.
+6. The merchant can export records and prove payment or revenue.
+7. TacitPay itself never receives the private invoice contents.
+
+Condition 7 holds today and must survive every feature that chases the other
+six. Conditions 1–6 map onto the revised Wave 2/3 order in §14.2–14.3.
+
 ---
 
 ## 4. Privacy model
@@ -246,6 +263,7 @@ Anything else that originates from a witness or a circuit parameter must not be 
 - Small anonymity sets early on are inherent to a new network.
 - The merchant learns the payer's identity off-chain (they sent them the link) — this is normal commerce and not a chain leak.
 - Variant A escrow exposure window (until Wave 2). This is more than a value leak: the escrowed `QualifiedShieldedCoinInfo` publishes the coin's **nonce**, so once the merchant withdraws, an observer who guesses the merchant's Zswap public key can recompute the withdrawal's coin commitment from public data and confirm the guess — permanently, in transaction history. While Variant A is live, a merchant's Zswap key is linkable across their withdrawn invoices (weakens INV-2 for the merchant side). Variant B (§6.5) closes this; until then, state it plainly in README/PRIVACY.
+- The invoice link is a bearer credential in plaintext (PRIVACY.md §6.6): anyone holding it reads the contents and can pay. The UI says this at the copy moment (since 2026-08-28); revocation, expiry-of-the-link-itself and recipient binding are Wave 2 (§15.8).
 
 ---
 
@@ -1003,6 +1021,18 @@ Notes:
 | 15 | Buffer / judge-walkthrough test on a clean machine. Submit ≥ 12 h before the platform deadline. |
 | 16–20 | Post-submission: start Wave 2 VERIFY spikes (Variant B, MCP), answer comments on AKINDO. |
 
+> **Amended 2026-08-28 (post-audit, see docs/AUDIT-RESPONSE.md).** Three
+> close-out items shipped inside Wave 1 in response to the external product
+> audit, all UI-only so the frozen contract, payload schema and storage layer
+> stay untouched before the demo:
+>
+> 1. Pay-page preflight — invoice-pool balance + DUST check with the real
+>    funding path, advisory only (the wallet remains the authority).
+> 2. Bearer-link disclosure at the copy moment in the create dialog.
+> 3. The Settings backup card states the true loss model ("this browser
+>    profile is the only copy") under a "Coming in Wave 2" tag instead of a
+>    toast that over-promised.
+
 ### 14.2 Wave 2 (Sep 27 – Oct 17) — "Developers and agents"
 
 **Scope:**
@@ -1020,6 +1050,23 @@ Notes:
 
 **Acceptance:** from a fresh Claude Code session with `@tacitpay/mcp` configured, "create an invoice for 25 NIGHT for 'consulting'" yields a link that a Lace user pays; the merchant dashboard updates live; the payer produces a receipt attestation a third party verifies on `/attest/<id>`. Additionally: a milestone invoice is paid, release-approved and withdrawn; an offered refund is claimed back by the payer; and a second period of a retainer series is minted and paid from the same standing link.
 
+> **Amended 2026-08-28 (post-audit, see docs/AUDIT-RESPONSE.md).** Scope
+> unchanged in content, re-ordered in priority: **product completeness now
+> outranks developer surface.** Build order inside the wave: (1) the shielded
+> wrapper ("Shield funds") and per-invoice settlement enforcement — the
+> product's differentiator completes here; (2) funds safety: Variant B,
+> milestone release (§15.5), claim-based refunds (§15.6), a timeout escape
+> hatch when one party disappears, and orphaned-local-record cleanup — these
+> are **core requirements, not optional additions**; (3) zero-setup payer:
+> sponsored DUST (§15.4), guided wallet path, prover pre-warming, the
+> balancing-stage timeout; (4) secure links v2 (§15.8, new); (5) encrypted
+> backup/export/import (§15.9, new — was BACKLOG); (6) notifications relay
+> and privacy-preserving webhooks (§15.3, §15.10); then (7) SDK, MCP and the
+> embeddable checkout (§15.1, §15.2, §15.10) — still in-wave, still in the
+> video, but they ride on a complete core rather than substituting for one.
+> Also added: a protocol **version registry and migration policy** for
+> contract upgrades — old invoice links must state their compatibility.
+
 ### 14.3 Wave 3 (Oct 27 – Nov 16) — "Prove it to the auditor; real stablecoin"
 
 **Scope:**
@@ -1032,6 +1079,24 @@ Notes:
 7. Tests U-19, U-28 + proof-time benchmarks in README; final deck with the full three-wave story; Build Club application material.
 
 **Acceptance:** a third party opens `/audit/<id>` and sees a verified "revenue ≥ X between dates" claim with no invoice data exposed; the video shows a USDM (or mock-stablecoin) invoice paid and withdrawn. A "receivables ≥ X" claim verifies the same way.
+
+> **Amended 2026-08-28 (post-audit, see docs/AUDIT-RESPONSE.md).** Wave 3
+> additionally absorbs the audit's business-product layer, in this order:
+> **(a) real invoice documents** — invoice number, issue/due dates, customer
+> details, line items with quantity and unit price, taxes/discounts, merchant
+> details, notes and terms, all device-local and committed as one invoice
+> body; plus PDF generation, a QR/share workflow, duplicate-and-template;
+> **(b) reconciliation** — search/tags, readable history, CSV/JSON/PDF
+> exports, monthly statements, downloadable receipts, fiat-value annotations
+> at pay time — built on the Wave 2 backup format so exports and backups are
+> one machinery; the §16.1 revenue/receivables proofs sit **on top of** these
+> records, not instead of them; **(c) trust before value** — an independent
+> Compact contract audit, a published threat model + audit history (seeded by
+> docs/AUDIT-RESPONSE.md), and the explicit business-model decision (free
+> protocol + paid hosting vs hosted checkout vs sponsored network vs
+> self-hosted enterprise) — decided before any mainnet deployment, because it
+> constrains which backend services are acceptable. "Who funds sponsored
+> DUST" is answered by that same decision.
 
 ---
 
@@ -1084,6 +1149,57 @@ Retainers and subscriptions — the primary persona's actual income shape — wi
 - The standing link (§7.3, `kind: "series"`) carries the seed and template; the payer's client computes the current period from `startAt`/`periodDays`, derives the child preimage, checks on-chain status, and pays. One link, every period.
 - The merchant mints period *n* with an ordinary `createInvoice` (dashboard prompts "mint next period" when the previous one settles or the period rolls). If the payer opens the link before minting, the UI says "this period hasn't been issued yet" instead of attempting a failing transaction.
 - Privacy (INV-11): on-chain, children are ordinary invoices with independent-looking ids and unlinkable tags; only seed-holders (merchant and payer) can correlate the series.
+
+### 15.8 Secure links v2 (added 2026-08-28, post-audit)
+
+The link stays a bearer credential (PRIVACY.md §6.6) until the circuits can do
+better. Wave 2 hardens it in three steps, cheapest first:
+
+- **Link-level expiry and rotation:** the payload gains an optional `linkExp`
+  (distinct from the invoice expiry) and the merchant can re-issue a fresh
+  link for the same invoice; the old fragment simply stops decoding as
+  current. Client-side only — no circuit change.
+- **In-circuit ID authentication:** derive `invoiceId` in-circuit from the
+  commitment preimage instead of accepting it as a free input, closing the
+  id-namespace front-run the audit flags. Contract change; rides the Variant B
+  recompile so the redeploy is paid for once.
+- **Optional recipient binding:** for sensitive invoices the merchant may bind
+  the payer's public key into the commitment; `payInvoice` then proves the
+  binding. Off by default — an unbound link is a feature (pay-on-behalf), a
+  bound one is protection. Password-wrapped payloads (payer-side key
+  derivation) remain a stretch alternative, evaluated with this work.
+
+### 15.9 Encrypted backup, export and import (added 2026-08-28, post-audit; promoted from BACKLOG)
+
+For a privacy product, local-only data is a strength only while users can
+preserve it. Wave 2 makes the Settings card real:
+
+- **Export:** serialize both private-state stores (§7.1, §7.2) into one
+  versioned envelope `{v: 1, net, contract, createdAt, records}`, encrypted
+  under a key derived from the existing D-023 passphrase; download as a file.
+  Nothing leaves the browser.
+- **Import:** decrypt, verify integrity (authenticated encryption — a wrong
+  passphrase or truncated file fails closed, never half-merges), show a
+  preview count, then merge by invoice id with newest-wins.
+- **Hygiene around it:** backup reminders after N new invoices without an
+  export; passphrase rotation (re-encrypt on change); the format version
+  gates migration when §7 evolves; multi-device restore is this same
+  file moved by the user — no sync service, by design.
+
+### 15.10 Webhooks and embeddable checkout (added 2026-08-28, post-audit)
+
+The integration layer that makes the SDK commercially useful, built on the
+relay's public-state-only rule (§15.3):
+
+- **Webhooks:** subscribe a URL to invoice-status transitions (created/paid/
+  withdrawn/cancelled — public facts only; never bodies, amounts, links or
+  identities). Delivery with retries and a visible attempt history; HMAC
+  signature so receivers can verify origin.
+- **Embeddable checkout button:** a script/iframe snippet that renders "Pay
+  with TacitPay" for a given link and hands off to the hosted pay page —
+  the fragment never transits the embedding site's server.
+- Framework examples (Next.js, plain Node) and sandbox fixtures ship with the
+  SDK quickstart.
 
 ---
 
