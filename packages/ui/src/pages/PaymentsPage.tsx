@@ -1,4 +1,4 @@
-import { Link21, ReceiptText, Verify } from 'iconsax-reactjs';
+import { ArrowRight, Link21, ReceiptText, Verify } from 'iconsax-reactjs';
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -8,9 +8,7 @@ import { SandboxBanner } from '@/components/SandboxBanner';
 import { PrivateAmount } from '@/components/PrivateAmount';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -19,10 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { WalletGate } from '@/components/WalletGate';
+import { ConnectedWalletCard, WalletGate } from '@/components/WalletGate';
 import { type InvoiceStatus, type ReceiptView, useTacitPay } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { formatDateTime } from '@/lib/format';
+import { useProving } from '@/lib/proving-context';
 import { cn } from '@/lib/utils';
 
 // The payer's whole side of the lifecycle in one place: open a link to pay,
@@ -57,46 +56,61 @@ function OpenInvoiceCard() {
     // Deliberately OUTSIDE the wallet gate: opening a link only decodes what
     // is already in your hands. You see what you are being asked to pay
     // before any wallet enters the room — the opposite order is how phishing
-    // behaves.
-    <Card className="max-w-xl">
-      <CardHeader>
-        <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-accent text-accent-foreground">
-          <Link21 size={20} variant="Linear" aria-hidden="true" />
-        </div>
-        <CardTitle>Pay an invoice</CardTitle>
-        <CardDescription>
-          Paste the private link you received. Its payload stays after the # and never reaches a
-          server.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={open} className="space-y-3" noValidate>
-          <div className="space-y-1.5">
-            <Label htmlFor="invoice-link">Invoice link</Label>
-            <Input
-              id="invoice-link"
-              type="text"
-              inputMode="url"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="https://tacitpay.example/pay#…"
-              value={invoiceLink}
-              onChange={(event) => setInvoiceLink(event.target.value)}
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? 'invoice-link-error' : undefined}
-            />
-            {error ? (
-              <p id="invoice-link-error" role="alert" className="text-sm text-destructive">
-                {error}
-              </p>
-            ) : null}
-          </div>
-          <Button type="submit" disabled={!invoiceLink.trim()}>
-            Open invoice
+    // behaves. Set in the verification page's explorer register — centred,
+    // one wide bar, no card chrome — because both are the same gesture:
+    // paste the thing you were handed, and the chain answers.
+    <div className="mx-auto flex w-full max-w-3xl flex-col items-center py-6 text-center md:py-10">
+      <h2 className="text-2xl font-semibold tracking-tight text-balance md:text-3xl">
+        Pay an invoice
+      </h2>
+      <p className="mt-3 text-base leading-7 text-muted-foreground">
+        Paste the private link you received. Its payload stays after the # and never reaches a
+        server.
+      </p>
+
+      <form onSubmit={open} className="mt-8 w-full" noValidate>
+        <label htmlFor="invoice-link" className="sr-only">
+          Invoice link
+        </label>
+        {/* The explorer bar: the bar owns the border and the focus ring so
+            the input and the button read as one instrument. */}
+        <div className="flex items-center gap-2 rounded-2xl border bg-card p-2 shadow-sm focus-within:ring-2 focus-within:ring-ring">
+          <Link21
+            size={20}
+            variant="Linear"
+            aria-hidden="true"
+            className="ml-2.5 shrink-0 text-muted-foreground"
+          />
+          <Input
+            id="invoice-link"
+            type="text"
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+            placeholder="https://tacitpay.example/pay#…"
+            value={invoiceLink}
+            onChange={(event) => setInvoiceLink(event.target.value)}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'invoice-link-error' : undefined}
+            className="h-12 flex-1 border-0 bg-transparent font-mono text-sm shadow-none focus-visible:ring-0 dark:bg-transparent"
+          />
+          <Button
+            type="submit"
+            disabled={!invoiceLink.trim()}
+            className="h-12 shrink-0 rounded-xl px-5"
+          >
+            <span className="hidden sm:inline">Open invoice</span>
+            <span className="sm:hidden">Open</span>
+            <ArrowRight size={17} variant="Linear" aria-hidden="true" />
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+        {error ? (
+          <p id="invoice-link-error" role="alert" className="mt-3 text-sm text-destructive">
+            {error}
+          </p>
+        ) : null}
+      </form>
+    </div>
   );
 }
 
@@ -208,6 +222,7 @@ function ReceiptsList() {
 }
 
 export function PaymentsPage() {
+  const { connection } = useProving();
   return (
     <>
       <PageHeader
@@ -216,15 +231,24 @@ export function PaymentsPage() {
       />
       <SandboxBanner />
       <div className="space-y-8">
+        {/* The connection is page-level status, so it stands above the pay
+            card — inside the Receipts section it read as a receipt row. The
+            gate below keeps only its connect prompt, seated where the locked
+            content actually is. */}
+        {connection ? <ConnectedWalletCard connection={connection} /> : null}
         <OpenInvoiceCard />
         <section className="space-y-4">
           <h2 className="text-lg font-semibold tracking-tight">Receipts</h2>
-          <WalletGate
-            title="Connect a payer wallet"
-            description="Connect the wallet that paid your invoices to unlock its private receipts."
-          >
-            {() => <ReceiptsList />}
-          </WalletGate>
+          {connection ? (
+            <ReceiptsList />
+          ) : (
+            <WalletGate
+              title="Connect a payer wallet"
+              description="Connect the wallet that paid your invoices to unlock its private receipts."
+            >
+              {() => null}
+            </WalletGate>
+          )}
         </section>
       </div>
     </>

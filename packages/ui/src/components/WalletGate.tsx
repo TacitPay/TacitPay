@@ -4,7 +4,6 @@ import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { useTacitPay } from '@/lib/api';
 import { getErrorMessage } from '@/lib/errors';
 import { truncateHash } from '@/lib/format';
-import { getWalletProvingCapability } from '@/lib/proving';
 import { useProving } from '@/lib/proving-context';
 import {
   clearStoredWalletIdentity,
@@ -18,6 +17,84 @@ import {
 import { CopyButton } from './CopyButton';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+
+// The connected banner on its own, for pages that want the connection to
+// read as page-level status rather than a lid on one gated section —
+// Payments seats it above the pay card while the gate guards only the
+// receipts below. Carries its own @container: the card's row/column switch
+// must follow whatever box it lands in.
+export function ConnectedWalletCard({ connection }: { connection: WalletConnection }) {
+  const connectedWallet = listInjectedWallets().find((wallet) => wallet.id === connection.walletId);
+  return (
+    <div className="@container space-y-6">
+      {/* Keyed on the CONTAINER: this card sits full-width on Merchant and in a ~300px pay-page rail, and viewport breakpoints crammed the row layout into the rail. */}
+      <div className="flex flex-col gap-3 rounded-lg border bg-card px-4 py-3 @sm:flex-row @sm:items-center @sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          {connectedWallet?.icon ? (
+            <span className="relative shrink-0">
+              <img
+                src={connectedWallet.icon}
+                alt=""
+                width={40}
+                height={40}
+                className="size-10 rounded-md"
+              />
+              <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-card bg-[var(--status-paid-fg)]" />
+            </span>
+          ) : (
+            <span className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--status-paid-bg)] text-[var(--status-paid-fg)]">
+              <Wallet3 size={20} variant="Linear" aria-hidden="true" />
+              <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-card bg-[var(--status-paid-fg)]" />
+            </span>
+          )}
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{connection.walletName} connected</p>
+            <code className="block truncate font-mono text-xs text-muted-foreground">
+              {truncateHash(connection.address)}
+            </code>
+            {/* No proving line here — the header's Proving chip already
+                carries that status on every page. */}
+          </div>
+        </div>
+        <ChangeWalletActions connection={connection} />
+      </div>
+      {connection.apiVersionWarning ? (
+        <div role="status" className="flex items-start gap-2 rounded-md border bg-muted/35 p-3">
+          <Danger
+            size={18}
+            variant="Linear"
+            className="mt-0.5 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <p className="text-sm text-muted-foreground">{connection.apiVersionWarning}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// The banner's actions need the same network-scoped disconnect the gate
+// performs; a tiny inner component keeps the hooks with the buttons.
+function ChangeWalletActions({ connection }: { connection: WalletConnection }) {
+  const { network } = useTacitPay();
+  const { setConnection } = useProving();
+  return (
+    <div className="flex flex-wrap gap-2">
+      <CopyButton value={connection.address} label="Copy address" />
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          clearStoredWalletIdentity(network);
+          setConnection(null);
+        }}
+      >
+        Change wallet
+      </Button>
+    </div>
+  );
+}
 
 export function WalletGate({
   children,
@@ -59,65 +136,9 @@ export function WalletGate({
   }
 
   if (connection) {
-    const connectedWallet = wallets.find((wallet) => wallet.id === connection.walletId);
     return (
-      <div className="@container space-y-6">
-        {/* Keyed on the CONTAINER: this card sits full-width on Merchant and in a ~300px pay-page rail, and viewport breakpoints crammed the row layout into the rail. */}
-        <div className="flex flex-col gap-3 rounded-lg border bg-card px-4 py-3 @sm:flex-row @sm:items-center @sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            {connectedWallet?.icon ? (
-              <span className="relative shrink-0">
-                <img
-                  src={connectedWallet.icon}
-                  alt=""
-                  width={40}
-                  height={40}
-                  className="size-10 rounded-md"
-                />
-                <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-card bg-[var(--status-paid-fg)]" />
-              </span>
-            ) : (
-              <span className="relative flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--status-paid-bg)] text-[var(--status-paid-fg)]">
-                <Wallet3 size={20} variant="Linear" aria-hidden="true" />
-                <span className="absolute right-0 bottom-0 size-2.5 rounded-full border-2 border-card bg-[var(--status-paid-fg)]" />
-              </span>
-            )}
-            <div className="min-w-0">
-              <p className="text-sm font-medium">{connection.walletName} connected</p>
-              <code className="block truncate font-mono text-xs text-muted-foreground">
-                {truncateHash(connection.address)}
-              </code>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {getWalletProvingCapability(connection)}
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <CopyButton value={connection.address} label="Copy address" />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                clearStoredWalletIdentity(network);
-                setConnection(null);
-              }}
-            >
-              Change wallet
-            </Button>
-          </div>
-        </div>
-        {connection.apiVersionWarning ? (
-          <div role="status" className="flex items-start gap-2 rounded-md border bg-muted/35 p-3">
-            <Danger
-              size={18}
-              variant="Linear"
-              className="mt-0.5 shrink-0 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <p className="text-sm text-muted-foreground">{connection.apiVersionWarning}</p>
-          </div>
-        ) : null}
+      <div className="space-y-6">
+        <ConnectedWalletCard connection={connection} />
         {children(connection)}
       </div>
     );
