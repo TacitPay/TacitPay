@@ -55,6 +55,7 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
     const grounds = root.querySelector<HTMLElement>('[data-tp-grounds]');
     const promise = root.querySelector<HTMLElement>('[data-tp-promise]');
     const markRing = root.querySelector<SVGCircleElement>('[data-tp-mark-ring]');
+    const markNode = root.querySelector<SVGCircleElement>('[data-tp-mark-node]');
 
     // ---------------------------------------------------------- load resolve
     if (splash && beam && lockup) {
@@ -75,9 +76,25 @@ const setupLandingMotion = (root: HTMLElement): MotionCleanup => {
           { x: -18, opacity: 0, duration: 0.7, ease: 'power3.out' },
           RESOLVE.wordmark,
         )
+        // The node OPENS from its own centre and stops at its size. Two things
+        // had to be said for that. `power2.out` only decelerates — it used to
+        // spring in on `back.out(2.4)`, an ease whose whole job is to
+        // overshoot, so the dot swelled past its own radius and shrank back.
+        // And `svgOrigin` pins the growth to the circle's centre in the SVG's
+        // user units: a scale on an SVG element takes its origin from the
+        // VIEWBOX by default, which grew the node out of the frame's corner.
+        // SplashLockup hands the two numbers over, so geometry stays in one
+        // file. The one point both halves agree on should arrive at its own
+        // size, in its own place.
         .from(
-          '[data-tp-mark-node]',
-          { scale: 0, opacity: 0, duration: 0.4, ease: 'back.out(2.4)' },
+          markNode ? [markNode] : [],
+          {
+            scale: 0,
+            opacity: 0,
+            duration: 0.55,
+            ease: 'power2.out',
+            svgOrigin: markNode?.dataset.tpOrigin,
+          },
           RESOLVE.node,
         )
         // THE ECLIPSE ITSELF. The ring is not moved into place at all — it is

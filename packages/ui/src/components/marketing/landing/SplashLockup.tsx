@@ -105,8 +105,20 @@ export function SplashLockup({ className = '' }: { className?: string }) {
         />
         {/* 2. Public ledger — the solid foreground disc, over the ring. */}
         <circle data-tp-mark-disc cx={DISC.cx} cy={DISC.cy} r={DISC.r} fill="var(--tp-ink)" />
-        {/* 3. The one point both sides agree on. */}
-        <circle data-tp-mark-node cx={NODE.cx} cy={NODE.cy} r={NODE.r} fill="var(--tp-surface)" />
+        {/* 3. The one point both sides agree on. `data-tp-origin` hands the
+            motion layer this circle's own centre in the SVG's user units: a
+            scale on an SVG element resolves its origin against the VIEWBOX
+            unless told otherwise, so without it the node grows out of the
+            frame's corner rather than out of itself. Same contract as the
+            ring's draw numbers above — geometry lives in this file only. */}
+        <circle
+          data-tp-mark-node
+          data-tp-origin={`${NODE.cx} ${NODE.cy}`}
+          cx={NODE.cx}
+          cy={NODE.cy}
+          r={NODE.r}
+          fill="var(--tp-surface)"
+        />
       </svg>
 
       {/* Stacked, not set on one line. Two lines keep the name inside a single
