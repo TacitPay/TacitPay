@@ -161,6 +161,12 @@ function NewInvoiceDialog({
                 <CopyButton value={created.link} label="Copy invoice link" />
                 <CopyButton value={created.invoiceId} label="Copy invoice ID" />
               </div>
+              {/* The link is a bearer credential (PRIVACY.md §6.6) — say it at
+                  the exact moment it leaves the app, not only in the docs. */}
+              <p className="text-xs text-muted-foreground">
+                Anyone holding this link can read the amount and memo and pay the invoice — share it
+                only with your payer, over a channel you trust.
+              </p>
             </div>
             <DialogFooter>
               <Button type="button" onClick={() => changeOpen(false)}>

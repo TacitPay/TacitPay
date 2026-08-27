@@ -437,10 +437,6 @@ function ProvingSettings() {
 export function SettingsPage() {
   const { network, setNetwork } = useTacitPay();
 
-  function comingSoon() {
-    toast.info('Coming with wallet integration');
-  }
-
   return (
     <>
       <PageHeader
@@ -499,27 +495,34 @@ export function SettingsPage() {
               <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-muted text-muted-foreground">
                 <CloudConnection size={22} variant="Linear" aria-hidden="true" />
               </div>
-              <CardTitle>Private state backup</CardTitle>
+              <div className="flex flex-wrap items-center gap-2">
+                <CardTitle>Private state backup</CardTitle>
+                <Badge variant="outline">Coming in Wave 2</Badge>
+              </div>
               <CardDescription>
-                Export or restore encrypted invoice and receipt state when wallet-backed storage
-                lands.
+                Your invoice bodies and receipts live only in this browser profile — the chain holds
+                commitments, never the contents.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               <Separator />
               <div className="flex flex-wrap gap-3">
-                <Button type="button" variant="outline" onClick={comingSoon}>
+                <Button type="button" variant="outline" disabled>
                   <Export size={17} variant="Linear" aria-hidden="true" />
                   Export private state
                 </Button>
-                <Button type="button" variant="outline" onClick={comingSoon}>
+                <Button type="button" variant="outline" disabled>
                   <Import size={17} variant="Linear" aria-hidden="true" />
                   Import private state
                 </Button>
               </div>
+              {/* Honest until it ships: this card must not soften the loss
+                  model. Encrypted export/import is the top of the Wave 2
+                  order (docs/AUDIT-RESPONSE.md). */}
               <p className="text-sm text-muted-foreground">
-                Coming with wallet integration. No private data leaves this browser in the mock
-                shell.
+                Until encrypted export and import land, treat this browser profile as the only copy
+                of your records: clearing site data or losing the device loses the invoice bodies,
+                and the chain cannot restore them.
               </p>
             </CardContent>
           </Card>

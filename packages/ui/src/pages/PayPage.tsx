@@ -15,23 +15,112 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { WalletGate } from '@/components/WalletGate';
+import { useWalletDetails } from '@/components/WalletDetails';
 import { type InvoiceLinkPayload, type InvoiceStatus, useTacitPay } from '@/lib/api';
 import { endpointsFor } from '@/lib/api/deployment';
 import { useLive } from '@/lib/api/live';
 import { getErrorMessage } from '@/lib/errors';
-import { formatDateTime } from '@/lib/format';
+import { displayToken, formatAmount, formatDateTime } from '@/lib/format';
 import { useProving } from '@/lib/proving-context';
+import type { WalletConnection } from '@/lib/wallet';
 
 interface PayInvoiceData {
   payload: InvoiceLinkPayload;
   publicState: { status: InvoiceStatus; expiresAt: number; exists: boolean };
 }
 
+// Read-only preflight: catch the two ways a first-time payer's transaction
+// dies before the wallet ever balances it — no spendable invoice token, or
+// no DUST for fees — and say so in token terms, with the funding path, before
+// the click instead of after the spinner. Advisory only: a warning never
+// disables Pay, because the wallet is the final authority on what it holds.
+// And null balances mean UNKNOWN (the wallet exposed no getter), so only
+// positive evidence of a shortfall may warn — silence over a false alarm.
+function PaymentPreflight({
+  payload,
+  connection,
+}: {
+  payload: InvoiceLinkPayload;
+  connection: WalletConnection;
+}) {
+  const { balances } = useWalletDetails(connection);
+  if (balances === 'loading') return null;
+
+  const known = endpointsFor(payload.net);
+  const symbol = displayToken(payload.token, known);
+  // The pool the pay circuit actually spends from on the INVOICE's network.
+  const pool = known.settlementLane === 'unshielded' ? balances.unshielded : balances.shielded;
+  let insufficient = false;
+  let held = 0n;
+  if (pool !== null) {
+    for (const [token, amount] of pool) {
+      if (displayToken(token, known) === symbol) held += amount;
+    }
+    insufficient = held < payload.amount;
+  }
+  const noDust = balances.dust === 0n;
+  if (!insufficient && !noDust) return null;
+
+  return (
+    // The app's amber caution register — provisional, not broken. Solid
+    // border: the dashed one is the sandbox banner's signature.
+    <div
+      role="status"
+      className="space-y-2 rounded-lg border border-[var(--sandbox-border)] bg-[var(--sandbox-bg)] p-4 text-sm text-[var(--sandbox-fg)]"
+    >
+      {insufficient ? (
+        <p>
+          <span className="font-medium">This wallet cannot cover the invoice yet.</span> It asks for{' '}
+          {formatAmount(payload.amount, symbol)} from your {known.settlementLane} balance; the
+          wallet reports {formatAmount(held, symbol)}.{' '}
+          {payload.net === 'preview' ? (
+            <>
+              Get {symbol} from the{' '}
+              <a
+                href="https://tusdm.moneta.global"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium underline underline-offset-2"
+              >
+                tUSDM faucet
+              </a>{' '}
+              on Cardano Preprod, then bridge it to Midnight over the{' '}
+              <a
+                href="https://midnight.anytoany.xyz"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium underline underline-offset-2"
+              >
+                USDM bridge
+              </a>
+              .
+            </>
+          ) : (
+            <>
+              Fund this wallet on the local devnet first — <code>yarn demo:seed</code> prints a
+              funded wallet.
+            </>
+          )}
+        </p>
+      ) : null}
+      {noDust ? (
+        <p>
+          <span className="font-medium">No DUST for the network fee.</span> DUST accrues over time
+          from NIGHT registered for DUST generation — get tNIGHT from the network faucet, register
+          it (Lace calls this Generate tDUST), and give the tank a little time to fill.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function PayAction({
   payload,
+  connection,
   onPaid,
 }: {
   payload: InvoiceLinkPayload;
+  connection: WalletConnection;
   onPaid(txId: string): void;
 }) {
   const { api, live, proofStage } = useTacitPay();
@@ -59,6 +148,7 @@ function PayAction({
 
   return (
     <div className="space-y-4">
+      <PaymentPreflight payload={payload} connection={connection} />
       {paying && proofStage ? <ProofStepper stage={proofStage} /> : null}
       {error ? <ErrorState message={error} title="Payment did not complete" /> : null}
       {needsLiveSession ? (
@@ -282,7 +372,13 @@ export function PayPage() {
                 title="Connect to pay"
                 description="Your wallet will review and authorize the private payment transaction."
               >
-                {() => <PayAction payload={data.payload} onPaid={setPaymentTxId} />}
+                {(connection) => (
+                  <PayAction
+                    payload={data.payload}
+                    connection={connection}
+                    onPaid={setPaymentTxId}
+                  />
+                )}
               </WalletGate>
             ) : (
               <Card>
