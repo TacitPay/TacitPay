@@ -1,8 +1,8 @@
-import { ArrowRight, Link21, ReceiptText, Verify, WalletMoney } from 'iconsax-reactjs';
+import { ArrowRight, Link21, Verify, WalletMoney } from 'iconsax-reactjs';
 import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { EmptyState, ErrorState, TableSkeleton } from '@/components/DataStates';
+import { ErrorState, TableSkeleton } from '@/components/DataStates';
 import { SandboxBanner } from '@/components/SandboxBanner';
 import { PrivateAmount } from '@/components/PrivateAmount';
 import { Button } from '@/components/ui/button';
@@ -100,28 +100,14 @@ function HomeChooser() {
           icon={<WalletMoney size={22} variant="Linear" aria-hidden="true" />}
           title="I'm a merchant"
           description="Create private invoices, track settlement, and withdraw paid funds."
-          door={
-            <Button asChild className="w-full justify-between">
-              <Link to="/invoices">
-                Open your invoices
-                <ArrowRight size={17} variant="Linear" aria-hidden="true" />
-              </Link>
-            </Button>
-          }
+          door={<DoorButton to="/invoices">Open your invoices</DoorButton>}
         />
 
         <EntryCard
           icon={<Link21 size={22} variant="Linear" aria-hidden="true" />}
           title="I have payments"
           description="Paste the private payment link you received. Its payload stays after # and never reaches a server."
-          door={
-            <Button asChild className="w-full justify-between">
-              <Link to="/payments">
-                Open your payments
-                <ArrowRight size={17} variant="Linear" aria-hidden="true" />
-              </Link>
-            </Button>
-          }
+          door={<DoorButton to="/payments">Open your payments</DoorButton>}
         >
           {/* The paste path in the verification bar's own miniature: input
               and submit as one quiet instrument, so it cannot fight the
@@ -170,43 +156,47 @@ function HomeChooser() {
           icon={<Verify size={22} variant="Linear" aria-hidden="true" />}
           title="Verify an invoice"
           description="Check a public invoice status without connecting a wallet or revealing private details."
-          door={
-            <Button asChild className="w-full justify-between">
-              <Link to="/verification">
-                Open verification
-                <ArrowRight size={17} variant="Linear" aria-hidden="true" />
-              </Link>
-            </Button>
-          }
+          door={<DoorButton to="/verification">Open verification</DoorButton>}
         />
       </section>
     </div>
   );
 }
 
+// One door, one shape, everywhere a card offers a way out — the chooser's
+// cards and the dashboard's strips speak the same sentence.
+function DoorButton({ to, children }: { to: string; children: ReactNode }) {
+  return (
+    <Button asChild className="w-full justify-between">
+      <Link to={to}>
+        {children}
+        <ArrowRight size={17} variant="Linear" aria-hidden="true" />
+      </Link>
+    </Button>
+  );
+}
+
+// The strip ends on its own door, pinned to the card's floor exactly like the
+// chooser's cards — the dashboard replaces the chooser once a wallet
+// connects, so the ways out of it must not change shape.
 function DashboardStrip({
   title,
-  to,
-  linkLabel,
+  door,
   children,
 }: {
   title: string;
-  to: string;
-  linkLabel: string;
+  door: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <Card>
-      <CardHeader className="flex-row items-baseline justify-between space-y-0">
+    <Card className="flex h-full flex-col">
+      <CardHeader>
         <CardTitle className="text-base">{title}</CardTitle>
-        <Link
-          to={to}
-          className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {linkLabel} →
-        </Link>
       </CardHeader>
-      <CardContent className="space-y-1.5">{children}</CardContent>
+      <CardContent className="flex flex-1 flex-col">
+        <div className="space-y-1.5">{children}</div>
+        <div className="mt-auto pt-4">{door}</div>
+      </CardContent>
     </Card>
   );
 }
@@ -259,16 +249,6 @@ function HomeDashboard() {
   const open = invoices?.filter((invoice) => invoice.status === 'OPEN') ?? [];
   const paidInvoices = invoices?.filter((invoice) => invoice.status === 'PAID') ?? [];
   const recent = receipts ? [...receipts].sort((a, b) => b.paidAt - a.paidAt) : [];
-  // "Nothing yet" may only be claimed when BOTH halves genuinely answered
-  // empty — a failed half must fall through to the strips, where its own
-  // could-not-read message tells the truth about it.
-  const nothingYet =
-    loaded &&
-    !error &&
-    invoices !== null &&
-    receipts !== null &&
-    invoices.length === 0 &&
-    receipts.length === 0;
 
   return (
     <div className="space-y-8">
@@ -286,25 +266,12 @@ function HomeDashboard() {
         <ErrorState message={error} onRetry={() => void load()} />
       ) : !loaded ? (
         <TableSkeleton />
-      ) : nothingYet ? (
-        <EmptyState
-          icon={<ReceiptText size={24} variant="Linear" aria-hidden="true" />}
-          title="Nothing on the ledger yet"
-          description="Create your first private invoice, or open a link someone sent you."
-          action={
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button asChild>
-                <Link to="/invoices">Create an invoice</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/payments">Pay an invoice</Link>
-              </Button>
-            </div>
-          }
-        />
       ) : (
         <section className="grid gap-5 lg:grid-cols-3">
-          <DashboardStrip title="Awaiting payment" to="/invoices" linkLabel="All invoices">
+          <DashboardStrip
+            title="Awaiting payment"
+            door={<DoorButton to="/invoices">Open your invoices</DoorButton>}
+          >
             {invoices === null ? (
               <p className="text-sm text-muted-foreground">Could not read invoice state.</p>
             ) : open.length === 0 ? (
@@ -322,7 +289,12 @@ function HomeDashboard() {
                 ))
             )}
           </DashboardStrip>
-          <DashboardStrip title="Ready to withdraw" to="/invoices" linkLabel="All invoices">
+          {/* Withdrawing is the invoice's last act, so this strip doors to
+              /invoices like its neighbour — payments own only what you PAID. */}
+          <DashboardStrip
+            title="Ready to withdraw"
+            door={<DoorButton to="/invoices">Open your invoices</DoorButton>}
+          >
             {invoices === null ? (
               <p className="text-sm text-muted-foreground">Could not read invoice state.</p>
             ) : paidInvoices.length === 0 ? (
@@ -340,7 +312,10 @@ function HomeDashboard() {
                 ))
             )}
           </DashboardStrip>
-          <DashboardStrip title="Recent payments" to="/payments" linkLabel="All payments">
+          <DashboardStrip
+            title="Recent payments"
+            door={<DoorButton to="/payments">Open your payments</DoorButton>}
+          >
             {receipts === null ? (
               <p className="text-sm text-muted-foreground">Could not read payer state.</p>
             ) : recent.length === 0 ? (

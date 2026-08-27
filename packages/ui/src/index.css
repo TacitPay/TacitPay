@@ -66,6 +66,17 @@
   --status-cancelled-bg: var(--color-zinc-100);
   --status-cancelled-fg: var(--color-zinc-600);
 
+  /* The sandbox banner's caution register. Amber, deliberately not red: red
+     is spent on real failures, and the sandbox is provisional, not broken. */
+  --sandbox-bg: var(--color-amber-50);
+  --sandbox-fg: var(--color-amber-700);
+  --sandbox-border: var(--color-amber-300);
+
+  /* A modal's backdrop DIMS, on both grounds — black-based always, never
+     foreground-based, which read as a white wash over the dark theme. The
+     void needs a deeper veil than paper to register at all. */
+  --overlay: rgb(0 0 0 / 0.4);
+
   /* The marketing surface at `/` runs a small semantic set of its own on top of
      the shadcn tokens: it alternates two grounds, rules everything with
      hairlines, and keeps exactly one inverted chapter. Naming them here is what
@@ -214,6 +225,12 @@
     --status-cancelled-bg: var(--color-zinc-800);
     --status-cancelled-fg: var(--color-zinc-400);
 
+    --sandbox-bg: var(--color-amber-950);
+    --sandbox-fg: var(--color-amber-300);
+    --sandbox-border: var(--color-amber-800);
+
+    --overlay: rgb(0 0 0 / 0.72);
+
     --tp-surface: var(--color-zinc-950);
     --tp-surface-alt: #101013;
     --tp-ink: var(--color-zinc-50);
@@ -274,6 +291,12 @@
   --status-withdrawn-fg: var(--color-violet-300);
   --status-cancelled-bg: var(--color-zinc-800);
   --status-cancelled-fg: var(--color-zinc-400);
+
+  --sandbox-bg: var(--color-amber-950);
+  --sandbox-fg: var(--color-amber-300);
+  --sandbox-border: var(--color-amber-800);
+
+  --overlay: rgb(0 0 0 / 0.72);
 
   --tp-surface: var(--color-zinc-950);
   --tp-surface-alt: #101013;

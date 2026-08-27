@@ -5,6 +5,14 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -38,6 +46,7 @@ export function LiveConnectionCard() {
   // Prefilled from whatever is actually in effect — a stored address or one baked in at
   // build time. Showing an empty box while the app reads a real chain is a lie.
   const [address, setAddress] = useState(() => getContractAddress(network) ?? '');
+  const [confirmForget, setConfirmForget] = useState(false);
   const [passphrase, setPassphrase] = useState('');
   const [touched, setTouched] = useState(false);
 
@@ -63,10 +72,13 @@ export function LiveConnectionCard() {
     toast.success(`Contract address saved for ${network}`);
   };
 
+  // Forgetting disconnects and clears — one accidental click cost the owner
+  // his address once, so the button only ASKS now; the dialog below does it.
   const forget = () => {
     clearStoredContractAddress(network);
     setAddress('');
     disconnect();
+    setConfirmForget(false);
     toast.info('Contract address cleared');
   };
 
@@ -105,10 +117,23 @@ export function LiveConnectionCard() {
             </CardDescription>
           </div>
           {/* Three states, not two. Public reads go live as soon as an address exists,
-              long before anyone connects a wallet — saying "Mock data" then is wrong. */}
-          <Badge variant={live || observer ? 'default' : 'secondary'}>
-            {live ? 'Live' : observer ? 'Public reads live' : 'Mock data'}
-          </Badge>
+              long before anyone connects a wallet — saying "Mock data" then is wrong.
+              Until the contract itself is connected, the sandbox's amber sits
+              beside it: same caution register as the banner, so "reads work"
+              can never be mistaken for "connected". */}
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {!live ? (
+              <Badge
+                variant="outline"
+                className="border-dashed border-[var(--sandbox-border)] bg-[var(--sandbox-bg)] text-[var(--sandbox-fg)]"
+              >
+                Not connected
+              </Badge>
+            ) : null}
+            <Badge variant={live || observer ? 'default' : 'secondary'}>
+              {live ? 'Live' : observer ? 'Public reads live' : 'Mock data'}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 
@@ -130,10 +155,35 @@ export function LiveConnectionCard() {
               Save
             </Button>
             {getStoredContractAddress(network) ? (
-              <Button type="button" variant="ghost" onClick={forget}>
-                Forget
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={() => setConfirmForget(true)}
+              >
+                Clear
               </Button>
             ) : null}
+            <Dialog open={confirmForget} onOpenChange={setConfirmForget}>
+              <DialogContent className="sm:max-w-sm">
+                <DialogHeader>
+                  <DialogTitle>Clear this contract address?</DialogTitle>
+                  <DialogDescription>
+                    Removes the address saved for {network} from this browser and disconnects
+                    anything live. If the bundle carries a default for this network, the field falls
+                    back to it.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setConfirmForget(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="button" variant="destructive" onClick={forget}>
+                    Clear address
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
           {showAddressError ? (
             <p className="flex items-center gap-1.5 text-sm text-destructive">
@@ -147,11 +197,16 @@ export function LiveConnectionCard() {
                   Built into this bundle for <strong>{network}</strong>. Saving a different one
                   overrides it in this browser.
                 </>
-              ) : (
+              ) : network === 'local' ? (
+                // The seed hint is the local devnet's own instruction — on
+                // preview it is developer jargon in front of a judge, so
+                // preview keeps only the storage fact.
                 <>
                   <code className="font-mono text-xs">yarn demo:seed</code> prints one for a local
                   devnet. Saved per network, in this browser only.
                 </>
+              ) : (
+                <>Saved per network, in this browser only.</>
               )}
             </p>
           )}
@@ -170,7 +225,16 @@ export function LiveConnectionCard() {
             </Button>
           </div>
         ) : (
-          <form className="space-y-3" onSubmit={onConnect}>
+          // The whole unlock step wears the sandbox's amber while the
+          // contract is not connected: this form is the one door out of the
+          // sandbox, so the caution colour points straight at the exit.
+          <form
+            className="space-y-3 rounded-lg border border-dashed border-[var(--sandbox-border)] bg-[var(--sandbox-bg)] p-4"
+            onSubmit={onConnect}
+          >
+            <p className="text-sm font-medium text-[var(--sandbox-fg)]">
+              Still in the sandbox — connect to the contract to go live on {network}.
+            </p>
             <div className="space-y-2">
               <Label htmlFor="private-state-passphrase">Private-state passphrase</Label>
               <Input
