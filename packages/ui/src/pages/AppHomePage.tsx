@@ -9,9 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { type InvoiceView, type ReceiptView, useTacitPay } from '@/lib/api';
+import { describeNetwork } from '@/lib/api/deployment';
 import { getErrorMessage } from '@/lib/errors';
-import { formatDateTime } from '@/lib/format';
+import { formatDateTime, truncateHash } from '@/lib/format';
 import { useProving } from '@/lib/proving-context';
+import type { WalletConnection } from '@/lib/wallet';
 
 // The app's front door — one route, two honest states. A visitor without a
 // wallet gets the chooser: three doors and no pretence of data we cannot
@@ -57,7 +59,7 @@ function NetworkEyebrow() {
   const { network } = useTacitPay();
   return (
     <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
-      {network === 'preview' ? 'Preview network' : 'Local devnet'}
+      {describeNetwork(network)}
     </p>
   );
 }
@@ -194,10 +196,23 @@ function DashboardStrip({
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col">
-        <div className="space-y-1.5">{children}</div>
+        <div className="space-y-4">{children}</div>
         <div className="mt-auto pt-4">{door}</div>
       </CardContent>
     </Card>
+  );
+}
+
+// A stage inside a card, in the same micro-eyebrow the wallet peek uses:
+// the card names the section, the group names the state within it.
+function StripGroup({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="font-mono text-[10px] tracking-[0.18em] text-muted-foreground uppercase">
+        {label}
+      </p>
+      {children}
+    </div>
   );
 }
 
@@ -221,7 +236,7 @@ function StripRow({
   );
 }
 
-function HomeDashboard() {
+function HomeDashboard({ connection }: { connection: WalletConnection }) {
   const { api } = useTacitPay();
   const [invoices, setInvoices] = useState<InvoiceView[] | null>(null);
   const [receipts, setReceipts] = useState<ReceiptView[] | null>(null);
@@ -254,10 +269,15 @@ function HomeDashboard() {
     <div className="space-y-8">
       <section className="max-w-2xl space-y-3 pt-2">
         <NetworkEyebrow />
-        <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">Where things stand</h1>
-        <p className="text-muted-foreground">
-          The private view across your invoices and payments. Only this wallet sees these numbers.
-        </p>
+        {/* The address is part of the greeting — smaller and muted inside the
+            heading, so the welcome leads and the identity follows. */}
+        <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
+          Welcome back,{' '}
+          <code className="font-mono text-[0.7em] font-medium text-muted-foreground">
+            {truncateHash(connection.address)}
+          </code>
+        </h1>
+        <p className="text-muted-foreground">Only this wallet sees these numbers.</p>
       </section>
 
       <SandboxBanner />
@@ -267,71 +287,95 @@ function HomeDashboard() {
       ) : !loaded ? (
         <TableSkeleton />
       ) : (
+        /* The chooser's three cards, now carrying data: whoever learned the
+           layout at the door finds the same rooms behind it. Invoices holds
+           both merchant stages, Payments the payer's, Verification stays the
+           outsider's tool it always was. */
         <section className="grid gap-5 lg:grid-cols-3">
           <DashboardStrip
-            title="Awaiting payment"
+            title="Invoices"
             door={<DoorButton to="/invoices">Open your invoices</DoorButton>}
           >
             {invoices === null ? (
               <p className="text-sm text-muted-foreground">Could not read invoice state.</p>
-            ) : open.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No open invoices.</p>
             ) : (
-              open
-                .slice(0, 3)
-                .map((invoice) => (
-                  <StripRow
-                    key={invoice.invoiceId}
-                    to={`/invoices/${invoice.invoiceId}`}
-                    primary={invoice.memo}
-                    secondary={<PrivateAmount amount={invoice.amount} token={invoice.token} />}
-                  />
-                ))
+              <>
+                <StripGroup label="Awaiting payment">
+                  {open.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No open invoices.</p>
+                  ) : (
+                    open
+                      .slice(0, 3)
+                      .map((invoice) => (
+                        <StripRow
+                          key={invoice.invoiceId}
+                          to={`/invoices/${invoice.invoiceId}`}
+                          primary={invoice.memo}
+                          secondary={
+                            <PrivateAmount amount={invoice.amount} token={invoice.token} />
+                          }
+                        />
+                      ))
+                  )}
+                </StripGroup>
+                <StripGroup label="Ready to withdraw">
+                  {paidInvoices.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No paid invoices waiting.</p>
+                  ) : (
+                    paidInvoices
+                      .slice(0, 3)
+                      .map((invoice) => (
+                        <StripRow
+                          key={invoice.invoiceId}
+                          to={`/invoices/${invoice.invoiceId}`}
+                          primary={invoice.memo}
+                          secondary={
+                            <PrivateAmount amount={invoice.amount} token={invoice.token} />
+                          }
+                        />
+                      ))
+                  )}
+                </StripGroup>
+              </>
             )}
           </DashboardStrip>
-          {/* Withdrawing is the invoice's last act, so this strip doors to
-              /invoices like its neighbour — payments own only what you PAID. */}
+
           <DashboardStrip
-            title="Ready to withdraw"
-            door={<DoorButton to="/invoices">Open your invoices</DoorButton>}
-          >
-            {invoices === null ? (
-              <p className="text-sm text-muted-foreground">Could not read invoice state.</p>
-            ) : paidInvoices.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No paid invoices waiting.</p>
-            ) : (
-              paidInvoices
-                .slice(0, 3)
-                .map((invoice) => (
-                  <StripRow
-                    key={invoice.invoiceId}
-                    to={`/invoices/${invoice.invoiceId}`}
-                    primary={invoice.memo}
-                    secondary={<PrivateAmount amount={invoice.amount} token={invoice.token} />}
-                  />
-                ))
-            )}
-          </DashboardStrip>
-          <DashboardStrip
-            title="Recent payments"
+            title="Payments"
             door={<DoorButton to="/payments">Open your payments</DoorButton>}
           >
             {receipts === null ? (
               <p className="text-sm text-muted-foreground">Could not read payer state.</p>
-            ) : recent.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No payments made from this wallet.</p>
             ) : (
-              recent
-                .slice(0, 3)
-                .map((receipt) => (
-                  <StripRow
-                    key={`${receipt.invoiceId}-${receipt.txId}`}
-                    to={`/verify/${receipt.invoiceId}`}
-                    primary={receipt.memo}
-                    secondary={formatDateTime(receipt.paidAt)}
-                  />
-                ))
+              <StripGroup label="Recent">
+                {recent.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No payments made from this wallet.
+                  </p>
+                ) : (
+                  recent
+                    .slice(0, 3)
+                    .map((receipt) => (
+                      <StripRow
+                        key={`${receipt.invoiceId}-${receipt.txId}`}
+                        to={`/verify/${receipt.invoiceId}`}
+                        primary={receipt.memo}
+                        secondary={formatDateTime(receipt.paidAt)}
+                      />
+                    ))
+                )}
+              </StripGroup>
             )}
+          </DashboardStrip>
+
+          <DashboardStrip
+            title="Verification"
+            door={<DoorButton to="/verification">Open verification</DoorButton>}
+          >
+            <p className="text-sm leading-6 text-muted-foreground">
+              Check any invoice's public status — yours or anyone's. No wallet needed, not even this
+              one.
+            </p>
           </DashboardStrip>
         </section>
       )}
@@ -341,5 +385,5 @@ function HomeDashboard() {
 
 export function AppHomePage() {
   const { connection } = useProving();
-  return connection ? <HomeDashboard /> : <HomeChooser />;
+  return connection ? <HomeDashboard connection={connection} /> : <HomeChooser />;
 }

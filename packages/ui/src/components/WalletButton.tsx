@@ -2,7 +2,7 @@ import { Coin, Danger, ExportSquare, Flash, LogoutCurve, Refresh, Wallet3 } from
 import { type ReactNode, useEffect, useState } from 'react';
 
 import { useTacitPay } from '@/lib/api';
-import { endpointsFor } from '@/lib/api/deployment';
+import { describeNetwork, endpointsFor } from '@/lib/api/deployment';
 import { getErrorMessage } from '@/lib/errors';
 import { displayToken, formatAmount, truncateHash } from '@/lib/format';
 import { getWalletProvingCapability } from '@/lib/proving';
@@ -159,7 +159,7 @@ function AddressRow({ label, value }: { label: string; value: string }) {
     <div className="grid grid-cols-[5rem_minmax(0,1fr)_auto] items-center gap-2 text-sm">
       <span className="text-muted-foreground">{label}</span>
       <code className="truncate font-mono text-xs">{truncateHash(value, 8)}</code>
-      <CopyButton value={value} label="Copy" />
+      <CopyButton value={value} label={`Copy ${label.toLowerCase()} address`} iconOnly />
     </div>
   );
 }
@@ -306,7 +306,7 @@ function WalletPeek({ connection }: { connection: WalletConnection }) {
         )}
         <p className="text-sm font-semibold">{connection.walletName}</p>
         <span className="ml-auto rounded-full border px-2 py-0.5 text-[10px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
-          {network}
+          {describeNetwork(network)}
         </span>
       </div>
 

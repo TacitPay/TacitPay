@@ -8,6 +8,14 @@ export const NETWORK_IDS = {
   preview: 'preview',
 } as const satisfies Record<InvoiceNetwork, string>;
 
+/**
+ * The network's display name, with its KIND said out loud: "Preview" alone
+ * assumes the reader knows Midnight's naming — a judge does not. One helper,
+ * so every pill, chip and eyebrow says the same thing.
+ */
+export const describeNetwork = (network: InvoiceNetwork): string =>
+  network === 'preview' ? 'Testnet · Preview' : 'Devnet · Local';
+
 export type Endpoints = {
   indexerUrl: string;
   indexerWsUrl: string;

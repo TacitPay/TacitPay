@@ -13,6 +13,7 @@ import { Link, NavLink } from 'react-router-dom';
 
 import { SiteLink } from '@/components/marketing/AppLink';
 import { useTacitPay } from '@/lib/api';
+import { describeNetwork } from '@/lib/api/deployment';
 import { getProvingDisplayLabel } from '@/lib/proving';
 import { useProving } from '@/lib/proving-context';
 import { cn } from '@/lib/utils';
@@ -125,7 +126,7 @@ function FooterLink({ link }: { link: FooterLink }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const { network } = useTacitPay();
   const { resolution, resolving } = useProving();
-  const networkLabel = network === 'preview' ? 'Preview' : 'Local';
+  const networkLabel = describeNetwork(network);
   const provingAvailable = Boolean(resolution?.effectiveTier);
   const provingLabel = resolving ? 'Checking…' : getProvingDisplayLabel(resolution);
 
@@ -270,7 +271,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <p className="text-sm leading-6 text-muted-foreground">
                 Private by default. Provable on demand.
               </p>
-              <p className="text-xs text-muted-foreground">Wave 1 demo · {networkLabel} network</p>
+              <p className="text-xs text-muted-foreground">Wave 1 demo · {networkLabel}</p>
             </div>
 
             <div className="flex flex-wrap gap-x-14 gap-y-6 text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">
