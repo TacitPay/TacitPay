@@ -1,4 +1,4 @@
-import { Add, ArrowRight2, ReceiptText } from 'iconsax-reactjs';
+import { Add, ArrowRight2, ReceiptText, TickCircle } from 'iconsax-reactjs';
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -11,6 +11,7 @@ import { ProofStepper } from '@/components/ProofStepper';
 import { ProvingUnavailableNotice } from '@/components/ProvingUnavailableNotice';
 import { StatusBadge } from '@/components/StatusBadge';
 import { TransactionSuccess } from '@/components/TransactionSuccess';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -48,6 +49,36 @@ interface CreatedInvoice {
   txId: string;
 }
 
+// One settlement lane, shown as the pair it will become: the active side is
+// whatever the network truly settles in today (preview public, devnet
+// shielded), and the other side sits greyed under its Wave 2 tag — a roadmap
+// statement in the form itself, never a control pretending to work.
+function SettlementOption({
+  title,
+  note,
+  state,
+}: {
+  title: string;
+  note: string;
+  state: 'active' | 'wave2';
+}) {
+  return (
+    <div className={`rounded-lg border bg-background p-3 ${state === 'wave2' ? 'opacity-60' : ''}`}>
+      <span className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium">{title}</span>
+        {state === 'active' ? (
+          <TickCircle size={16} variant="Bold" aria-hidden="true" className="shrink-0" />
+        ) : (
+          <Badge variant="outline" className="shrink-0">
+            Coming in Wave 2
+          </Badge>
+        )}
+      </span>
+      <span className="mt-1 block text-xs text-muted-foreground">{note}</span>
+    </div>
+  );
+}
+
 function NewInvoiceDialog({
   open,
   onOpenChange,
@@ -58,7 +89,7 @@ function NewInvoiceDialog({
   onCreated(): void;
 }) {
   const { api, network, proofStage } = useTacitPay();
-  const tokenSymbol = endpointsFor(network).tokenSymbol;
+  const { tokenSymbol, settlementLane } = endpointsFor(network);
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
   const [expiry, setExpiry] = useState('');
@@ -179,6 +210,21 @@ function NewInvoiceDialog({
                 onChange={(event) => setExpiry(event.target.value)}
                 aria-invalid={error ? true : undefined}
               />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-sm leading-none font-medium">Settlement</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <SettlementOption
+                  title="Public"
+                  note="Unshielded transfer — visible on chain."
+                  state={settlementLane === 'unshielded' ? 'active' : 'wave2'}
+                />
+                <SettlementOption
+                  title="Private"
+                  note="Shielded transfer — hidden on chain."
+                  state={settlementLane === 'shielded' ? 'active' : 'wave2'}
+                />
+              </div>
             </div>
 
             {error ? (

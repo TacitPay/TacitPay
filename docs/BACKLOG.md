@@ -42,6 +42,15 @@ notes). Wave 1 items are marked; the rest is Wave 2 planning input:
   wrapper token against unshielded deposits (the design-intended way to
   shield), driven through the dApp connector from the pay page. No wallet
   ships this today; TacitPay doing it is a differentiator.
+- **[Wave 2] Per-invoice settlement choice** — the merchant picks Public or
+  Private settlement at creation; the invoice commitment carries the required
+  lane and the pay circuit enforces it (UI-only flags would be privacy
+  theater). Depends on the wrapper above so "Private" is actually payable on
+  public networks. Open design question: merchant _requires_ a lane vs sets a
+  floor the payer may upgrade — the unshielded transfer mostly exposes the
+  payer. The Wave 1 create dialog already shows the pair, active side driven
+  by the network's real lane, the other greyed under a "Coming in Wave 2" tag
+  (added 2026-08-28).
 - **[Wave 2] Sponsored DUST — gasless payer.** Official pattern (docs:
   `guides/dust-sponsorship`; reference repo
   `midnightntwrk/example-private-party`): the payer proves, balances its own

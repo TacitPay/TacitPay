@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { WalletGate } from '@/components/WalletGate';
 import { type InvoiceLinkPayload, type InvoiceStatus, useTacitPay } from '@/lib/api';
+import { endpointsFor } from '@/lib/api/deployment';
 import { useLive } from '@/lib/api/live';
 import { getErrorMessage } from '@/lib/errors';
 import { formatDateTime } from '@/lib/format';
@@ -75,22 +76,32 @@ function PayAction({
       ) : !resolving && !resolution?.effectiveTier ? (
         <ProvingUnavailableNotice reason={resolution?.reason} />
       ) : (
-        <Button
-          type="button"
-          size="lg"
-          className="w-full sm:w-auto"
-          disabled={paying || resolving}
-          aria-busy={paying || resolving}
-          onClick={() => void pay()}
-        >
-          {paying
-            ? proofStage
-              ? 'Preparing payment…'
-              : 'Checking proof setup…'
-            : resolving
-              ? 'Checking proof setup…'
-              : 'Pay invoice'}
-        </Button>
+        <div className="space-y-2">
+          <Button
+            type="button"
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={paying || resolving}
+            aria-busy={paying || resolving}
+            onClick={() => void pay()}
+          >
+            {paying
+              ? proofStage
+                ? 'Preparing payment…'
+                : 'Checking proof setup…'
+              : resolving
+                ? 'Checking proof setup…'
+                : 'Pay invoice'}
+          </Button>
+          {/* Which pool the money leaves, said where it actually leaves —
+              creation deducts nothing, so this line lives here, keyed to the
+              INVOICE's network rather than the app's current setting. */}
+          <p className="text-xs text-muted-foreground">
+            {endpointsFor(payload.net).settlementLane === 'unshielded'
+              ? 'Pays from your unshielded balance — the transfer is public on this network.'
+              : 'Pays from your shielded balance — the transfer is hidden.'}
+          </p>
+        </div>
       )}
     </div>
   );
