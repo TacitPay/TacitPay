@@ -1,4 +1,4 @@
-import { ArrowRight, Link21, Verify, WalletMoney } from 'iconsax-reactjs';
+import { ArrowRight, Global, Link21, Verify, WalletMoney } from 'iconsax-reactjs';
 import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -57,10 +57,20 @@ function EntryCard({
 
 function NetworkEyebrow() {
   const { network } = useTacitPay();
+  const label = describeNetwork(network);
   return (
-    <p className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
-      {describeNetwork(network)}
-    </p>
+    // The header's network chip restated at the page's own threshold — same
+    // icon, same "Network:" label, same door to Settings. A bare mono
+    // eyebrow read as decoration; the chip reads as the fact it is.
+    <Link
+      to="/settings"
+      aria-label={`Network: ${label}`}
+      className="inline-flex min-h-8 items-center gap-1.5 rounded-full border bg-card px-2.5 py-1 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
+      <Global size={14} variant="Linear" aria-hidden="true" className="text-muted-foreground" />
+      <span className="text-muted-foreground">Network:</span>
+      <span>{label}</span>
+    </Link>
   );
 }
 
