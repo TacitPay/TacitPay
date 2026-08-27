@@ -32,6 +32,10 @@ Back on the merchant side, a PAID invoice offers **Withdraw**. Your wallet prove
 
 `/verify/<invoice-id>` needs no wallet, no account, no permission. It reads the public record and shows: the invoice exists, its status, its expiry. That is everything a verifier can learn — which is the point. Hand this URL to an accountant, a counterparty or a court.
 
+## Your wallet's page
+
+Once connected, click the wallet pill in the header to open **/profile** — the wallet _is_ the account, and this is its page: every address in full with one-tap copy, live balances (shielded, unshielded, DUST), and this wallet's activity counted up — invoices by status, money ready to withdraw, payments made. Hovering the pill shows the same numbers in miniature. Disconnecting from here ends the browser session only; your records stay in your wallet and private state.
+
 ## If something looks wrong
 
 - **"This invoice lives on a real network"** on the pay page — the app is in sandbox mode. Go to Settings and complete the Live connection first; the page keeps the link while you do.

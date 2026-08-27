@@ -27,6 +27,9 @@ const PayPage = lazy(async () => ({ default: (await import('@/pages/PayPage')).P
 const PaymentsPage = lazy(async () => ({
   default: (await import('@/pages/PaymentsPage')).PaymentsPage,
 }));
+const ProfilePage = lazy(async () => ({
+  default: (await import('@/pages/ProfilePage')).ProfilePage,
+}));
 const SettingsPage = lazy(async () => ({
   default: (await import('@/pages/SettingsPage')).SettingsPage,
 }));
@@ -151,6 +154,10 @@ export function App() {
           <Route path="/pay" element={<PayPage />} />
           <Route path="/payments" element={<PaymentsPage />} />
           <Route path="/receipts" element={<Navigate to="/payments" replace />} />
+          {/* The wallet's own page — reached by clicking the header pill,
+              deliberately absent from the nav: a profile is a door on the
+              identity, not a section of the app. */}
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/verify/:invoiceId" element={<VerifyPage />} />
           <Route path="/verification" element={<VerificationPage />} />
           <Route path="/settings" element={<SettingsPage />} />
