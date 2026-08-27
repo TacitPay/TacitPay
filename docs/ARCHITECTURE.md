@@ -16,7 +16,8 @@ Four components. Three of them exist to keep the fourth honest.
 
 ```
 Browser (Vite + React 18 + TS)  packages/ui
-  /  ·  /app  ·  /merchant  ·  /pay  ·  /receipts  ·  /verify/:id  ·  /settings
+  /  ·  /app  ·  /invoices  ·  /invoices/:id  ·  /pay  ·  /payments
+  /verification  ·  /verify/:id  ·  /profile  ·  /settings
         │
   packages/api  (TacitPayApi — the ONLY place circuit calls happen)
   Midnight.js providers: privateState (encrypted, on device) · publicData

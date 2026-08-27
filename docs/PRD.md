@@ -729,6 +729,13 @@ Read `/mnt/skills/public/frontend-design/SKILL.md` (if present in your environme
 
 ### 9.1 Routes
 
+> **Superseded 2026-08-27.** The shipped IA re-cut renamed the spine to
+> lifecycle nouns — `/invoices` (+ `/invoices/:id`), `/payments`,
+> `/verification`, plus `/profile` behind the wallet pill — with the old
+> role-named routes kept as redirects. This table stands as the original
+> intent; the re-cut's rationale lives in
+> `docs/superpowers/specs/2026-08-27-app-ia-lifecycle-recut-design.md`.
+
 | Route | Who | Purpose |
 |---|---|---|
 | `/` | all | Landing: one-paragraph pitch, "I'm a merchant" / "I have an invoice link" / "Verify an invoice". Network badge (Preview/Local). |

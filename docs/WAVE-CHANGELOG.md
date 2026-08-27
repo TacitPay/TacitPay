@@ -218,3 +218,39 @@ took, in order:
 - README truth-sync rode along: the contract section now lists all six
   circuits (the unshielded-lane pair included), and the repository map and
   live-URL footer know about `packages/docs`.
+
+### Field notes — Aug 28, 2026, 01:00 (the app re-cut to lifecycle nouns, and the wallet gets a page)
+
+- **The IA re-cut shipped** (spec:
+  `docs/superpowers/specs/2026-08-27-app-ia-lifecycle-recut-design.md`). The
+  spine renamed from roles to lifecycle: `/invoices` (+ `/invoices/:id`
+  detail with withdraw/cancel), `/payments` (pay + receipts in one room),
+  `/verification` in the nav, old routes kept as redirects. The frozen URLs
+  (`/pay#…`, `/verify/:id`) never moved.
+- **The home page speaks both states.** Disconnected: a three-door chooser.
+  Connected: a dashboard that mirrors it — same three cards, now carrying
+  data — under "Welcome back, `<address>`". Networks say their kind
+  everywhere ("Testnet · Preview"), and the home eyebrow became the header's
+  own network chip.
+- **The wallet pill grew a hover peek, then a whole page.** Peek: live
+  balances (official NIGHT/USDM marks from the Cardano token registry),
+  every address with one-tap copy, Disconnect. Click: `/profile` — identity
+  in full, statistics from the same private-state reads the dashboard uses,
+  and a Session card. The old connected wallet dialog retired; connect flow
+  untouched.
+- **Payments reads top-down now** — connection banner first, then a centred
+  explorer-register pay bar (the verification page's sibling, because both
+  are the same gesture), then receipts.
+- **The create dialog states the settlement lane** as the pair it will
+  become: the active side is the network's real lane, the other sits greyed
+  under "Coming in Wave 2" — the roadmap in the product, no control
+  pretending to work. The pay page says which pool the money leaves, keyed
+  to the invoice's own network.
+- **An amber caution register** (`--sandbox-*`) marks everything
+  provisional; modal overlays got a black-based `--overlay` token so dark
+  mode dialogs darken instead of washing out; the settings tabs' active tab
+  wears the primary ink.
+- **Repo hygiene:** docs truth-synced to the re-cut (PRD §9.1 carries a
+  supersession note; ARCHITECTURE/PRIVACY/currentstate/demo script updated),
+  vendored agent skills gitignored, and the last orphaned helper
+  (`getWalletProvingCapability`) removed with the dialog that used it.

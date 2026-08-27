@@ -136,12 +136,6 @@ export function hasWalletProvingProvider(connection: WalletConnection | null): b
   }
 }
 
-export function getWalletProvingCapability(connection: WalletConnection): string {
-  return hasWalletProvingProvider(connection)
-    ? 'Proves in browser — no extra setup'
-    : 'Needs a local proof server';
-}
-
 export async function checkProverHealth(
   baseUrl: string,
   timeoutMilliseconds = 2500,

@@ -35,6 +35,11 @@ deployments/undeployed*.json
 .vite/
 .firecrawl/
 .serena/
+# Agent skills vendored onto this machine (npx skills add …) — dev tooling,
+# not product code; each dev pulls their own.
+.agents/
+.claude/
+skills-lock.json
 # Astro's generated type cache (packages/docs)
 .astro/
 # Node-wallet private state written by CLI runs — never commit

@@ -360,7 +360,7 @@ User-Agent to Google. That is fixed — fonts are bundled from `@fontsource` and
 served from the app's own origin, and no automatic third-party request remains.
 
 What is left is smaller but real. Whoever serves the static bundle sees the
-requesting IP, the User-Agent, and the route — `/pay`, `/merchant`,
+requesting IP, the User-Agent, and the route — `/pay`, `/invoices`,
 `/verify/<id>`. They do **not** see the fragment: browsers never transmit it,
 and never put it in a `Referer` header either. The invoice id in a `/verify/<id>`
 path is the one exception, and it is public information anyway.

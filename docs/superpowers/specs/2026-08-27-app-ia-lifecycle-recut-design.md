@@ -247,6 +247,12 @@ for these, not the sections above:
   networks are named with their kind ("Testnet · Preview" / "Devnet · Local").
 - The header wallet pill grew a hover peek (addresses, balances, official
   NIGHT/USDM marks, Disconnect).
-- NEXT, not yet designed: a /profile page behind the wallet pill's click
-  ("profile, dashboard statistics… perhaps some settings"). Design before
-  building; it likely retires the connected half of the wallet dialog.
+- SHIPPED 2026-08-28 (commit c24574b and after): the /profile page behind the
+  wallet pill's click — identity with full addresses, statistics from the same
+  private-state reads the dashboard uses, the peek's balance list, and a
+  Session card. As predicted it retired the wallet dialog's connected half;
+  the connect flow stays for disconnected visitors, the hover peek stays.
+  Same batch: Payments seats the connection banner above a centred
+  explorer-register pay bar, and the create dialog shows the settlement pair
+  (active side = the network's real lane, the other greyed "Coming in
+  Wave 2").

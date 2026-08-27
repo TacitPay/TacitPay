@@ -1,6 +1,10 @@
 # TacitPay — current state
 
-**As of 2026-08-24, commit `f710478`.** 69 commits since the pre-wave scaffold.
+**As of 2026-08-28, commit `64dce83`.** Route map and headline claims below are
+current; for everything that landed after the original 2026-08-24 snapshot —
+the unshielded settlement lane on Preview (D-020/D-022), the domains and docs
+site, and the lifecycle IA re-cut — the running record is
+[`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md).
 
 This document is the fast way to understand what exists without reading the
 codebase. Every claim points at the file or command that proves it, so treat it
@@ -160,18 +164,22 @@ deliberately: invoice payloads live in the URL fragment so no server ever sees
 them, and a server runtime would reintroduce exactly the surface the privacy
 claim denies.
 
-| Route                | Purpose                                           |
-| -------------------- | ------------------------------------------------- |
-| `/`                  | public marketing page — no wallet, no app chrome  |
-| `/app`               | the app's front door; the three role entry points |
-| `/merchant`          | dashboard, create invoice, withdraw, cancel       |
-| `/pay`               | decodes the link fragment, pays                   |
-| `/receipts`          | payer's receipts                                  |
-| `/verify/:invoiceId` | public status page, no wallet needed              |
-| `/settings`          | network, proving mode, contract connection        |
+| Route                  | Purpose                                                |
+| ---------------------- | ------------------------------------------------------ |
+| `/`                    | public marketing page — no wallet, no app chrome       |
+| `/app`                 | chooser when disconnected, dashboard when connected    |
+| `/invoices`            | the merchant's index; `New invoice` lives here         |
+| `/invoices/:invoiceId` | one invoice's whole record; withdraw and cancel        |
+| `/pay`                 | decodes the link fragment, pays                        |
+| `/payments`            | paste-a-link explorer bar + the payer's receipts       |
+| `/verification`        | explorer-register search — check any invoice's status  |
+| `/verify/:invoiceId`   | public status page, no wallet needed (frozen URL)      |
+| `/profile`             | the wallet's own page, behind the header pill's click  |
+| `/settings`            | network, proving mode, contract connection, passphrase |
 
-Plus a 404. Seven routes shipped where §14.1 asked for six — `/` was split out
-so the marketing page carries no app chrome.
+Plus a 404, and `/merchant` → `/invoices`, `/receipts` → `/payments` redirects
+for old bookmarks. The spine was renamed to lifecycle nouns in the 2026-08-27
+IA re-cut (`docs/superpowers/specs/2026-08-27-app-ia-lifecycle-recut-design.md`).
 
 **How it decides what to talk to** (`src/lib/api/`):
 
