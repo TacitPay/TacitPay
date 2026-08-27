@@ -4,7 +4,7 @@
 current; for everything that landed after the original 2026-08-24 snapshot —
 the unshielded settlement lane on Preview (D-020/D-022), the domains and docs
 site, and the lifecycle IA re-cut — the running record is
-[`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md).
+[`docs/WAVE-CHANGELOG.md`](./WAVE-CHANGELOG.md).
 
 This document is the fast way to understand what exists without reading the
 codebase. Every claim points at the file or command that proves it, so treat it
@@ -13,11 +13,11 @@ document and the repository disagree, the repository is right and this file is
 stale.
 
 Related documents: [`PRD.md`](./PRD.md) is the product spec and the source of
-truth for intent. [`docs/DECISIONS.md`](./docs/DECISIONS.md) records why things
+truth for intent. [`docs/DECISIONS.md`](./DECISIONS.md) records why things
 are the way they are, D-001 through D-016.
-[`docs/plans/wave-1.md`](./docs/plans/wave-1.md) tracks execution and holds the
-Preview runbook. [`docs/PRIVACY.md`](./docs/PRIVACY.md) and
-[`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) are the deep versions of §3 and
+[`docs/plans/wave-1.md`](./plans/wave-1.md) tracks execution and holds the
+Preview runbook. [`docs/PRIVACY.md`](./PRIVACY.md) and
+[`docs/ARCHITECTURE.md`](./ARCHITECTURE.md) are the deep versions of §3 and
 §6 here.
 
 ---
@@ -413,13 +413,13 @@ work with; the Vite plugin serves them in dev and copies them into `dist/`.
   Export/import is the Wave 2 mitigation (D-014).
 
 Full who-sees-what table, and every invariant mapped to the test that enforces
-it, in [`docs/PRIVACY.md`](./docs/PRIVACY.md).
+it, in [`docs/PRIVACY.md`](./PRIVACY.md).
 
 ---
 
 ## 7. Decisions worth knowing
 
-Full text in [`docs/DECISIONS.md`](./docs/DECISIONS.md), D-001 through D-016.
+Full text in [`docs/DECISIONS.md`](./DECISIONS.md), D-001 through D-016.
 
 | ID    | Decision                                                                                                                                   |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -445,7 +445,7 @@ build proves nothing about whether WASM initialises.
 ## 8. What is left
 
 The full step-by-step sequence, with the reasoning behind the ordering, is the
-**Preview runbook** in [`docs/plans/wave-1.md`](./docs/plans/wave-1.md). In
+**Preview runbook** in [`docs/plans/wave-1.md`](./plans/wave-1.md). In
 summary:
 
 **Owner actions — start (1) first, it gates everything else:**
@@ -454,7 +454,7 @@ summary:
    time. The deployment, the end-to-end run and the video all wait on it.
 2. **Flip the repository public** before the Sep 16 submission (D-003).
 3. **Record the 3–5 minute video.**
-   [`docs/DEMO-SCRIPT.md`](./docs/DEMO-SCRIPT.md) is the shot list and the
+   [`docs/DEMO-SCRIPT.md`](./DEMO-SCRIPT.md) is the shot list and the
    pre-recording checklist.
 
 **Engineering, all of it gated on (1):**
@@ -478,7 +478,7 @@ summary:
 **Already done** and needing nothing further: the contract and its tests, the
 library, the CLI, the judge sandbox, the UI including its live read path, all
 four documentation files, the twelve-slide deck at
-[`docs/deck/index.html`](./docs/deck/index.html), self-hosted fonts, the
+[`docs/deck/index.html`](./deck/index.html), self-hosted fonts, the
 code-split bundle, and the Vercel configuration.
 
 ---

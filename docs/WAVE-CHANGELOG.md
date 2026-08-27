@@ -251,6 +251,6 @@ took, in order:
   mode dialogs darken instead of washing out; the settings tabs' active tab
   wears the primary ink.
 - **Repo hygiene:** docs truth-synced to the re-cut (PRD §9.1 carries a
-  supersession note; ARCHITECTURE/PRIVACY/currentstate/demo script updated),
+  supersession note; ARCHITECTURE/PRIVACY/CURRENT-STATE/demo script updated),
   vendored agent skills gitignored, and the last orphaned helper
   (`getWalletProvingCapability`) removed with the dialog that used it.

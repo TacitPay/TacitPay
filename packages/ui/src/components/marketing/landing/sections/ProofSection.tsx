@@ -5,7 +5,7 @@ import { MicroLabel, Reveal } from '../shared';
 // Structural guarantees, not build evidence. Each one is a thing the product
 // cannot do rather than a thing it promises not to — which is the only kind of
 // privacy claim worth printing. Test counts and the licence live in the README
-// and currentstate.md, where someone auditing the work will look for them.
+// and docs/CURRENT-STATE.md, where someone auditing the work will look for them.
 //
 // The icon names the subject and the figure supplies the negation: a key beside
 // a zero reads as "no keys" without the row having to say so twice.

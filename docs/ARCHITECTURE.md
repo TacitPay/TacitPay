@@ -6,7 +6,7 @@ spec — where the spec and the code disagreed, the code won.
 
 Related: [`PRIVACY.md`](./PRIVACY.md) explains what each layer may hold,
 [`DECISIONS.md`](./DECISIONS.md) records why the tooling is what it is, and
-[`../currentstate.md`](../currentstate.md) is the honest status of each piece.
+[`CURRENT-STATE.md`](./CURRENT-STATE.md) is the honest status of each piece.
 
 ---
 

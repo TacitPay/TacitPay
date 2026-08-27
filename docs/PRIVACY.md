@@ -10,7 +10,7 @@ stable and greppable; use those if a line number does not land where it says.
 
 Related: [`../PRD.md`](../PRD.md) §4 is the source of truth for intent,
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) explains where each piece of state
-lives, and [`../currentstate.md`](../currentstate.md) §6 is the short version of
+lives, and [`CURRENT-STATE.md`](./CURRENT-STATE.md) §6 is the short version of
 the limitations below.
 
 ---
@@ -58,7 +58,7 @@ served from the app's own origin (`packages/ui/src/index.css`,
 `packages/ui/src` are outbound links a user can choose to click — the Midnight
 docs, and a block explorer on the transaction-success screen. Nothing loads on
 its own. This closes what was a real limitation until that date;
-[`../currentstate.md`](../currentstate.md) §6 still lists it as open and is
+[`CURRENT-STATE.md`](./CURRENT-STATE.md) §6 still lists it as open and is
 stale on this point.
 
 Notes on the harder cells:

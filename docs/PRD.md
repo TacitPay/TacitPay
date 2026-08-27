@@ -951,7 +951,7 @@ tacitpay/
 │   └── mcp/                     Wave 2 (MCP server)
 ├── deployments/                 contract addresses per network
 ├── config/networks.json
-├── assets/                      logo (light/dark SVG) used by the README
+├── .github/assets/              repo art — logo, avatar, social preview
 └── package.json                 yarn workspaces; scripts: compile, build, test, test:int, env:up, env:down, lint, typecheck
 ```
 
