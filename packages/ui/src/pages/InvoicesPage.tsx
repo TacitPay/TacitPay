@@ -1,5 +1,6 @@
-import { Add, DirectboxSend, ReceiptText } from 'iconsax-reactjs';
+import { Add, ArrowRight2, ReceiptText } from 'iconsax-reactjs';
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { CopyButton } from '@/components/CopyButton';
 import { EmptyState, ErrorState, TableSkeleton } from '@/components/DataStates';
@@ -35,6 +36,11 @@ import { endpointsFor } from '@/lib/api/deployment';
 import { getErrorMessage } from '@/lib/errors';
 import { formatDateTime, parseAmount, toUnixSeconds } from '@/lib/format';
 import { useProving } from '@/lib/proving-context';
+
+// The merchant's half of the lifecycle: issue an invoice, watch it settle,
+// open one to act on it. This index deliberately carries no row actions any
+// more — withdraw, cancel and the copy buttons moved to the detail route,
+// where the whole record is in view. A row here is a door, not a workbench.
 
 interface CreatedInvoice {
   invoiceId: string;
@@ -209,15 +215,18 @@ function NewInvoiceDialog({
   );
 }
 
-function MerchantDashboard() {
-  const { api, proofStage } = useTacitPay();
-  const { resolution, resolving, refreshProving } = useProving();
+function InvoicesList({
+  dialogOpen,
+  onDialogOpenChange,
+}: {
+  dialogOpen: boolean;
+  onDialogOpenChange(open: boolean): void;
+}) {
+  const { api } = useTacitPay();
+  const { resolution, resolving } = useProving();
+  const navigate = useNavigate();
   const [invoices, setInvoices] = useState<InvoiceView[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [actionInvoiceId, setActionInvoiceId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
-  const [actionSuccess, setActionSuccess] = useState<{ txId: string; title: string } | null>(null);
 
   const loadInvoices = useCallback(async () => {
     setLoadError(null);
@@ -233,61 +242,19 @@ function MerchantDashboard() {
     void loadInvoices();
   }, [loadInvoices]);
 
-  async function act(invoice: InvoiceView, action: 'withdraw' | 'cancel') {
-    setActionInvoiceId(invoice.invoiceId);
-    setActionError(null);
-    setActionSuccess(null);
-    try {
-      const currentProving = await refreshProving();
-      if (!currentProving.effectiveTier) return;
-      const result =
-        action === 'withdraw'
-          ? await api.withdraw(invoice.invoiceId)
-          : await api.cancelInvoice(invoice.invoiceId);
-      setActionSuccess({
-        txId: result.txId,
-        title: action === 'withdraw' ? 'Funds withdrawn' : 'Invoice cancelled',
-      });
-      await loadInvoices();
-    } catch (error) {
-      setActionError(getErrorMessage(error));
-    } finally {
-      setActionInvoiceId(null);
-    }
-  }
-
   return (
     <>
-      <PageHeader
-        eyebrow="Merchant"
-        title="Your invoices"
-        description="Create private payment requests and follow their public settlement status."
-        action={
-          <Button type="button" onClick={() => setDialogOpen(true)}>
-            <Add size={18} variant="Linear" aria-hidden="true" />
-            New invoice
-          </Button>
-        }
-      />
-
-      <SandboxBanner />
-
       <NewInvoiceDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={onDialogOpenChange}
         onCreated={() => void loadInvoices()}
       />
 
       <div className="space-y-5">
-        {actionInvoiceId && proofStage ? <ProofStepper stage={proofStage} /> : null}
+        {/* Creation proves too, so the notice belongs on the index even with
+            the row actions gone. */}
         {!resolving && !resolution?.effectiveTier ? (
           <ProvingUnavailableNotice reason={resolution?.reason} />
-        ) : null}
-        {actionError ? (
-          <ErrorState message={actionError} title="The invoice action did not complete" />
-        ) : null}
-        {actionSuccess ? (
-          <TransactionSuccess txId={actionSuccess.txId} title={actionSuccess.title} />
         ) : null}
 
         {loadError ? (
@@ -300,7 +267,7 @@ function MerchantDashboard() {
             title="No invoices yet"
             description="Create your first private invoice. Its amount and memo stay off the public ledger."
             action={
-              <Button type="button" onClick={() => setDialogOpen(true)}>
+              <Button type="button" onClick={() => onDialogOpenChange(true)}>
                 <Add size={17} variant="Linear" aria-hidden="true" />
                 Create invoice
               </Button>
@@ -308,7 +275,7 @@ function MerchantDashboard() {
           />
         ) : (
           <div className="overflow-hidden rounded-xl border bg-card">
-            <Table className="min-w-[940px]">
+            <Table className="min-w-[840px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Status</TableHead>
@@ -316,12 +283,19 @@ function MerchantDashboard() {
                   <TableHead>Memo</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Expires</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="sr-only">Open</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {invoices.map((invoice) => (
-                  <TableRow key={invoice.invoiceId}>
+                  <TableRow
+                    key={invoice.invoiceId}
+                    // The row is the link: every cell leads to the same
+                    // detail, and the actions that used to crowd this table
+                    // now live where they have room.
+                    className="cursor-pointer"
+                    onClick={() => navigate(`/invoices/${invoice.invoiceId}`)}
+                  >
                     <TableCell>
                       <StatusBadge status={invoice.status} />
                     </TableCell>
@@ -341,34 +315,15 @@ function MerchantDashboard() {
                       {formatDateTime(invoice.expiresAt)}
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-end gap-2">
-                        <CopyButton value={invoice.link} label="Copy link" />
-                        {invoice.status === 'PAID' ? (
-                          <Button
-                            type="button"
-                            size="sm"
-                            disabled={
-                              actionInvoiceId !== null || resolving || !resolution?.effectiveTier
-                            }
-                            onClick={() => void act(invoice, 'withdraw')}
-                          >
-                            <DirectboxSend size={16} variant="Linear" aria-hidden="true" />
-                            Withdraw
-                          </Button>
-                        ) : null}
-                        {invoice.status === 'OPEN' ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={
-                              actionInvoiceId !== null || resolving || !resolution?.effectiveTier
-                            }
-                            onClick={() => void act(invoice, 'cancel')}
-                          >
-                            Cancel
-                          </Button>
-                        ) : null}
+                      <div className="flex justify-end">
+                        <Link
+                          to={`/invoices/${invoice.invoiceId}`}
+                          aria-label={`Open invoice ${invoice.memo}`}
+                          onClick={(event) => event.stopPropagation()}
+                          className="grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          <ArrowRight2 size={16} variant="Linear" aria-hidden="true" />
+                        </Link>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -382,13 +337,35 @@ function MerchantDashboard() {
   );
 }
 
-export function MerchantPage() {
+export function InvoicesPage() {
+  const { connection } = useProving();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
-    <WalletGate
-      title="Connect a merchant wallet"
-      description="Your wallet unlocks invoice details stored in private state."
-    >
-      {() => <MerchantDashboard />}
-    </WalletGate>
+    <>
+      {/* The header stands outside the gate: a visitor without a wallet still
+          learns what this section is. The action only appears once a wallet
+          is here to act with — a dead button is worse than none. */}
+      <PageHeader
+        eyebrow="Invoice"
+        title="Your invoices"
+        description="Create private payment requests and follow their public settlement status."
+        action={
+          connection ? (
+            <Button type="button" onClick={() => setDialogOpen(true)}>
+              <Add size={18} variant="Linear" aria-hidden="true" />
+              New invoice
+            </Button>
+          ) : undefined
+        }
+      />
+      <SandboxBanner />
+      <WalletGate
+        title="Connect a merchant wallet"
+        description="Your wallet unlocks the invoice records kept in private state."
+      >
+        {() => <InvoicesList dialogOpen={dialogOpen} onDialogOpenChange={setDialogOpen} />}
+      </WalletGate>
+    </>
   );
 }

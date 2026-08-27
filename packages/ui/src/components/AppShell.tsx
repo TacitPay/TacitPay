@@ -1,4 +1,13 @@
-import { Book1, ExportSquare, Global, ShieldTick } from 'iconsax-reactjs';
+import {
+  Book1,
+  ExportSquare,
+  Global,
+  MoneySend,
+  ReceiptText,
+  Setting2,
+  ShieldTick,
+  Verify,
+} from 'iconsax-reactjs';
 import type { ReactNode } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 
@@ -11,12 +20,17 @@ import { cn } from '@/lib/utils';
 import { GithubMark } from './GithubMark';
 import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
+import { WalletButton } from './WalletButton';
 
+// The nav is the invoice's own lifecycle — issue it, pay it, prove it — with
+// Settings holding the machine room. Each stage wears its own page's mark:
+// Invoices the document, Payments the money leaving, Verification the same
+// shield-tick the verify pages already use.
 const navigation = [
-  { label: 'Merchant', to: '/merchant' },
-  { label: 'Receipts', to: '/receipts' },
-  { label: 'Verify', to: '/app#verify-invoice' },
-  { label: 'Settings', to: '/settings' },
+  { label: 'Invoices', to: '/invoices', icon: ReceiptText },
+  { label: 'Payments', to: '/payments', icon: MoneySend },
+  { label: 'Verification', to: '/verification', icon: Verify },
+  { label: 'Settings', to: '/settings', icon: Setting2 },
 ];
 
 // The landing's own measure, carried into the app so the two surfaces line up:
@@ -39,9 +53,9 @@ const FOOTER_SECTIONS: { title: string; links: FooterLink[] }[] = [
   {
     title: 'App',
     links: [
-      { label: 'Merchant', to: '/merchant' },
-      { label: 'Receipts', to: '/receipts' },
-      { label: 'Verify', to: '/app#verify-invoice' },
+      { label: 'Invoices', to: '/invoices' },
+      { label: 'Payments', to: '/payments' },
+      { label: 'Verification', to: '/verification' },
       { label: 'Settings', to: '/settings' },
     ],
   },
@@ -63,10 +77,25 @@ const FOOTER_SECTIONS: { title: string; links: FooterLink[] }[] = [
   },
 ];
 
+// The phone keeps its words: a tooltip needs a pointer to hover, and a row of
+// four unlabelled glyphs is a guessing game on a touch screen.
 function navigationClass(isActive: boolean) {
   return cn(
-    'inline-flex min-h-10 items-center rounded-md px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
+    'inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
     isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground',
+  );
+}
+
+// The desktop bar goes to glyphs alone. Square and borderless, so the four
+// routes stay one group and do not turn into four more circles beside the
+// round controls; the active route keeps the same filled treatment it had as
+// a word. Every one carries its name for the pointer and the screen reader.
+function navigationIconClass(isActive: boolean) {
+  return cn(
+    'grid size-9 place-items-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
+    isActive
+      ? 'bg-accent text-accent-foreground'
+      : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
   );
 }
 
@@ -163,18 +192,21 @@ export function AppShell({ children }: { children: ReactNode }) {
               />
             </Link>
           </div>
-          {/* Routes first, then the two round controls as their own cluster —
-              the gap between the groups is wider than the gap inside either, so
-              the nav does not read as a third button. */}
+          {/* Routes first, then the round controls, then the wallet — the gap
+              between the groups is wider than the gap inside either, so the
+              nav does not read as more buttons. The wallet sits last because
+              it is the only control here that changes what the app can DO. */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             <nav aria-label="Primary navigation" className="mr-1 hidden items-center gap-1 md:flex">
               {navigation.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  className={({ isActive }) => navigationClass(isActive && !item.to.includes('#'))}
+                  aria-label={item.label}
+                  title={item.label}
+                  className={({ isActive }) => navigationIconClass(isActive)}
                 >
-                  {item.label}
+                  <item.icon size={18} variant="Linear" aria-hidden="true" />
                 </NavLink>
               ))}
             </nav>
@@ -191,6 +223,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Book1 size={15} variant="Linear" aria-hidden="true" />
             </a>
             <ThemeToggle />
+            <WalletButton />
           </div>
         </div>
         <nav
@@ -201,8 +234,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) => navigationClass(isActive && !item.to.includes('#'))}
+              className={({ isActive }) => navigationClass(isActive)}
             >
+              <item.icon size={16} variant="Linear" aria-hidden="true" />
               {item.label}
             </NavLink>
           ))}

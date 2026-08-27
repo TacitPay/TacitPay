@@ -14,25 +14,32 @@ const HomePage = lazy(async () => ({ default: (await import('@/pages/HomePage'))
 const AppHomePage = lazy(async () => ({
   default: (await import('@/pages/AppHomePage')).AppHomePage,
 }));
-const MerchantPage = lazy(async () => ({
-  default: (await import('@/pages/MerchantPage')).MerchantPage,
+const InvoiceDetailPage = lazy(async () => ({
+  default: (await import('@/pages/InvoiceDetailPage')).InvoiceDetailPage,
+}));
+const InvoicesPage = lazy(async () => ({
+  default: (await import('@/pages/InvoicesPage')).InvoicesPage,
 }));
 const NotFoundPage = lazy(async () => ({
   default: (await import('@/pages/NotFoundPage')).NotFoundPage,
 }));
 const PayPage = lazy(async () => ({ default: (await import('@/pages/PayPage')).PayPage }));
-const ReceiptsPage = lazy(async () => ({
-  default: (await import('@/pages/ReceiptsPage')).ReceiptsPage,
+const PaymentsPage = lazy(async () => ({
+  default: (await import('@/pages/PaymentsPage')).PaymentsPage,
 }));
 const SettingsPage = lazy(async () => ({
   default: (await import('@/pages/SettingsPage')).SettingsPage,
 }));
+const VerificationPage = lazy(async () => ({
+  default: (await import('@/pages/VerificationPage')).VerificationPage,
+}));
 const VerifyPage = lazy(async () => ({ default: (await import('@/pages/VerifyPage')).VerifyPage }));
 
-// Routes whose hash is a section anchor. Everywhere else the hash is data —
-// /pay#<payload> carries the invoice itself — so it must never be treated as
-// a scroll target.
-const ANCHOR_ROUTES = new Set(['/', '/app']);
+// Routes whose hash is a section anchor — only the root remains, since the
+// app home lost its last anchor when verification got its own page.
+// Everywhere else the hash is data — /pay#<payload> carries the invoice
+// itself — so it must never be treated as a scroll target.
+const ANCHOR_ROUTES = new Set(['/']);
 
 function ScrollManager() {
   const { pathname, hash } = useLocation();
@@ -136,10 +143,16 @@ export function App() {
           ) : (
             <Route path="/app" element={<AppHomePage />} />
           )}
-          <Route path="/merchant" element={<MerchantPage />} />
+          <Route path="/invoices" element={<InvoicesPage />} />
+          <Route path="/invoices/:invoiceId" element={<InvoiceDetailPage />} />
+          {/* The old role-named door. Bookmarks and muscle memory land here
+              for a while yet; the redirect keeps every one of them working. */}
+          <Route path="/merchant" element={<Navigate to="/invoices" replace />} />
           <Route path="/pay" element={<PayPage />} />
-          <Route path="/receipts" element={<ReceiptsPage />} />
+          <Route path="/payments" element={<PaymentsPage />} />
+          <Route path="/receipts" element={<Navigate to="/payments" replace />} />
           <Route path="/verify/:invoiceId" element={<VerifyPage />} />
+          <Route path="/verification" element={<VerificationPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

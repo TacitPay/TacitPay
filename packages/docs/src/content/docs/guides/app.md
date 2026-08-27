@@ -14,7 +14,7 @@ The reference app lives at [app.tacitpay.xyz](https://app.tacitpay.xyz). Out of 
 
 ## Issue an invoice
 
-**Merchant → New invoice.** Enter the amount, a memo, and optionally an expiry. Your wallet proves and submits `createInvoice`; the app then polls the ledger until the invoice is visibly there — the success screen only appears once the chain confirms it.
+**Invoices → New invoice.** Enter the amount, a memo, and optionally an expiry. Your wallet proves and submits `createInvoice`; the app then polls the ledger until the invoice is visibly there — the success screen only appears once the chain confirms it.
 
 What you get is a **link**. Everything private rides in its `#fragment`, which browsers never send to any server — the link _is_ the invoice. Send it over whatever channel you already use.
 
