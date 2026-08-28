@@ -1,0 +1,794 @@
+<title>TacitPay demo deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap"
+/>
+
+<style>
+  /* The recording deck: six slides behind the demo video's talk track.
+     Same tokens, faces and grammar as index.html — one design, two decks. */
+  :root {
+    --ground: #fafafa;
+    --surface: #ffffff;
+    --ink: #09090b;
+    --muted: #52525b;
+    --faint: #71717a;
+    --rule: #e4e4e7;
+    --glow: 9 9 11;
+
+    --sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --serif: 'Instrument Serif', ui-serif, Georgia, serif;
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+    --pad: clamp(1.75rem, 5vw, 5.5rem);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --ground: #09090b;
+      --surface: #141418;
+      --ink: #fafafa;
+      --muted: #a1a1aa;
+      --faint: #71717a;
+      --rule: #27272a;
+      --glow: 250 250 250;
+    }
+  }
+  :root[data-theme='dark'] {
+    --ground: #09090b;
+    --surface: #141418;
+    --ink: #fafafa;
+    --muted: #a1a1aa;
+    --faint: #71717a;
+    --rule: #27272a;
+    --glow: 250 250 250;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: clamp(1rem, 0.9rem + 0.35vw, 1.15rem);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck {
+    height: 100dvh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deck {
+      scroll-behavior: auto;
+    }
+  }
+  .slide {
+    scroll-snap-align: start;
+    min-height: 100dvh;
+    padding: var(--pad);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(1rem, 2.5vh, 1.8rem);
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  .num {
+    position: absolute;
+    top: var(--pad);
+    right: var(--pad);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--faint);
+  }
+
+  h1,
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(2.4rem, 5.5vw, 4.4rem);
+    line-height: 1.08;
+  }
+  h2 {
+    font-size: clamp(1.9rem, 4vw, 3.2rem);
+    line-height: 1.12;
+    max-width: 24ch;
+  }
+  .lede {
+    font-size: clamp(1.05rem, 1rem + 0.4vw, 1.35rem);
+    max-width: 58ch;
+    margin: 0;
+  }
+  .muted {
+    color: var(--muted);
+  }
+  .mono {
+    font-family: var(--mono);
+  }
+
+  /* Title lockup — the mark and beam from the main deck, unchanged. */
+  .slide--center {
+    align-items: center;
+    text-align: center;
+  }
+  .slide--center p {
+    margin-inline: auto;
+  }
+  .lockup-row {
+    position: relative;
+    align-self: stretch;
+    display: flex;
+    justify-content: center;
+  }
+  .beam {
+    position: absolute;
+    inset-inline: calc(var(--pad) * -1);
+    top: 50%;
+    height: clamp(4rem, 8vw, 8rem);
+    translate: 0 -50%;
+    pointer-events: none;
+  }
+  .beam::before,
+  .beam::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+  }
+  .beam::before {
+    inset-block: 0;
+    background: linear-gradient(to bottom, transparent, rgb(var(--glow) / 0.07) 50%, transparent);
+  }
+  .beam::after {
+    top: 50%;
+    height: 1px;
+    translate: 0 -50%;
+    background: rgb(var(--glow) / 0.7);
+  }
+  .lockup {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--ground);
+    padding-inline: 1.25rem;
+  }
+  .lockup svg {
+    width: clamp(4.5rem, 9vw, 7rem);
+    height: auto;
+  }
+  .wordmark {
+    font-size: clamp(2rem, 4.5vw, 3.4rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .wordmark span {
+    color: var(--faint);
+  }
+
+  /* Problem slide: the two dead ends, side by side, weighed equally. */
+  .pair {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    max-width: 62rem;
+  }
+  .option {
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .option .k {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .option h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(1.3rem, 2vw, 1.7rem);
+    margin: 0;
+    line-height: 1.2;
+  }
+  .option p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.98rem;
+  }
+  .tension {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.2rem, 2.2vw, 1.7rem);
+    margin: 0;
+  }
+
+  /* Solution offer: three promises, read left · middle · right. */
+  .triplet {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    width: min(100%, 66rem);
+  }
+  /* On centred slides the cards centre their own text too, so the whole
+     composition reads from the middle out instead of leaning left. */
+  .slide--center .option {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Architecture slide: the blueprint's four regions
+     (docs/tacitpay-architecture-*.png) redrawn at slide scale — same
+     detail, full-viewport, every label sized to survive 720p. */
+  .slide--diagram {
+    gap: clamp(0.5rem, 1.2vh, 0.9rem);
+  }
+  .slide--diagram h2 {
+    font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+    max-width: none;
+  }
+  .arch {
+    align-self: stretch;
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: clamp(0.6rem, 1.2vh, 0.9rem);
+    text-align: left;
+  }
+  .zone {
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: clamp(0.7rem, 1.4vh, 1rem) clamp(0.9rem, 1.4vw, 1.25rem);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.5rem, 1vh, 0.75rem);
+    min-height: 0;
+  }
+  .zone-label {
+    font-family: var(--mono);
+    font-size: clamp(0.7rem, 0.85vw, 0.82rem);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .zone-label b {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .arch-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: clamp(0.5rem, 0.9vw, 0.8rem);
+  }
+  .arch-row > .arrow {
+    align-self: center;
+  }
+  .grow-row {
+    flex: 1;
+    min-height: 0;
+  }
+  .arch-mid {
+    display: grid;
+    gap: clamp(0.6rem, 1vw, 0.9rem);
+    grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
+    min-height: 0;
+  }
+  .anode {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: clamp(0.5rem, 1vh, 0.75rem) clamp(0.7rem, 1vw, 1rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+  .anode b {
+    font-weight: 600;
+    font-size: clamp(0.95rem, 1.15vw, 1.15rem);
+  }
+  .anode span {
+    font-family: var(--mono);
+    font-size: clamp(0.68rem, 0.82vw, 0.8rem);
+    color: var(--muted);
+  }
+  .anode--hero {
+    border-color: var(--ink);
+  }
+  .anode--ghost {
+    border-style: dashed;
+    background: transparent;
+  }
+  .anode--line {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex: 1;
+  }
+  .anode--line span {
+    text-align: right;
+  }
+  .caller-stack {
+    display: grid;
+    gap: clamp(0.45rem, 0.9vh, 0.7rem);
+    align-content: stretch;
+    flex: 0 1 clamp(15rem, 24vw, 21rem);
+  }
+  .caller-stack .anode {
+    flex: 1;
+  }
+  .provider-stack {
+    display: grid;
+    gap: clamp(0.4rem, 0.8vh, 0.6rem);
+    align-content: stretch;
+  }
+  .tiers {
+    display: grid;
+    gap: 0.3rem;
+    font-family: var(--mono);
+    font-size: clamp(0.7rem, 0.85vw, 0.82rem);
+    color: var(--muted);
+    border-top: 1px dashed var(--rule);
+    padding-top: clamp(0.5rem, 1vh, 0.7rem);
+  }
+  .tiers .tiers-close {
+    color: var(--faint);
+  }
+  .arrow {
+    font-family: var(--mono);
+    color: var(--faint);
+    flex: none;
+  }
+  .grow {
+    flex: 1 1 16rem;
+  }
+  .zone-note {
+    font-family: var(--mono);
+    font-size: clamp(0.7rem, 0.85vw, 0.82rem);
+    color: var(--muted);
+    margin: 0;
+  }
+  .states {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    font-family: var(--mono);
+    font-size: clamp(0.72rem, 0.85vw, 0.82rem);
+    color: var(--ink);
+  }
+  .states .st {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+    background: var(--surface);
+  }
+  .states .st--fill {
+    background: var(--ink);
+    color: var(--ground);
+    border-color: var(--ink);
+  }
+  .states .st--ghost {
+    border-style: dashed;
+    color: var(--muted);
+    background: transparent;
+  }
+
+  /* Wave 2 slide: a real sequence — the audit fixed the order, so the
+     numbers carry information, not decoration. */
+  .roadmap {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: 46rem;
+    counter-reset: step;
+  }
+  .roadmap li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 2.2rem 1fr;
+    gap: 0.9rem;
+    align-items: baseline;
+  }
+  .roadmap li::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .roadmap strong {
+    font-weight: 600;
+  }
+  .roadmap .why {
+    color: var(--muted);
+  }
+
+  /* End card: everything a paused frame must carry, and nothing else. */
+  .end-lines {
+    display: grid;
+    gap: 0.55rem;
+    justify-items: center;
+    font-family: var(--mono);
+    font-size: clamp(0.82rem, 1.4vw, 1rem);
+  }
+  .end-lines .contract {
+    font-size: clamp(0.62rem, 1.1vw, 0.78rem);
+    color: var(--faint);
+    word-break: break-all;
+    max-width: 60ch;
+  }
+</style>
+
+<main class="deck" id="deck" tabindex="-1">
+  <!-- 1 · The app -->
+  <section class="slide slide--center">
+    <span class="num">01 / 06</span>
+    <span class="eyebrow">Midnight Buildathon 2026 · Wave 1</span>
+
+    <div class="lockup-row">
+      <div class="beam" aria-hidden="true"></div>
+      <div class="lockup">
+        <svg
+          viewBox="112 82 256 176"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <circle cx="280" cy="170" r="80" stroke="var(--faint)" stroke-width="5" />
+          <circle cx="200" cy="170" r="80" fill="var(--ink)" />
+          <circle cx="240" cy="170" r="15" fill="var(--ground)" />
+        </svg>
+        <span class="wordmark">Tacit<span>Pay</span></span>
+      </div>
+    </div>
+
+    <h1>Private invoicing &amp; settlement on Midnight.</h1>
+    <p class="lede muted">
+      Anyone can verify an invoice was paid. Nobody can see what it was for. Private by default —
+      provable on demand.
+    </p>
+    <p class="mono muted" style="font-size: 0.8rem">app.tacitpay.xyz · live on Preview testnet</p>
+  </section>
+
+  <!-- 2 · The problem -->
+  <section class="slide slide--center">
+    <span class="num">02 / 06</span>
+    <span class="eyebrow">The problem</span>
+    <h2>Paying or getting paid in crypto gives you two bad options.</h2>
+
+    <div class="pair">
+      <div class="option">
+        <span class="k">Option one · transparent chain</span>
+        <h3>Everyone learns what you charge, and who pays you.</h3>
+        <p>
+          Every payment permanently publishes who paid whom, and how much. Fresh addresses don't
+          help — clustering stitches the history back together: your rate card to every competitor,
+          your client list to anyone who looks.
+        </p>
+      </div>
+      <div class="option">
+        <span class="k">Option two · fully private rails</span>
+        <h3>Your only proof is the other side's paperwork.</h3>
+        <p>
+          A signed receipt can be refused, disputed, or faked by the two people who wrote it — which
+          is why auditors ask for bank statements, not receipts. Private rails have no neutral
+          witness at all.
+        </p>
+      </div>
+    </div>
+
+    <p class="tension">
+      Real businesses need both at once: privacy from the world, proof on demand.
+    </p>
+  </section>
+
+  <!-- 3 · The solution — the offer, three promises across -->
+  <section class="slide slide--center">
+    <span class="num">03 / 06</span>
+    <span class="eyebrow">The solution</span>
+    <h2>Both at once — three promises.</h2>
+
+    <div class="triplet">
+      <div class="option">
+        <span class="k">Private by construction</span>
+        <h3>The chain holds a commitment — never the invoice.</h3>
+        <p>
+          Amount, memo and parties stay on the parties' own devices. What lands on-chain: a hash, a
+          status flag, an expiry.
+        </p>
+      </div>
+      <div class="option">
+        <span class="k">Provable by anyone</span>
+        <h3>Settlement verifies with no wallet and no permission.</h3>
+        <p>
+          One public page confirms an invoice was paid — enough for an accountant, a counterparty,
+          or a court.
+        </p>
+      </div>
+      <div class="option">
+        <span class="k">No server to trust</span>
+        <h3>The invoice travels as a link — TacitPay never sees it.</h3>
+        <p>
+          The payload rides the URL fragment, which browsers never transmit. Proofs are generated
+          where you choose — never by us.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · The solution — the machinery, over the architecture -->
+  <section class="slide slide--diagram slide--center">
+    <span class="num">04 / 06</span>
+    <span class="eyebrow">The solution · under the hood</span>
+    <h2>One chain sees a commitment. The invoice never leaves the parties.</h2>
+
+    <div class="arch">
+      <div class="zone">
+        <span class="zone-label"
+          ><b>1 · the link is the transport</b> — no server in the payment path</span
+        >
+        <div class="arch-row grow-row">
+          <div class="anode">
+            <b>Merchant browser</b>
+            <span>createInvoice() → encodeLink()</span>
+            <span>shares it over email · chat · QR</span>
+          </div>
+          <span class="arrow">──→</span>
+          <div class="anode grow">
+            <b>/pay#eyJ2IjoxLCJuZXQiOiJwcmV2aWV3Ii…</b>
+            <span
+              >{ v · net · contract · id · amount · token · memo · salt · exp } — nine fields
+              exactly, strictly validated</span
+            >
+            <span
+              >the # fragment is never transmitted: no server, no logs, no referer — as private as
+              the channel that carries it</span
+            >
+          </div>
+          <span class="arrow">──→</span>
+          <div class="anode">
+            <b>Payer browser</b>
+            <span>decodeLink() → checks status → pays</span>
+            <span>both run the same static bundle</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-mid">
+        <div class="zone">
+          <span class="zone-label"><b>2 · one door to the circuits</b> — one audit surface</span>
+          <div class="arch-row grow-row">
+            <div class="caller-stack">
+              <div class="anode">
+                <b>Web app</b><span>Vite + React 18 — static files only</span>
+              </div>
+              <div class="anode"><b>CLI</b><span>deploy · lifecycle · judge sandbox</span></div>
+              <div class="anode anode--ghost">
+                <b>SDK · MCP server</b><span>Wave 2 — agents invoice like people</span>
+              </div>
+            </div>
+            <span class="arrow">──→</span>
+            <div class="anode anode--hero grow">
+              <b>packages/api — TacitPayApi</b>
+              <span>the ONLY place circuits are called</span>
+              <span>one link parser · one disclosure path</span>
+            </div>
+          </div>
+          <div class="tiers">
+            <span class="zone-label"><b>proving</b> — trust-ordered tiers</span>
+            <span>1 · in-wallet WASM — nothing leaves the tab</span>
+            <span>2 · local proof server — localhost:6300</span>
+            <span>3 · your own remote prover — TLS only</span>
+            <span class="tiers-close"
+              >whoever proves, sees the invoice — TacitPay never operates a prover</span
+            >
+          </div>
+        </div>
+        <div class="zone">
+          <span class="zone-label"><b>3 · six providers</b> — two worlds</span>
+          <div class="provider-stack grow-row">
+            <div class="anode anode--line">
+              <b>Midnight Indexer</b
+              ><span>publicData · GraphQL + WS, whole-state public reads</span>
+            </div>
+            <div class="anode anode--line">
+              <b>Wallet</b><span>wallet · DApp Connector, balances the transaction</span>
+            </div>
+            <div class="anode anode--line">
+              <b>zk artifacts — keys/ + zkir/</b
+              ><span>zkConfig · compiler output, served static</span>
+            </div>
+            <div class="anode anode--line">
+              <b>Private state</b><span>privateState · encrypted on-device, never transmitted</span>
+            </div>
+            <div class="anode anode--line">
+              <b>Proof provider</b><span>proof · whichever tier you chose on the left</span>
+            </div>
+            <div class="anode anode--line">
+              <b>Submission</b><span>midnight · the wallet hands the balanced tx to the node</span>
+            </div>
+          </div>
+          <p class="zone-note">public facts and private records never share a channel</p>
+        </div>
+      </div>
+
+      <div class="zone">
+        <span class="zone-label"
+          ><b>4 · on chain — tacitpay.compact</b> — createInvoice · payInvoice · withdraw ·
+          cancelInvoice</span
+        >
+        <div class="arch-row grow-row">
+          <div class="anode grow">
+            <b>public ledger — invoices["0x7f3c…"]</b>
+            <span
+              >{ ownerTag · payerTag · commitment: persistentCommit(amount, memoHash, salt) · status
+              · expiresAt }</span
+            >
+            <span
+              >anyone can verify the invoice exists and settled — amount, memo and salt exist on
+              chain only inside the hiding commitment</span
+            >
+          </div>
+          <div class="anode">
+            <b>invoice status machine</b>
+            <div class="states">
+              <span class="st">OPEN</span><span class="arrow">→</span> <span class="st">PAID</span
+              ><span class="arrow">→</span>
+              <span class="st st--fill">WITHDRAWN</span>
+              <span class="st st--ghost">CANCELLED</span>
+            </div>
+            <span
+              >escrow holds the coin between pay and withdraw — the merchant initiates their own
+              payout</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · Wave 2 -->
+  <section class="slide">
+    <span class="num">05 / 06</span>
+    <span class="eyebrow">Wave 2 · Sep 27 – Oct 17</span>
+    <h2>The product completes, in this order.</h2>
+
+    <ol class="roadmap">
+      <li>
+        <p style="margin: 0">
+          <strong>Shielded settlement on public networks.</strong>
+          <span class="why"
+            >A contract-minted wrapper turns on the greyed Private card — per-invoice choice of
+            public or private settlement.</span
+          >
+        </p>
+      </li>
+      <li>
+        <p style="margin: 0">
+          <strong>Funds safety.</strong>
+          <span class="why"
+            >Milestone escrow, claim-based refunds, and a timeout escape hatch — money can never get
+            stuck.</span
+          >
+        </p>
+      </li>
+      <li>
+        <p style="margin: 0">
+          <strong>Zero-setup payers.</strong>
+          <span class="why"
+            >Sponsored DUST: a first-time payer with an empty fee tank pays from their first
+            click.</span
+          >
+        </p>
+      </li>
+      <li>
+        <p style="margin: 0">
+          <strong>Invoice documents, hardened links &amp; encrypted backup.</strong>
+          <span class="why"
+            >Numbers, dates, customers and line items in the private body; revocable links; records
+            restorable on a new device.</span
+          >
+        </p>
+      </li>
+      <li>
+        <p style="margin: 0">
+          <strong>SDK + MCP server.</strong>
+          <span class="why">Software agents issue and settle invoices the way people do.</span>
+        </p>
+      </li>
+    </ol>
+
+    <p class="muted" style="font-size: 0.85rem; margin: 0">
+      Ordering set by an external product audit — the full triage ships in the repo (<span
+        class="mono"
+        >docs/AUDIT-RESPONSE.md</span
+      >).
+    </p>
+  </section>
+
+  <!-- 6 · End card -->
+  <section class="slide slide--center">
+    <span class="num">06 / 06</span>
+
+    <div class="lockup-row">
+      <div class="beam" aria-hidden="true"></div>
+      <div class="lockup">
+        <svg
+          viewBox="112 82 256 176"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <circle cx="280" cy="170" r="80" stroke="var(--faint)" stroke-width="5" />
+          <circle cx="200" cy="170" r="80" fill="var(--ink)" />
+          <circle cx="240" cy="170" r="15" fill="var(--ground)" />
+        </svg>
+        <span class="wordmark">Tacit<span>Pay</span></span>
+      </div>
+    </div>
+
+    <h2 style="max-width: none">Private by default. Provable on demand.</h2>
+
+    <div class="end-lines">
+      <span>github.com/TacitPay/TacitPay</span>
+      <span>app.tacitpay.xyz · docs.tacitpay.xyz</span>
+      <span class="contract"
+        >contract · 0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24</span
+      >
+    </div>
+  </section>
+</main>
+
+<script>
+  // Arrow-key navigation, same as the main deck — presentable without a mouse.
+  const deck = document.getElementById('deck');
+  const slides = [...document.querySelectorAll('.slide')];
+  deck.focus();
+  addEventListener('keydown', (e) => {
+    const step =
+      e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ' || e.key === 'ArrowRight'
+        ? 1
+        : e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'ArrowLeft'
+          ? -1
+          : 0;
+    if (!step) return;
+    e.preventDefault();
+    const here = slides.findIndex((s) => s.getBoundingClientRect().top > -window.innerHeight / 2);
+    const next = slides[Math.min(Math.max(here + step, 0), slides.length - 1)];
+    next?.scrollIntoView({
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  });
+</script>
