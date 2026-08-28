@@ -298,3 +298,25 @@ took, in order:
   under the wrong key — the error is now mapped to a plain-English message,
   and a pre-write canary check is queued for Wave 2 alongside the backup
   work (BACKLOG).
+
+### Field notes — Aug 29, 2026, 03:20 (the recording kit, the vision, and the docs site learns to deploy)
+
+- **The recording kit shipped:** `docs/deck/demo.html` (six slides: the app,
+  the problem hardened against its two rebuttals, three promises, the
+  architecture redrawn full-bleed with the six providers named by SDK role,
+  Wave 2 in completion order, the end card) and `docs/DEMO-TALK-TRACK.md`
+  (the whole video, spoken lines only).
+- **`docs/VISION.md`:** the arc the waves add up to. Private state grows as
+  document, relationship, evidence and workflow; Wave 1 makes invoices
+  private, Wave 2 complete, Wave 3 provable. Invoice document v1 moved into
+  Wave 2 (PRD §15.11): it folds into the existing commitment through
+  memoHash and rides the same `v: 2` payload bump as secure links.
+- **The community answered the shielding question** (tNIGHT is unshielded by
+  nature; the ZK side runs on DUST), which matches D-020/D-022 exactly. The
+  stale known-issues bullet above is corrected, and the docs site points
+  newcomers at the Midnight Academy for the three-token model.
+- **docs.tacitpay.xyz was two days stale** because `tacitpay-docs` is not
+  git-connected, and a plain `vercel --prod` inherits the app's root
+  `vercel.json` and fails on a static folder. `yarn docs:deploy`
+  (`scripts/deploy-docs.sh`) now builds the site and ships it through the
+  Build Output API, no install, no build, aliased to the domain in seconds.

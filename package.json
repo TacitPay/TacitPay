@@ -21,6 +21,7 @@
     "env:up": "./scripts/devnet.sh up",
     "env:down": "./scripts/devnet.sh down",
     "env:status": "./scripts/devnet.sh status",
+    "docs:deploy": "bash scripts/deploy-docs.sh",
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
