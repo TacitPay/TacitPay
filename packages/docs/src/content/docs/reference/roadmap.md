@@ -28,3 +28,5 @@ The reason privacy plus provability matters:
 - **USDM on mainnet** (stretch) and a mobile proof-of-concept.
 
 Progress per wave is kept in the repository's [`docs/WAVE-CHANGELOG.md`](https://github.com/TacitPay/TacitPay/blob/main/docs/WAVE-CHANGELOG.md).
+
+What the waves add up to, axis by axis: [Where the invoice goes](https://github.com/TacitPay/TacitPay/blob/main/docs/VISION.md).

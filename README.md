@@ -249,14 +249,15 @@ The integration suite runs the same lifecycle against a real chain with real pro
 
 ## Roadmap
 
-| Wave                | Theme                   | Highlights                                                                                                                                                                                                                                                                         |
-| ------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 (Aug 27 – Sep 16) | The loop works          | Contract + tests, API, CLI, UI on Preview, Variant A escrow, judge sandbox, pay-page preflight                                                                                                                                                                                     |
-| 2 (Sep 27 – Oct 17) | The product completes   | In-app shield-funds wrapper → private settlement on Preview, Variant B escrow, milestone escrow, claim-based refunds, sponsored DUST (gasless payer), secure links v2, encrypted backup/import, recurring invoices, receipt proofs, notifications + webhooks, Node SDK, MCP server |
-| 3 (Oct 27 – Nov 16) | Prove it to the auditor | ZK revenue & receivables proofs, real invoice documents (line items, PDF, QR), accounting exports, USDM on mainnet (stretch), mobile PoC                                                                                                                                           |
+| Wave                | Theme                   | Highlights                                                                                                                                                                                                                                                                                            |
+| ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 (Aug 27 – Sep 16) | The loop works          | Contract + tests, API, CLI, UI on Preview, Variant A escrow, judge sandbox, pay-page preflight                                                                                                                                                                                                        |
+| 2 (Sep 27 – Oct 17) | The product completes   | In-app shield-funds wrapper → private settlement on Preview, Variant B escrow, milestone escrow, claim-based refunds, sponsored DUST (gasless payer), secure links v2, invoice documents, encrypted backup/import, recurring invoices, receipt proofs, notifications + webhooks, Node SDK, MCP server |
+| 3 (Oct 27 – Nov 16) | Prove it to the auditor | ZK revenue & receivables proofs, the rest of the invoice document (PDF, QR, templates, attachments), accounting exports, USDM on mainnet (stretch), mobile PoC                                                                                                                                        |
 
 Progress per wave: [`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md).
 Product-completeness triage (external audit, Aug 28 2026): [`docs/AUDIT-RESPONSE.md`](./docs/AUDIT-RESPONSE.md).
+Where the invoice goes, wave by wave: [`docs/VISION.md`](./docs/VISION.md).
 Twelve-slide overview: [`docs/deck/index.html`](./docs/deck/index.html) — open it in a browser and present with the arrow keys.
 
 ## Known limitations
@@ -275,5 +276,5 @@ Stated openly per PRD §4.5:
 ---
 
 Live: [tacitpay.xyz](https://tacitpay.xyz) · [app.tacitpay.xyz](https://app.tacitpay.xyz) · [docs.tacitpay.xyz](https://docs.tacitpay.xyz)
-Built on [Midnight](https://midnight.network) · [Compact docs](https://docs.midnight.network) · Midnight Expert used for verified Compact generation.
+Built on [Midnight](https://midnight.network) · [Compact docs](https://docs.midnight.network) · [Midnight Academy](https://academy.midnight.network/) · Midnight Expert used for verified Compact generation.
 Licensed under [Apache-2.0](./LICENSE).

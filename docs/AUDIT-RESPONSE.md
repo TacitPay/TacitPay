@@ -29,7 +29,7 @@ surface (SDK, MCP, checkout embeds) inside Wave 2.
 | 4   | Secure invoice links                            | **Split.** The threat model was already documented (PRIVACY.md §6.6: the link is a bearer credential). **The UI now says it at the copy moment** (shipped this week). In-circuit ID authentication, signed payloads, revocation/rotation, and recipient binding are Wave 2 §15.8 — they need circuit changes and the contract is frozen until after submission.                                                                                                                                                                                              |
 | 5   | Durable private-state recovery                  | **Wave 2, near the top.** Encrypted export/import touches the storage layer the demo depends on — wrong week to open it. **This week the backup card stopped over-promising**: it now states plainly that this browser profile is the only copy. Spec: §15.9 (versioned format, integrity check on import, passphrase rotation, reminders).                                                                                                                                                                                                                  |
 | 6   | Notifications without surrendering privacy      | **Wave 2 (§15.3), unchanged scope** — the audit endorses the design already in the PRD: a relay that sees only public state, never bodies, links or identities. Webhooks land with it.                                                                                                                                                                                                                                                                                                                                                                       |
-| 7   | Real invoice documents                          | **Wave 3.** Line items, numbering, parties, taxes, PDF and QR live in the private body, so they are client-side — but changing the payload schema days before the demo would break the frozen link format and the deployed e2e invoice. The audit's own build order places this seventh.                                                                                                                                                                                                                                                                     |
+| 7   | Real invoice documents                          | **Wave 2 for the fields, Wave 3 for the rest.** The document fields (number, dates, customer, line items, notes) fold into the existing commitment via `memoHash`, so they need no circuit change; they ship on the same `v: 2` payload bump as secure links (PRD §15.11). PDF, QR, templates and attachments-by-hash follow in Wave 3. Not before the demo: changing the payload schema days before the take would break the frozen link format and the deployed e2e invoice.                                                                               |
 | 8   | Reconciliation and accounting                   | **Wave 3**, on top of the Wave 2 backup/export machinery (records first, exports second — the audit's own sequencing). ZK revenue/receivables proofs stay the Wave 3 flagship (§16.1).                                                                                                                                                                                                                                                                                                                                                                       |
 | 9   | Recurring commercial relationships              | **Wave 2 (§15.7), unchanged** — the series-seed design needs zero new circuits and the audit endorses it.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | 10  | Developer integration surface                   | **Wave 2, after product core.** SDK and MCP stay in Wave 2 (they are also judge-visible for a buildathon about agents); **webhooks and an embeddable checkout button are added** (§15.10). Hosted/self-hosted docs follow in Wave 3.                                                                                                                                                                                                                                                                                                                         |
@@ -73,8 +73,9 @@ Product completeness first, developer surface second:
    timeout escape hatch, orphaned-record cleanup.
 3. Zero-setup payer: sponsored DUST service, guided wallet path, prover
    pre-warming, balancing timeout.
-4. Secure links v2 (§15.8): in-circuit ID auth, expiry/revocation, optional
-   recipient binding.
+4. Secure links v2 (§15.8) and invoice document v1 (§15.11) on one `v: 2`
+   payload bump: in-circuit ID auth, expiry/revocation, optional recipient
+   binding; number, dates, customer, line items, notes.
 5. Encrypted backup/export/import (§15.9).
 6. Notifications relay + privacy-preserving webhooks (§15.3, §15.10).
 7. SDK, MCP server, embeddable checkout (§15.1, §15.2, §15.10).
@@ -93,6 +94,14 @@ NIGHT/USDM, team accounts. The primary loop completes first.
   shield/convert primitive — swaps are two-party Zswap. Contract minting is
   the only crossing, which is why the wrapper is Wave 2 slot 1.
   (docs.midnight.network/guides/acquire-tokens; Wallet SDK 1.0 release notes)
+- **Confirmed by the Midnight community (Discord, Aug 29).** The reply to our
+  shielding question: tNIGHT is unshielded by nature; users obtain it at their
+  unshielded address, register it for DUST, and the ZK side of a dApp runs on
+  DUST, not on shielded value. That is precisely the D-020/D-022 architecture:
+  contents private through commitments, settlement on the unshielded lane,
+  shielded value on public networks only via contract minting (Wave 2). The
+  Academy's Wallet SDK course frames the same three-token model
+  (NIGHT / shielded / DUST). (academy.midnight.network)
 - **DUST sponsorship is real and dApp-layer.** The user proves, balances and
   binds; the sponsor adds a DUST-only fee offer and submits — no wallet
   support required, and authorization must come from a proven secret, never

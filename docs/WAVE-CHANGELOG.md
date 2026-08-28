@@ -89,10 +89,13 @@ parties' real secret keys.
   in-circuit is a Wave 2 candidate.
 - **Escrowed funds have no exit without the merchant** until Wave 2 refunds.
   Keep Wave 1 on testnet.
-- **The browser _write_ path met its first real wallet on Aug 26** — see the
-  field notes below. The create leg is proven end-to-end on Preview; the pay
-  leg is in progress and requires the payer to hold **shielded** tNIGHT.
-  The browser _read_ path was already proven (D-015).
+- **The full browser lifecycle is proven end-to-end on Preview** (create, pay,
+  verify, withdraw; see the field notes below) on the unshielded lane. tNIGHT
+  is unshielded by nature, a point the Midnight community confirmed on Aug 29:
+  users fund an unshielded address, register it for DUST, and the ZK side of
+  a dApp runs on DUST, not on shielded value. The shielded lane runs on the
+  local devnet; a contract-minted wrapper brings it to public networks in
+  Wave 2. The browser _read_ path was proven first (D-015).
 
 ### Field notes — Aug 26, 2026 (first real-wallet session)
 

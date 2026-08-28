@@ -16,7 +16,7 @@ wave planning, not mid-wave:
 - Payer-side batch pay (merchant-side multi-withdraw is already in §14.3).
 - Encrypted cross-device private-state backup (manual export/import ships in
   `/settings` first; README must warn about device loss).
-- Docs site / vision page beyond the README.
+- **[SHIPPED]** Docs site (docs.tacitpay.xyz) and the product arc in `docs/VISION.md` (2026-08-29).
 - Rejected outright (conflict with §1.1 principles): oracle token conversion,
   wallet-free custodial checkout, in-app AI assistant.
 
@@ -109,9 +109,7 @@ parking-lot entries, so this block is mostly pointers):
 - **Promoted straight into the PRD:** secure links v2 (§15.8), encrypted
   backup/export/import (§15.9 — supersedes the "Encrypted cross-device
   private-state backup" entry above), webhooks + embeddable checkout
-  (§15.10), the re-ordered Wave 2 build order (§14.2 addendum), the Wave 3
-  business layer — invoice documents, reconciliation/accounting, trust track
-  (§14.3 addendum), and the seven-condition definition of complete (§3.5).
+  (§15.10), the re-ordered Wave 2 build order (§14.2 addendum), the Wave 3 business layer — the rest of the invoice document (the v1 fields moved to Wave 2, §15.11), reconciliation/accounting, trust track (§14.3 addendum), and the seven-condition definition of complete (§3.5).
 - **[Wave 2] Protocol version registry + migration policy** — contract
   upgrades must state what happens to old invoice links; the compatibility
   answer belongs in docs, not in support threads.

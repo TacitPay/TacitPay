@@ -29,4 +29,4 @@ Deployed addresses for real networks are committed in `deployments/` — local d
 
 ## Preview settlement prerequisites
 
-Preview invoices are denominated in **tUSDM** (bridged USDM), so a payer needs tUSDM in their wallet — the faucet dispenses tNIGHT for fees, and USDM arrives over the bridge. Fees themselves are paid in DUST, which wallets generate from NIGHT holdings over time.
+Preview invoices are denominated in **tUSDM** (bridged USDM), so a payer needs tUSDM in their wallet — the faucet dispenses tNIGHT for fees, and USDM arrives over the bridge. Fees themselves are paid in DUST, which a wallet generates over time once its NIGHT is registered for DUST generation (Lace calls this "Generate tDUST"). New to the three-token model (NIGHT, shielded, DUST)? The [Midnight Academy](https://academy.midnight.network/) Wallet SDK course walks it end to end.

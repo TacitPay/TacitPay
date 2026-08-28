@@ -202,7 +202,7 @@ all seven hold at once:
 7. TacitPay itself never receives the private invoice contents.
 
 Condition 7 holds today and must survive every feature that chases the other
-six. Conditions 1–6 map onto the revised Wave 2/3 order in §14.2–14.3.
+six. Conditions 1–6 map onto the revised Wave 2/3 order in §14.2–14.3. The product arc those waves add up to is in `docs/VISION.md`.
 
 ---
 
@@ -1059,7 +1059,7 @@ Notes:
 > hatch when one party disappears, and orphaned-local-record cleanup — these
 > are **core requirements, not optional additions**; (3) zero-setup payer:
 > sponsored DUST (§15.4), guided wallet path, prover pre-warming, the
-> balancing-stage timeout; (4) secure links v2 (§15.8, new); (5) encrypted
+> balancing-stage timeout; (4) secure links v2 (§15.8, new) and invoice document v1 (§15.11, new) on one `v: 2` payload bump, so the link schema changes once; (5) encrypted
 > backup/export/import (§15.9, new — was BACKLOG); (6) notifications relay
 > and privacy-preserving webhooks (§15.3, §15.10); then (7) SDK, MCP and the
 > embeddable checkout (§15.1, §15.2, §15.10) — still in-wave, still in the
@@ -1082,10 +1082,7 @@ Notes:
 
 > **Amended 2026-08-28 (post-audit, see docs/AUDIT-RESPONSE.md).** Wave 3
 > additionally absorbs the audit's business-product layer, in this order:
-> **(a) real invoice documents** — invoice number, issue/due dates, customer
-> details, line items with quantity and unit price, taxes/discounts, merchant
-> details, notes and terms, all device-local and committed as one invoice
-> body; plus PDF generation, a QR/share workflow, duplicate-and-template;
+> **(a) the rest of the invoice document** — v1 (number, dates, customer, line items, notes) ships in Wave 2 (§15.11); Wave 3 adds taxes and discounts as first-class lines, merchant details and terms templates, PDF generation, a QR/share workflow, duplicate-and-template, and attachments by hash;
 > **(b) reconciliation** — search/tags, readable history, CSV/JSON/PDF
 > exports, monthly statements, downloadable receipts, fiat-value annotations
 > at pay time — built on the Wave 2 backup format so exports and backups are
@@ -1201,6 +1198,34 @@ relay's public-state-only rule (§15.3):
 - Framework examples (Next.js, plain Node) and sandbox fixtures ship with the
   SDK quickstart.
 
+
+### 15.11 Invoice document v1 (added 2026-08-29; see docs/VISION.md)
+
+The three-field form grows into a real invoice without touching the contract:
+the commitment is `persistentCommit(amount, memoHash, salt)`, so a structured
+body hashes into the same `memoHash` and stays bound to the settlement.
+
+- **Body v1 fields:** invoice number, issue date, due date (the on-chain
+  expiry remains the payable window), a customer record (name, contact,
+  address), line items (description, quantity, unit price), notes and payment
+  terms. The amount is the computed total; the circuit still receives only the
+  total.
+- **Payload `v: 2`:** the link carries the structured body inside the 4 KB
+  memo budget (a compact JSON encoding, validated as strictly as `v: 1`). Ships
+  on the same bump as §15.8's link expiry; the decoder keeps opening `v: 1`
+  links unchanged.
+- **UI:** the create form in sections (parties, items, terms); the pay page and
+  the merchant's detail page render the document; `/verify` is unchanged, it
+  never saw contents.
+- **Immutability:** the body is hashed at creation. An amendment is a new
+  version referencing the original; credit notes and partial-payment records
+  are Wave 3 private-state records.
+- **Deferred to Wave 3:** taxes and discounts as first-class lines, merchant
+  profile and terms templates, PDF export, QR/share, duplicate-and-template,
+  attachments by hash (an encrypted blob elsewhere, the key in the fragment).
+- **Privacy:** nothing new reaches the ledger. INV-1 to INV-8 hold exactly as
+  they do for the memo today, and U-17's serialisation sweep extends to every
+  new field.
 ---
 
 ## 16. Wave 3 feature specifications
@@ -1304,7 +1329,7 @@ Kuira SDK (Android) repo: https://github.com/kuiralabs/kuira-sdk-android . Minim
 |---|---|---|
 | Shielded coin custody (`receiveShielded` + `insertCoin` + `sendShielded`) behaves differently than assumed | Medium | Day-2 spike on local devnet before any UI work. If not working by end of Day 3: fall back to **unshielded** NIGHT for Wave 1 (`receiveUnshielded`/`sendUnshielded`, amounts public), keep the commitment scheme for invoice contents, and state clearly that shielded settlement is the Wave 2 target. Record in DECISIONS.md. |
 | DUST not available on Preview wallets in time | Medium | Register Day 0; develop on local devnet; demo can fall back to local devnet video with a note if Preview DUST fails. |
-| tUSDM cannot be shielded in any wallet | Medium | Ship the unshielded-USDM circuit path (§16.2) and keep shielded tNIGHT as the full-privacy demo; state the limitation plainly. |
+| tUSDM cannot be shielded in any wallet | Medium | Ship the unshielded-USDM circuit path (§16.2) and keep the shielded lane on the local devnet (genesis shielded funds) as the full-privacy demo; state the limitation plainly. Confirmed 2026-08-29 by the Midnight community: tNIGHT is unshielded by nature and the ZK side runs on DUST. |
 | Lace browser proving/balancing API differs from expectation | Medium | Mirror `example-bboard` UI wiring exactly; if the browser path blocks, ship the CLI flow in the video and keep the UI read-only for payment, with an explicit note. |
 | Proof generation too slow for demo | Low | Keep circuits small; avoid large Vectors; benchmark; show the stepper. |
 | Compiler upgrade mid-wave breaks artifacts | Low | Pin versions in `package.json` and `docs/DECISIONS.md`; upgrade only between waves. |
