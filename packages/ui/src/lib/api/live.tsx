@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 
+import { getErrorMessage } from '../errors';
 import { useProving } from '../proving-context';
 import {
   connectInjectedWallet,
@@ -206,7 +207,9 @@ export function LiveApiProvider({ children }: { children: ReactNode }) {
         setState({
           status: 'error',
           contractAddress,
-          message: error instanceof Error ? error.message : 'Could not connect to the contract.',
+          // Mapped, not raw: a wrong passphrase reaches here as WebCrypto's
+          // opaque OperationError, and the mapper names the real cause.
+          message: getErrorMessage(error),
         });
         throw error;
       }

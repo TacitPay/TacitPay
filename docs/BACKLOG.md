@@ -115,6 +115,13 @@ parking-lot entries, so this block is mostly pointers):
 - **[Wave 2] Protocol version registry + migration policy** — contract
   upgrades must state what happens to old invoice links; the compatibility
   answer belongs in docs, not in support threads.
+- **[Wave 2] Wrong-passphrase pre-check before any write** — verified against
+  the level provider (2026-08-28): a wrong passphrase throws only on READS of
+  existing records (WebCrypto `OperationError`, now mapped to a plain-English
+  message), while WRITES quietly succeed — so one mistyped session can split
+  a store across two passphrases. Fix with an app-level canary record
+  decrypted before the first write; lands with the §15.9 backup work, which
+  needs the same verifier.
 - **[Wave 3] Business-model decision** — free protocol + paid hosting vs
   hosted checkout vs sponsored-transaction network vs self-hosted enterprise;
   decides who funds sponsored DUST; required before mainnet value.

@@ -9,7 +9,7 @@ The reference app lives at [app.tacitpay.xyz](https://app.tacitpay.xyz). Out of 
 
 1. **Install a Midnight wallet.** Lace (with Midnight enabled) or 1AM. Fund it from the network's faucet — and for Preview, note that invoices are denominated in **tUSDM**, so the payer needs tUSDM, not just tNIGHT.
 2. Open **Settings → Contract connection**. Pick the network, paste the contract address (the live Preview address is in [Networks & deployments](/reference/networks/)), and connect your wallet.
-3. **Unlock private state** with a passphrase. It encrypts your invoice bodies in this browser, never leaves the device, and cannot be recovered — treat it accordingly. Until encrypted export/import lands in Wave 2, this browser profile is the only copy of your records: the chain keeps commitments, never contents, so clearing site data loses the bodies for good.
+3. **Unlock private state** with a passphrase. It encrypts your invoice bodies in this browser, never leaves the device, and cannot be recovered — treat it accordingly. The form knows the difference between visits: the first connection on a device **sets** the passphrase, and every return asks for **that same one** — a different passphrase cannot open the records, and the app says so plainly instead of failing cryptically. Until encrypted export/import lands in Wave 2, this browser profile is the only copy of your records: the chain keeps commitments, never contents, so clearing site data loses the bodies for good.
 4. Wait for the **Live** badge. Until it shows, every write is sandbox theater by design — the app will refuse to pretend a sandbox action touched a chain.
 
 ## Issue an invoice

@@ -285,3 +285,13 @@ took, in order:
   via WASM with no extra setup. The app's runtime Proving chip already
   resolves this per wallet, which is why nothing in the product had it wrong
   — only our own field intuition did.
+- **The passphrase form learned the difference between setting and asking
+  again.** The first successful unlock leaves a non-secret per-wallet
+  breadcrumb; returns ask for "the passphrase you set on this device"
+  (`autocomplete="current-password"`), first visits say plainly that this
+  connection sets it. Behind it, the wrong-passphrase failure was pinned by
+  running Midnight's level provider directly: reads of existing records
+  throw an opaque WebCrypto `OperationError` while writes quietly succeed
+  under the wrong key — the error is now mapped to a plain-English message,
+  and a pre-write canary check is queued for Wave 2 alongside the backup
+  work (BACKLOG).

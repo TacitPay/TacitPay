@@ -25,12 +25,37 @@ import {
   storeContractAddress,
 } from '@/lib/api/deployment';
 import { useLive } from '@/lib/api/live';
+import { getErrorMessage } from '@/lib/errors';
+import { useProving } from '@/lib/proving-context';
 
 const BLOCKER_TEXT = {
   contract: 'Enter the address of a deployed TacitPay contract.',
   wallet: 'Connect a wallet first — signing and balancing both need one.',
   proving: 'No prover is available. Pick one under Proving mode.',
 } as const;
+
+// A non-secret breadcrumb: "a passphrase has been SET for this wallet on this
+// device", written after the first successful unlock. It lets the form ask
+// for the SAME passphrase on return instead of inviting a new one — nothing
+// about the passphrase itself is stored, so D-023 still holds.
+const passphraseMarkerKey = (network: string, address: string) =>
+  `tacitpay.private-state-set.v1:${network}:${address}`;
+/** The ISO timestamp of the first successful unlock, or null if never set. */
+const passphraseSetAt = (network: string, address: string | undefined) => {
+  if (!address) return null;
+  try {
+    return localStorage.getItem(passphraseMarkerKey(network, address));
+  } catch {
+    return null;
+  }
+};
+const markPassphraseSet = (network: string, address: string) => {
+  try {
+    localStorage.setItem(passphraseMarkerKey(network, address), new Date().toISOString());
+  } catch {
+    // A missing breadcrumb only costs the returning-user wording.
+  }
+};
 
 /**
  * The control that takes the app off the mock adapter and onto a real chain.
@@ -43,6 +68,16 @@ const BLOCKER_TEXT = {
 export function LiveConnectionCard() {
   const { network, live } = useTacitPay();
   const { state, blocker, connect, disconnect, observer } = useLive();
+  const { connection } = useProving();
+  // Setting or asking again? The records are per-wallet, so the breadcrumb is
+  // too — and it carries WHEN, which makes "you already set one" concrete.
+  const setAtRaw = passphraseSetAt(network, connection?.address);
+  const returning = setAtRaw !== null;
+  const setAtDate = setAtRaw ? new Date(setAtRaw) : null;
+  const setAtLabel =
+    setAtDate && !Number.isNaN(setAtDate.getTime())
+      ? setAtDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+      : null;
   // Prefilled from whatever is actually in effect — a stored address or one baked in at
   // build time. Showing an empty box while the app reads a real chain is a lie.
   const [address, setAddress] = useState(() => getContractAddress(network) ?? '');
@@ -89,9 +124,10 @@ export function LiveConnectionCard() {
       await connect(passphrase);
       // The passphrase is held only by the provider that derives the storage key from it.
       setPassphrase('');
+      if (connection) markPassphraseSet(network, connection.address);
       toast.success('Connected to the contract');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not connect.');
+      toast.error(getErrorMessage(error));
     }
   };
 
@@ -233,23 +269,54 @@ export function LiveConnectionCard() {
             onSubmit={onConnect}
           >
             <p className="text-sm font-medium text-[var(--sandbox-fg)]">
-              Still in the sandbox — connect to the contract to go live on {network}.
+              {returning
+                ? `Still in the sandbox — unlock your records to go live on ${network}.`
+                : `Still in the sandbox — connect to the contract to go live on ${network}.`}
             </p>
             <div className="space-y-2">
-              <Label htmlFor="private-state-passphrase">Private-state passphrase</Label>
+              <Label htmlFor="private-state-passphrase">
+                {returning
+                  ? 'Enter your private-state passphrase'
+                  : 'Set a private-state passphrase'}
+              </Label>
+              {/* Setting and asking-again are different sentences: the first
+                  visit chooses the passphrase, every return must repeat it.
+                  Showing "choose one you will remember" to someone who already
+                  chose reads as an invitation to type a new one — which cannot
+                  open their records. */}
               <Input
                 id="private-state-passphrase"
                 type="password"
-                autoComplete="current-password"
-                placeholder="Unlocks invoices and receipts stored on this device"
+                autoComplete={returning ? 'current-password' : 'new-password'}
+                placeholder={
+                  returning
+                    ? 'The passphrase you set on this device'
+                    : 'Set a passphrase for this device'
+                }
                 value={passphrase}
                 disabled={blocker !== null || connecting}
                 onChange={(event) => setPassphrase(event.target.value)}
               />
-              <p className="text-sm text-muted-foreground">
-                Encrypts invoice bodies, salts and memos in this browser. It is never sent anywhere,
-                and it cannot be recovered — choose one you will remember.
-              </p>
+              {returning ? (
+                // Two lines on purpose: the FACT (you set one, and when) gets
+                // its own weighted line, the instruction sits under it.
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  <p className="font-medium">
+                    You set this wallet&rsquo;s passphrase on this device
+                    {setAtLabel ? ` on ${setAtLabel}` : ' before'}.
+                  </p>
+                  <p>
+                    Enter that same one — a different passphrase cannot open these records, and it
+                    cannot be recovered.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  First connection on this device sets it. It encrypts invoice bodies, salts and
+                  memos in this browser, is never sent anywhere, and cannot be recovered — choose
+                  one you will remember.
+                </p>
+              )}
             </div>
 
             {blocker ? (
@@ -267,7 +334,11 @@ export function LiveConnectionCard() {
             ) : null}
 
             <Button type="submit" disabled={blocker !== null || connecting || !passphrase}>
-              {connecting ? 'Connecting…' : 'Connect to contract'}
+              {connecting
+                ? 'Connecting…'
+                : returning
+                  ? 'Unlock and connect'
+                  : 'Set passphrase and connect'}
             </Button>
           </form>
         )}

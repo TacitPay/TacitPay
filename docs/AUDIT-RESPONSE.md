@@ -50,6 +50,14 @@ surface (SDK, MCP, checkout embeds) inside Wave 2.
 3. **The backup card stopped over-promising** — it names the loss model
    (this browser profile is the only copy) and wears the same "Coming in
    Wave 2" tag as the settlement pair, instead of a toast.
+4. **The passphrase form knows setting from asking-again** — the first
+   successful unlock leaves a non-secret breadcrumb per wallet, so returning
+   users are asked for "the passphrase you set on this device" instead of
+   being invited to choose a new one; and the wrong-passphrase failure
+   (verified against the level provider: an opaque WebCrypto
+   `OperationError` on reads, while writes quietly succeed) is now mapped to
+   a plain-English message naming the real cause. The write-side pre-check
+   is a Wave 2 backlog item riding with §15.9.
 
 Deliberately **not** touched this week, to protect the demo: the invoice
 payload schema, the contract and its compiler (0.31.1 stays until
