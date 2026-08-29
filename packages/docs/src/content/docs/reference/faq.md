@@ -31,7 +31,7 @@ Not fully — stated openly: the shielded escrow's coin nonce is public while th
 
 ## Why doesn't Preview settle shielded?
 
-Because no self-shielding operation is available to end users on public testnets — faucets and the bridge dispense unshielded funds, and shielded tokens are contract-minted by design. Preview therefore settles bridged USDM through the unshielded lane; the full shielded flow runs on the local devnet, and a contract-minted shielded wrapper is the Wave 2 route. The Midnight community confirmed the framing when we asked: tNIGHT is unshielded by nature, and a dApp's zero-knowledge side runs on DUST, not on shielded value. The whole story: [Settlement lanes](/concepts/lanes/); the token model itself: the [Midnight Academy](https://academy.midnight.network/).
+Because no supported end-user shield path exists on Preview today: faucets and the bridge dispense unshielded funds, Lace has no shield control, and the Wallet SDK's shielding swap is broken on stable releases through 1.2.0 (Midnight core engineering confirmed this on Aug 29, 2026; the fix is merged upstream and unreleased). Preview therefore settles bridged USDM through the unshielded lane; the full shielded flow runs on the local devnet, and a contract-minted shielded wrapper is the Wave 2 route. The Midnight community confirmed the framing when we asked: tNIGHT is unshielded by nature, and a dApp's zero-knowledge side runs on DUST, not on shielded value. The whole story: [Settlement lanes](/concepts/lanes/); the token model itself: the [Midnight Academy](https://academy.midnight.network/).
 
 ## Is TacitPay a company holding my money?
 

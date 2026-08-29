@@ -185,9 +185,7 @@ _Stay on the app. Say it unprompted, calmly._
 
 One honest limitation. On today's public testnets the payment transfer itself is
 public: payer address and amount ride the open token flow. The invoice's
-contents never touch the ledger either way. The fully shielded flow already runs
-on our local devnet, and bringing it to public networks is exactly where Wave 2
-starts.
+contents never touch the ledger either way. The fully shielded flow already runs on our local devnet. On public networks, the missing piece is a wallet-side shielding step, and Midnight's own engineers have confirmed it is a fixed-but-unreleased SDK gap, not a protocol limit. **Wave 2 turns it on.**
 
 ---
 
@@ -198,7 +196,7 @@ specifics._
 
 Wave 2, in the order the product completes.
 
-The shielded wrapper that turns on that greyed Private card. Funds safety:
+Shielded settlement on public networks, which turns on that greyed Private card. Funds safety:
 milestone escrow, refunds, a timeout escape hatch. Gasless first payments with
 sponsored DUST. Real invoice documents, hardened links, encrypted backup. And then the SDK and the MCP
 server, **so software agents can invoice the way people do**.

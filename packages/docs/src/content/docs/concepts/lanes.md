@@ -27,11 +27,11 @@ The product says this out loud wherever it applies. On an unshielded network, th
 On today's public testnets, **no self-shielding operation is available to end users**:
 
 - faucets dispense unshielded funds, and the USDM bridge mints unshielded tokens;
-- the wallet SDK offers no shield/convert primitive — transfers source each output from its own pool, and swaps are two-party atomic exchanges by design, so a single-sided "shielding swap" is correctly rejected by the node;
+- the wallet SDK's unshielded-to-shielded swap (`initSwap`) is broken on stable releases through 1.2.0: Midnight core engineering confirmed the gap on Aug 29, 2026 (fixed upstream in midnight-wallet PR #615, awaiting release), and `transferTransaction` sources each output from its own pool;
 - shielded tokens are their own category, minted by contracts — the local devnet's shielded funds are a genesis artifact.
 
-So the **Preview deployment is denominated in bridged USDM and settles through the unshielded lane — by design, not compromise**. Stablecoin invoicing with sealed contents is the honest product available on a public testnet today, and it is a product transparent chains cannot offer at all. The full shielded flow runs live on the local devnet, where genesis provides shielded funds, and both lanes are covered by the same test matrix.
+So the **Preview deployment is denominated in bridged USDM and settles through the unshielded lane — by necessity, not compromise**. Stablecoin invoicing with sealed contents is the honest product available on a public testnet today, and it is a product transparent chains cannot offer at all. The full shielded flow runs live on the local devnet, where genesis provides shielded funds, and both lanes are covered by the same test matrix.
 
 ## The road to fully private public settlement
 
-The gap is closable from inside the protocol's own rules: shielded tokens are contract-minted, so a **contract-minted shielded wrapper token** — deposit unshielded USDM, receive shielded units, settle invoices with those — is the Wave 2 route to running the shielded lane on public networks. Until then, each network declares its lane in configuration, and the app routes payments and withdrawals accordingly without either party having to know the distinction exists.
+The gap is closable from inside the protocol's own rules: shielded tokens are contract-minted, so a **contract-minted shielded wrapper token** — deposit unshielded USDM, receive shielded units, settle invoices with those — is the Wave 2 route to running the shielded lane on public networks for browser wallets, which reach TacitPay only through the DApp Connector. Programmatic wallets (the CLI, the SDK, agents) gain native shielding the moment the fixed Wallet SDK ships. Until then, each network declares its lane in configuration, and the app routes payments and withdrawals accordingly without either party having to know the distinction exists.

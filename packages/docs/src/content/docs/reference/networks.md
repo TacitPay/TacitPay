@@ -30,3 +30,7 @@ Deployed addresses for real networks are committed in `deployments/` — local d
 ## Preview settlement prerequisites
 
 Preview invoices are denominated in **tUSDM** (bridged USDM), so a payer needs tUSDM in their wallet — the faucet dispenses tNIGHT for fees, and USDM arrives over the bridge. Fees themselves are paid in DUST, which a wallet generates over time once its NIGHT is registered for DUST generation (Lace calls this "Generate tDUST"). New to the three-token model (NIGHT, shielded, DUST)? The [Midnight Academy](https://academy.midnight.network/) Wallet SDK course walks it end to end.
+
+## Preprod notes
+
+Endpoints confirmed current by Midnight core engineering on Aug 29, 2026: RPC `https://rpc.preprod.midnight.network`, indexer `https://indexer.preprod.midnight.network/api/v4/graphql` (WebSocket `wss://indexer.preprod.midnight.network/api/v4/graphql/ws`), cloud proof server `https://proof-server.preprod.midnight.network`. A first wallet sync can take 40 to 60 minutes (a large initial event backlog, midnight-wallet #405); that is not a stale endpoint. Call `setNetworkId('preprod')` before copying addresses for the faucet, and raise `batchUpdates` to 5000 in the wallet facade config. `testnet-02` is retired.

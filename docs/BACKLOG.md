@@ -25,23 +25,26 @@ notes). Wave 1 items are marked; the rest is Wave 2 planning input:
 
 - **[Wave 1 — DECIDED 2026-08-26, see D-020 + correction and D-022] Preview
   pay leg goes `receiveUnshielded`, denominated in bridged USDM.** The
-  `initSwap` spike falsified road (a) for the right reason: the official docs
-  make `initSwap` a TWO-PARTY exchange, so the single-sided "shielding swap"
-  was invalid by design (the 199 rejection is expected behaviour, not
-  midnight-node #1206 — see D-020's correction). No self-shield primitive
-  exists on public networks; every on-ramp (faucet, USDM bridge) lands
+  `initSwap` spike falsified road (a) for the right reason: a reason core engineering later corrected (D-020, amended 2026-08-29): the
+  single-wallet `initSwap` shield is an intended path that was broken on
+  stable SDK releases through 1.2.0, fixed upstream in midnight-wallet PR
+  #615 and unreleased; node #1206 is unrelated. No supported end-user shield
+  path exists on Preview today; every on-ramp (faucet, USDM bridge) lands
   unshielded. Build status: unshielded lane per D-022 — two mirror circuits
   plus an `unshieldedOwed` pool marker; the shielded path stays the
   local-devnet flagship.
-- **[Falsified road — kept as archive] `tacitpay wallet shield`** — the swap
-  wrapper (session archive: swap-shield-final.mjs) was half of a two-party
-  exchange and can never land alone; it documents the dead end. Shielding
-  arrives in Wave 2 as a contract-minted wrapper token (D-020 correction),
-  not through a node fix.
+- **[Parked, revive on the SDK release] `tacitpay wallet shield`** — the
+  archived spike (swap-shield-final.mjs) exercised exactly the path core
+  engineering fixed in midnight-wallet PR #615. Retest in isolation against
+  `@midnight-ntwrk/wallet-sdk@canary` (1.2.1-canary.*), then on the first
+  stable release. If it passes, the CLI, SDK and MCP wallets shield natively;
+  browser wallets still need the contract-minted wrapper below.
 - **[Wave 2] In-app "Shield funds"** — mint a contract-issued shielded
   wrapper token against unshielded deposits (the design-intended way to
-  shield), driven through the dApp connector from the pay page. No wallet
-  ships this today; TacitPay doing it is a differentiator.
+  shield), driven through the dApp connector from the pay page. No wallet ships this
+  today; TacitPay doing it is a differentiator. (2026-08-29) Two routes now:
+  the fixed Wallet SDK's `initSwap` for programmatic wallets, the wrapper for
+  browser wallets, which only reach us through the connector.
 - **[Wave 2] Per-invoice settlement choice** — the merchant picks Public or
   Private settlement at creation; the invoice commitment carries the required
   lane and the pay circuit enforces it (UI-only flags would be privacy

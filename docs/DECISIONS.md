@@ -18,10 +18,11 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
   fit under 100 MB and should be committed for judges. Revisit then and update
   this entry.
 
-- **D-003 (2026-08-23) — Repo starts private** (`Marcussy34/tacitpay`) during
-  pre-wave development. **It must be flipped public before the Wave 1
-  submission** (PRD §2.2 requires a public repo; topics incl. `midnightntwrk`
-  are already set).
+- **D-003 (2026-08-23, closed 2026-08-29) — The repo is public at
+  `TacitPay/TacitPay`.** Pre-wave development ran somewhere closed; the project
+  now lives in the organisation, public and Apache-2.0, which satisfies PRD
+  §2.2 (topics incl. `midnightntwrk` are set). The old personal repository has
+  been deleted and nothing points at it any more.
 
 - **D-004 (2026-08-23) — Contract pragma is `pragma language_version >= 0.23;`**
   (range form, current tooling guidance) rather than the PRD's exact-version
@@ -592,6 +593,30 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
     design-intended route for public-network payments, and a contract-minted
     shielded wrapper token is the design-intended way to "shield" — a Wave 2
     candidate.
+  - **Amended 2026-08-29, after Midnight core engineering replied:** the
+    single-wallet `initSwap` (unshielded in, shielded out) IS an intended
+    path, and our failure matches a known Wallet SDK gap: mixed-pool swaps
+    were broken on Preview through `@midnight-ntwrk/wallet-sdk` 1.2.0 (the
+    SDK builds only the unshielded leg and silently drops the shielded
+    output; servicedesk #99, midnight-wallet #554). The fix is merged in
+    midnight-wallet PR #615 (Aug 18, 2026) and awaits a stable release;
+    `1.2.1-canary.*` (Aug 21) may already carry it. Two attributions above
+    are therefore wrong: the rejection was a bug, not "expected behaviour,"
+    and node #1206 is unrelated (a node-toolkit contract-minting bug).
+    Error-code note from the same reply: `Custom error: 199` is
+    `InvariantViolation`; `AllCommitmentsSubsetCheckFailure` is 213 on node
+    2.0+, so the decoding of 199 above was mistaken. The Wave 1 conclusion
+    holds: no supported end-user shield path exists on Preview today (Lace
+    has no shield UI; the SDK path is broken on stable), so the unshielded
+    lane stays. What changes is Wave 2: native shielding through the fixed
+    SDK becomes the route for programmatic wallets (CLI, SDK, MCP, the
+    devnet demo), while the contract-minted wrapper remains the route for
+    browser wallets, which reach TacitPay only through the DApp Connector.
+    Also confirmed: Preprod endpoints are current; a 40 to 60 minute first
+    sync is a known pain (midnight-wallet #405), not a stale endpoint;
+    `testnet-02` is retired. A repro files under midnightntwrk/servicedesk,
+    parent #99, with SDK versions, network id, commit SHA, script, tx
+    hashes and the raw rejection JSON.
 
 - **D-022 (2026-08-26) — Preview settles in bridged USDM through the new
   unshielded lane; sponsored DUST is adopted as the Wave 2 fee story; the

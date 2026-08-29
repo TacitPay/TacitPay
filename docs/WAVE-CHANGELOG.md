@@ -320,3 +320,29 @@ took, in order:
   `vercel.json` and fails on a static folder. `yarn docs:deploy`
   (`scripts/deploy-docs.sh`) now builds the site and ships it through the
   Build Output API, no install, no build, aliased to the domain in seconds.
+
+### Field notes — Aug 29, 2026, evening (core engineering answers the shielding question)
+
+- **The rejection was a bug, not a design boundary.** Midnight core
+  engineering: the single-wallet `initSwap` shield (unshielded in, shielded
+  out) is an intended path that was broken on Preview through Wallet SDK
+  1.2.0, tracked as servicedesk #99 / midnight-wallet #554, fixed in PR #615
+  (Aug 18) and awaiting a stable release (`1.2.1-canary.*` may carry it).
+  Node #1206 was never our bug, and `Custom error: 199` is
+  `InvariantViolation`, not the commitment-subset failure we decoded it as.
+  D-020 carries the dated amendment; README, PRD, BACKLOG, the audit
+  response, the whitepaper and the lanes page now say "broken on stable,
+  fix pending" instead of "two-party by design."
+- **Wave 1 is unchanged; Wave 2 gains a second route.** No supported
+  end-user shield path exists on Preview today (Lace has no shield UI, the
+  SDK path is broken on stable), so the unshielded lane stays. When the fix
+  ships, programmatic wallets (CLI, SDK, MCP, the devnet demo) shield
+  natively; browser wallets, which reach TacitPay only through the DApp
+  Connector, still get the contract-minted wrapper.
+- **Preprod endpoints are current.** A 40 to 60 minute first sync is a known
+  pain, not stale configuration; `testnet-02` is retired. The docs site's
+  Networks page carries the notes and the cloud proof server.
+- **Next:** retest the archived swap spike against the canary SDK in an
+  isolated workspace, and file the repro under servicedesk #99 with the raw
+  rejection JSON re-captured (the copy on disk turned out to be a search
+  result, not the node's output).

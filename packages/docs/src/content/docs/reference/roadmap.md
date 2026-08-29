@@ -13,7 +13,7 @@ TacitPay is being built through the Midnight Buildathon 2026 (AKINDO WaveHack), 
 
 The protocol grows edges other software can hold:
 
-- **Shielded wrapper token** — deposit unshielded USDM, receive contract-minted shielded units: fully private settlement on public networks.
+- **Private settlement on public networks, by two routes** — native shielding through the Wallet SDK for programmatic wallets once the upstream fix ships (Midnight core engineering, Aug 29, 2026: fixed, awaiting release), and a contract-minted shielded wrapper token for browser wallets: deposit unshielded USDM, receive shielded units.
 - **Variant B escrow** — removes the escrow-window linkability stated in the [FAQ](/reference/faq/).
 - **Sponsored DUST** — a sponsor service pays transaction fees so a payer needs only the stablecoin, not a fee asset: web2 feel, web3 settlement.
 - **Milestone escrow, claim-based refunds, recurring invoices.**

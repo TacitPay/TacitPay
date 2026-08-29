@@ -1,12 +1,10 @@
 # TacitPay — current state
 
-**As of 2026-08-28, commit `64dce83`.** Route map and headline claims below are
-current; for everything that landed after the original 2026-08-24 snapshot —
+**As of 2026-08-29, commit `16f0389` plus the same-day amendment pass.** Status, contract, execution and limitations sections below were refreshed on Aug 29; the component detail in §3.2 to §3.5 dates from the Aug 24 snapshot and is verified against the code where cited. Route map and headline claims are current; for everything that landed after the original 2026-08-24 snapshot —
 the unshielded settlement lane on Preview (D-020/D-022), the domains and docs
 site, and the lifecycle IA re-cut — the running record is
 [`docs/WAVE-CHANGELOG.md`](./WAVE-CHANGELOG.md). The Aug 28 external product
-audit and its triage (what ships when, and why) live in
-[`docs/AUDIT-RESPONSE.md`](./AUDIT-RESPONSE.md).
+audit and its triage (what ships when, and why) live in [`docs/AUDIT-RESPONSE.md`](./AUDIT-RESPONSE.md). D-020's dated amendment (2026-08-29) records Midnight core engineering's answer on shielding: a fixed-but-unreleased Wallet SDK gap, not a protocol limit.
 
 This document is the fast way to understand what exists without reading the
 codebase. Every claim points at the file or command that proves it, so treat it
@@ -16,7 +14,7 @@ stale.
 
 Related documents: [`PRD.md`](./PRD.md) is the product spec and the source of
 truth for intent. [`docs/DECISIONS.md`](./DECISIONS.md) records why things
-are the way they are, D-001 through D-016.
+are the way they are, D-001 through D-023.
 [`docs/plans/wave-1.md`](./plans/wave-1.md) tracks execution and holds the
 Preview runbook. [`docs/PRIVACY.md`](./PRIVACY.md) and
 [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md) are the deep versions of §3 and
@@ -49,33 +47,37 @@ anonymous one gives the second and makes the first impossible.
 
 Wave 1 scope is PRD §14.1.
 
-| #   | Scope item                                   | Status                                                                 |
-| --- | -------------------------------------------- | ---------------------------------------------------------------------- |
-| 1   | Contract with 4 circuits, Variant A escrow   | **Done**                                                               |
-| 2   | Unit tests U-01…U-17                         | **Done** (plus U-17b)                                                  |
-| 3   | Integration test on local devnet             | **Done**                                                               |
-| 4   | `packages/api`                               | **Done** — browser providers are real, not stubs                       |
-| 5   | `packages/cli`                               | **Done**                                                               |
-| 6   | `packages/ui` — six routes, works on Preview | **Read path done and proven; write path built but never met a wallet** |
-| 7   | Deployed to Preview, address committed       | **Not started** — blocked on wallet funding                            |
-| 8   | README, PRIVACY, ARCHITECTURE, deck, video   | **Docs and deck done; video outstanding**                              |
-| 9   | Repo topics, Apache-2.0, repo public         | **Topics set, Apache-2.0 licensed; still private**                     |
-| 10  | Judge sandbox (`demo seed`)                  | **Done**                                                               |
+| #   | Scope item                                           | Status                                                                                        |
+| --- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 1   | Contract: six circuits (shielded + unshielded pairs) | **Done** (v2 deployed, D-022)                                                                 |
+| 2   | Unit tests U-01…U-17                                 | **Done** (plus U-17b; 28 passing, 10 Wave 2/3 todos)                                          |
+| 3   | Integration test on local devnet                     | **Done**                                                                                      |
+| 4   | `packages/api`                                       | **Done** — both lanes; browser providers proven against real wallets                          |
+| 5   | `packages/cli`                                       | **Done**                                                                                      |
+| 6   | `packages/ui` — ten routes, works on Preview         | **Done** — full browser lifecycle proven on Preview on Aug 27 (create, pay, verify, withdraw) |
+| 7   | Deployed to Preview, address committed               | **Done** — `0847de8a…326d24` in `deployments/preview.json`, baked into the app bundle         |
+| 8   | README, PRIVACY, ARCHITECTURE, deck, video           | **Docs, both decks and the spoken script done; the video is the last piece**                  |
+| 9   | Repo topics, Apache-2.0, repo public                 | **Public at github.com/TacitPay/TacitPay, Apache-2.0, topics set**                            |
+| 10  | Judge sandbox (`demo seed`)                          | **Done**                                                                                      |
 
-Six items are complete outright (1, 2, 3, 4, 5, 10). Item 6 is complete except
-for one step nothing can substitute for. Items 7, 8 and 9 have exactly one
-piece left each — a deployment, a video, and a visibility flip.
+Nine of the ten items are complete. The tenth is the video, and everything it
+needs is ready: the six-slide recording deck (`docs/deck/demo.html`), the spoken
+script (`docs/DEMO-TALK-TRACK.md`), and the prep checklist (`docs/DEMO-SCRIPT.md`).
+The app is live at app.tacitpay.xyz, the docs at docs.tacitpay.xyz, the landing at
+tacitpay.xyz.
 
-**Everything outstanding is gated on one thing: two funded Preview wallets.**
+**Everything outstanding is human: rehearse on production, record, submit.**
 
 ### The one caveat that matters
 
-§3.6 states it precisely, but in short: the UI is no longer a mock. The
-chain-backed adapter is built, wired, and its **read** path is proven against a
-real chain in a real browser. Its **write** path — signing and submitting
-through a wallet extension — has never been executed by anything, because that
-needs a funded wallet and a deployed contract. This document will not claim
-otherwise, and neither should the deck or the video.
+Not the wallet any more (the browser write path met Lace on Aug 26 and ran the
+whole loop on Aug 27); the settlement lane. On Preview the payment transfer
+itself is public: the payer's address and the amount ride the open token flow
+(the unshielded lane, D-020/D-022). The invoice's contents never touch the
+ledger on either lane, and the fully shielded lane runs on the local devnet.
+Midnight core engineering confirmed on Aug 29 that the missing public-network
+shielding step is a fixed-but-unreleased Wallet SDK gap, not a protocol limit
+(D-020, amended). Say it in the video before anyone asks.
 
 ---
 
@@ -83,15 +85,20 @@ otherwise, and neither should the deck or the video.
 
 ### 3.1 The contract — `contracts/tacitpay.compact`
 
-Four exported circuits, compiled by compact 0.31.1 against
-`@midnight-ntwrk/compact-runtime` 0.16.0.
+Six exported circuits, compiled by compact 0.31.1 against
+`@midnight-ntwrk/compact-runtime` 0.16.0: the original shielded four plus an
+unshielded mirror pair added for public-network settlement (D-022). The v2
+contract is the one deployed on Preview; v1 (four circuits, `1f3783…bc547`)
+hosted the first real in-browser invoice.
 
-| Circuit         | Asserts                                                             | `disclose()`d                           |
-| --------------- | ------------------------------------------------------------------- | --------------------------------------- |
-| `createInvoice` | id unused, amount > 0                                               | invoice id, owner tag, expiry (3 calls) |
-| `payInvoice`    | OPEN, unexpired, commitment matches preimage, coin colour and value | payer tag, status, escrowed coin (4)    |
-| `withdraw`      | PAID, caller's secret derives the stored owner tag                  | status (1)                              |
-| `cancelInvoice` | OPEN, caller's secret derives the stored owner tag                  | status (1)                              |
+| Circuit                | Asserts                                                                                                             | `disclose()`d                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `createInvoice`        | id unused, amount > 0                                                                                               | invoice id, owner tag, expiry (3 calls)       |
+| `payInvoice`           | OPEN, unexpired, commitment matches preimage, coin colour and value                                                 | payer tag, status, escrowed coin (4)          |
+| `withdraw`             | PAID, caller's secret derives the stored owner tag                                                                  | status (1)                                    |
+| `cancelInvoice`        | OPEN, caller's secret derives the stored owner tag                                                                  | status (1)                                    |
+| `payInvoiceUnshielded` | the same invoice checks as `payInvoice`, then `receiveUnshielded(paymentToken, amount)`                             | payer tag, status, the unshielded owed marker |
+| `withdrawUnshielded`   | PAID on the unshielded lane, caller's secret derives the stored owner tag; pays out to the address the issuer names | status                                        |
 
 Two design points that are easy to get wrong and worth understanding before
 changing anything:
@@ -279,13 +286,14 @@ are changing underneath us. The active tier is shown in the app header.
 
 The distinction this whole document turns on.
 
-| Path                                               | Run against a real chain?                                       |
-| -------------------------------------------------- | --------------------------------------------------------------- |
-| Contract circuits, all four                        | **Yes** — pure-JS runtime, 20 offline tests                     |
-| Full lifecycle via Node + CLI                      | **Yes** — live devnet, real proofs, two wallets, balance checks |
-| Judge sandbox (`demo seed`)                        | **Yes** — deploys and seeds three invoices                      |
-| Browser **read** — `/verify/<id>`                  | **Yes** — real contract, cold load, dev _and_ production builds |
-| Browser **write** — connect, create, pay, withdraw | **No.** Built and unit-tested; no wallet extension has run it   |
+| Path                                               | Run against a real chain?                                                                                                                                               |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contract circuits, all six                         | **Yes** — pure-JS runtime, 28 offline tests                                                                                                                             |
+| Full lifecycle via Node + CLI                      | **Yes** — live devnet (shielded lane) and Preview (unshielded)                                                                                                          |
+| Judge sandbox (`demo seed`)                        | **Yes** — deploys and seeds three invoices                                                                                                                              |
+| Browser **read** — `/verify/<id>`                  | **Yes** — real contract, cold load, dev _and_ production builds                                                                                                         |
+| Browser **write** — connect, create, pay, withdraw | **Yes** — Lace 4.0.1 on Preview: create on Aug 26 (v1), the whole loop on Aug 27 (v2, invoice `084318a7…f0342`, 2 tUSDM), every step ledger-confirmed by the truth gate |
+| Shielded lane on a public network                  | **No.** Blocked upstream (§6); runs on the local devnet only                                                                                                            |
 
 Getting the browser read path working surfaced three defects that every offline
 check had passed — see D-015. They are worth knowing because they are the class
@@ -395,13 +403,23 @@ work with; the Vite plugin serves them in dev and copies them into `dist/`.
   against the recomputed coin commitment, linking that merchant's withdrawals in
   transaction history. Withdrawing does not undo this. Variant B (Wave 2) closes
   it; test **U-17b** pins the current behaviour so any widening fails.
-- **The browser write path has never met a real wallet extension.** Every
-  provider is built against the shipped `dapp-connector-api@4.0.1` type
-  definitions and unit tested, but nothing has signed or submitted through a
-  wallet. The wire format is _not_ part of that uncertainty — the hex encoding
-  and the transaction markers were verified against midnight-js's own
-  `DAppConnectorWalletAdapter`, the receiving side of the same interface
-  (D-013). What remains untested is the extension itself.
+- **Public-network settlement is unshielded** (D-020/D-022). The transfer's
+  payer address and amount are visible on Preview; the invoice's contents are
+  not, on either lane. No supported end-user shield path exists on Preview
+  today: Lace has no shield UI, and the Wallet SDK's shielding swap is broken
+  on stable releases through 1.2.0 (fixed upstream in midnight-wallet PR #615,
+  unreleased; D-020 amended 2026-08-29). The shielded lane runs on the local
+  devnet; Wave 2 brings it to public networks by two routes (PRD §15.12 and
+  the contract-minted wrapper).
+- **The invoice link is a bearer credential.** Anyone holding it reads the
+  amount and memo and can pay. The create dialog says so at the copy moment;
+  revocation and recipient binding are Wave 2 (PRD §15.8, PRIVACY §6.6).
+- **Private state is per browser profile and per origin.** Records created on
+  `localhost` do not appear on `app.tacitpay.xyz`; encrypted export/import is
+  Wave 2 (PRD §15.9).
+- **A wrong passphrase splits a store.** Reads of existing records fail (now
+  mapped to a plain-English message) but writes quietly succeed under the
+  wrong key; a pre-write canary check is Wave 2 (BACKLOG).
 - **Invoice ids are an unauthenticated first-come namespace.** Someone holding a
   link payload could create the invoice first under their own secret. Bounded —
   the merchant's client sees the failed transaction — but deriving ids
@@ -412,7 +430,7 @@ work with; the Vite plugin serves them in dev and copies them into `dist/`.
   at time T", never the amount or the parties.
 - **A forgotten private-state passphrase loses invoice bodies.** The chain still
   proves an invoice existed and was settled; the amount, memo and salt are gone.
-  Export/import is the Wave 2 mitigation (D-014).
+  Export/import is the Wave 2 mitigation (D-014, PRD §15.9).
 
 Full who-sees-what table, and every invariant mapped to the test that enforces
 it, in [`docs/PRIVACY.md`](./PRIVACY.md).
@@ -421,7 +439,7 @@ it, in [`docs/PRIVACY.md`](./PRIVACY.md).
 
 ## 7. Decisions worth knowing
 
-Full text in [`docs/DECISIONS.md`](./DECISIONS.md), D-001 through D-016.
+Full text in [`docs/DECISIONS.md`](./DECISIONS.md), D-001 through D-023.
 
 | ID    | Decision                                                                                                                                   |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -446,42 +464,36 @@ build proves nothing about whether WASM initialises.
 
 ## 8. What is left
 
-The full step-by-step sequence, with the reasoning behind the ordering, is the
-**Preview runbook** in [`docs/plans/wave-1.md`](./plans/wave-1.md). In
-summary:
+The historical Preview runbook is in [`docs/plans/wave-1.md`](./plans/wave-1.md); every step in it has been executed.
 
-**Owner actions — start (1) first, it gates everything else:**
+**Human, in order:**
 
-1. **Fund the two Lace Preview wallets and register for DUST.** ~12-hour lead
-   time. The deployment, the end-to-end run and the video all wait on it.
-2. **Flip the repository public** before the Sep 16 submission (D-003).
-3. **Record the 3–5 minute video.**
-   [`docs/DEMO-SCRIPT.md`](./DEMO-SCRIPT.md) is the shot list and the
-   pre-recording checklist.
+1. **Rehearse on production** with both wallets, everything on
+   `app.tacitpay.xyz` (records are per origin). Roles by funding: the wallet
+   holding tUSDM pays, the other issues. Keep the local proof server on
+   `:6300` for Lace. The checklist is at the top of
+   [`docs/DEMO-TALK-TRACK.md`](./DEMO-TALK-TRACK.md).
+2. **Record** from the six-slide deck and the spoken script; the rules for the
+   take are in [`docs/DEMO-SCRIPT.md`](./DEMO-SCRIPT.md).
+3. **Submit** at least 12 hours before the Sep 16 deadline, with the repository
+   visibility confirmed (D-003).
 
-**Engineering, all of it gated on (1):**
+**Engineering, none of it blocking the video:**
 
-4. Check `wallet dust-status` before deploying — holding NIGHT is not the same
-   as being able to transact, and finding out at deploy time wastes the lead.
-5. Deploy to Preview; commit `deployments/preview.json`; put the address in the
-   README badge and on deck slide 8.
-6. Run the lifecycle through the **CLI first**, so a failure is attributable to
-   the chain rather than to a wallet extension.
-7. Rebuild the UI with `VITE_TACITPAY_CONTRACT_PREVIEW=<address>`, then run the
-   full loop through a real wallet extension. This is the one genuinely untested
-   path. If it fails, the likeliest single culprit is the transaction encoding,
-   isolated in one pair of functions in `packages/api/src/providers/browser.ts`
-   (D-013). This step also closes the Day-3 VERIFY on whether the shipping Lace
-   build implements `getProvingProvider` — update D-010 with the answer.
-8. Host the UI publicly. [`vercel.json`](./vercel.json) has the build command,
-   the SPA rewrite that keeps `/verify/<id>` alive through a refresh, and the
-   security headers. Run `yarn compile` first.
+4. The canary shielding spike in an isolated workspace (PRD §15.12), whose
+   control run also re-captures the raw rejection for the servicedesk #99
+   filing.
+5. `yarn docs:deploy` after any docs-site change; the docs project is not
+   git-connected.
+6. Wave 2 planning per PRD §14.2 (amended) and
+   [`docs/AUDIT-RESPONSE.md`](./AUDIT-RESPONSE.md); the product arc is in
+   [`docs/VISION.md`](./VISION.md).
 
-**Already done** and needing nothing further: the contract and its tests, the
-library, the CLI, the judge sandbox, the UI including its live read path, all
-four documentation files, the twelve-slide deck at
-[`docs/deck/index.html`](./deck/index.html), self-hosted fonts, the
-code-split bundle, and the Vercel configuration.
+**Already done** and needing nothing further: the contract (six circuits) and
+its tests, the library on both lanes, the CLI, the judge sandbox, the UI with
+the full browser lifecycle proven on Preview, the Preview deployment, hosting
+for the app, the landing and the docs site, the twelve-slide deck and the
+six-slide recording deck, the spoken script, and the audit response.
 
 ---
 

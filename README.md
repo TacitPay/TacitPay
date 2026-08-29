@@ -138,12 +138,13 @@ the public explorer. Two things that first contact taught, worth knowing before
 you test:
 
 - **Public-network payments settle in a stablecoin through the unshielded
-  lane — by design, not compromise (D-020 → D-022).** No self-shielding
-  operation exists in the protocol's current design: the faucet dispenses
-  transparent tNIGHT, the Wallet SDK offers no shield/convert primitive —
-  `transferTransaction` sources each output from its own pool, and `initSwap`
-  is documented as a two-party atomic exchange, so a single-sided "shielding
-  swap" is correctly rejected by the node. Shielded tokens are their own
+  lane — by necessity, not compromise (D-020 → D-022).** No supported
+  end-user shield path exists on Preview today: the faucet dispenses
+  transparent tNIGHT, Lace has no shield UI, `transferTransaction` sources
+  each output from its own pool, and the Wallet SDK's unshielded-to-shielded
+  `initSwap` is broken on stable releases through 1.2.0 (core engineering
+  confirmed on Aug 29, 2026: fixed upstream in midnight-wallet PR #615,
+  awaiting release). Shielded tokens are their own
   category, minted by contracts; the devnet's shielded native funds are a
   genesis artifact. So Preview invoices are denominated in bridged USDM and
   settle through the contract's unshielded lane — and the **complete browser
@@ -249,11 +250,11 @@ The integration suite runs the same lifecycle against a real chain with real pro
 
 ## Roadmap
 
-| Wave                | Theme                   | Highlights                                                                                                                                                                                                                                                                                            |
-| ------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 (Aug 27 – Sep 16) | The loop works          | Contract + tests, API, CLI, UI on Preview, Variant A escrow, judge sandbox, pay-page preflight                                                                                                                                                                                                        |
-| 2 (Sep 27 – Oct 17) | The product completes   | In-app shield-funds wrapper → private settlement on Preview, Variant B escrow, milestone escrow, claim-based refunds, sponsored DUST (gasless payer), secure links v2, invoice documents, encrypted backup/import, recurring invoices, receipt proofs, notifications + webhooks, Node SDK, MCP server |
-| 3 (Oct 27 – Nov 16) | Prove it to the auditor | ZK revenue & receivables proofs, the rest of the invoice document (PDF, QR, templates, attachments), accounting exports, USDM on mainnet (stretch), mobile PoC                                                                                                                                        |
+| Wave                | Theme                   | Highlights                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 (Aug 27 – Sep 16) | The loop works          | Contract + tests, API, CLI, UI on Preview, Variant A escrow, judge sandbox, pay-page preflight                                                                                                                                                                                                                                                                                                    |
+| 2 (Sep 27 – Oct 17) | The product completes   | private settlement on Preview by two routes (the fixed Wallet SDK's native shielding for CLI/SDK/agents, a contract-minted wrapper for browser wallets), Variant B escrow, milestone escrow, claim-based refunds, sponsored DUST (gasless payer), secure links v2, invoice documents, encrypted backup/import, recurring invoices, receipt proofs, notifications + webhooks, Node SDK, MCP server |
+| 3 (Oct 27 – Nov 16) | Prove it to the auditor | ZK revenue & receivables proofs, the rest of the invoice document (PDF, QR, templates, attachments), accounting exports, USDM on mainnet (stretch), mobile PoC                                                                                                                                                                                                                                    |
 
 Progress per wave: [`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md).
 Product-completeness triage (external audit, Aug 28 2026): [`docs/AUDIT-RESPONSE.md`](./docs/AUDIT-RESPONSE.md).
@@ -267,7 +268,7 @@ Stated openly per PRD §4.5:
 - **Payment timing is correlatable** — an observer learns "some invoice was paid at time T", never the amount or the parties.
 - **Anonymity sets are small on a young network** — inherent to any new chain.
 - **Whoever issued the invoice learns who paid it** — off-chain, because they sent them the link. Normal commerce, not a chain leak.
-- **The Preview pay leg settles unshielded, by platform design** — no user-side operation on today's public testnets converts unshielded funds to shielded (the faucet dispenses unshielded only; swaps are two-party), so Preview invoices settle as public transfers denominated in bridged tUSDM while the invoice contents stay off-ledger either way. The fully shielded flow runs on the local devnet today; the Wave 2 contract-minted wrapper brings it to public networks (see `docs/AUDIT-RESPONSE.md`).
+- **The Preview pay leg settles unshielded, by platform design** — no user-side operation on today's public testnets converts unshielded funds to shielded (the faucet dispenses unshielded only, and the SDK's shielding swap is broken on stable releases through 1.2.0; the upstream fix is merged and unreleased), so Preview invoices settle as public transfers denominated in bridged tUSDM while the invoice contents stay off-ledger either way. The fully shielded flow runs on the local devnet today; the Wave 2 contract-minted wrapper brings it to public networks (see `docs/AUDIT-RESPONSE.md`).
 - **The invoice link is a bearer credential** — anyone holding it can read the amount and memo and pay the invoice. The create dialog says so at the copy moment; revocation and recipient binding are Wave 2 (PRD §15.8, `docs/PRIVACY.md` §6.6).
 - **Wallet-reported transaction IDs are ledger _identifiers_, not hashes** — explorers index the 64-hex transaction _hash_, so pasting the ID a wallet shows into an explorer search finds nothing. The indexer maps between the two; the success dialog deep-linking by hash is a pending fix.
 - **A forgotten private-state passphrase loses invoice bodies** — the chain still proves the invoice existed and was settled; the amount, memo and salt are gone. Export/import is the Wave 2 mitigation (D-014).

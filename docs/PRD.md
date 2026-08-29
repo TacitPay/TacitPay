@@ -909,8 +909,10 @@ Compatibility matrix (authoritative): https://docs.midnight.network/relnotes/sup
 |---|---|---|---|---|
 | Local (`undeployed`) | from `midnight-local-dev` compose (node ws `:9944`, indexer `http://127.0.0.1:8088/api/v4/graphql`, proof `:6300`) | | genesis wallets | — |
 | **Preview** (primary public target — testnet USDM is bridged here) | https://rpc.preview.midnight.network | https://indexer.preview.midnight.network/api/v4/graphql | https://midnight-tmnight-preview.nethermind.dev/ | https://preview.midnightexplorer.com/ |
-| Preprod (secondary; no tUSDM) | https://rpc.preprod.midnight.network | https://indexer.preprod.midnight.network/api/v4/graphql | https://midnight-tmnight-preprod.nethermind.dev/ | https://preprod.midnightexplorer.com/ , https://midnight-preprod.subscan.io/ |
+| Preprod (secondary; no tUSDM; endpoints confirmed current 2026-08-29, first wallet sync 40 to 60 min, `testnet-02` retired) | https://rpc.preprod.midnight.network | https://indexer.preprod.midnight.network/api/v4/graphql | https://midnight-tmnight-preprod.nethermind.dev/ | https://preprod.midnightexplorer.com/ , https://midnight-preprod.subscan.io/ |
 | Mainnet (Wave 3 stretch) | https://rpc.mainnet.midnight.network | https://indexer.mainnet.midnight.network/api/v4/graphql | — (real NIGHT) | https://midnightexplorer.com/ |
+
+Cloud proof servers, for when a local `:6300` is not available (the local tier stays the recommended one): `https://proof-server.preview.midnight.network` and `https://proof-server.preprod.midnight.network` (confirmed current by Midnight core engineering, 2026-08-29).
 
 WebSocket indexer URL for local is `ws://127.0.0.1:8088/api/v4/graphql/ws` (deploy guide). For Preprod/Preview use the same `wss://…/api/v4/graphql/ws` pattern — **VERIFY** against https://docs.midnight.network/guides/networks-and-environments#environment-reference before hardcoding.
 
@@ -1052,9 +1054,7 @@ Notes:
 
 > **Amended 2026-08-28 (post-audit, see docs/AUDIT-RESPONSE.md).** Scope
 > unchanged in content, re-ordered in priority: **product completeness now
-> outranks developer surface.** Build order inside the wave: (1) the shielded
-> wrapper ("Shield funds") and per-invoice settlement enforcement — the
-> product's differentiator completes here; (2) funds safety: Variant B,
+> outranks developer surface.** Build order inside the wave: (1) shielded settlement on public networks by two routes: native `initSwap` shielding through the fixed Wallet SDK for programmatic wallets (canary retest first; §15.12, D-020 amendment 2026-08-29) and the contract-minted wrapper ("Shield funds") for browser wallets, then per-invoice settlement enforcement — the product's differentiator completes here; (2) funds safety: Variant B,
 > milestone release (§15.5), claim-based refunds (§15.6), a timeout escape
 > hatch when one party disappears, and orphaned-local-record cleanup — these
 > are **core requirements, not optional additions**; (3) zero-setup payer:
@@ -1226,6 +1226,40 @@ body hashes into the same `memoHash` and stays bound to the settlement.
 - **Privacy:** nothing new reaches the ledger. INV-1 to INV-8 hold exactly as
   they do for the memo today, and U-17's serialisation sweep extends to every
   new field.
+
+### 15.12 Native shielding through the Wallet SDK (added 2026-08-29; see D-020's amendment)
+
+Midnight core engineering confirmed that the single-wallet `initSwap`
+(unshielded in, shielded out) is an intended path that was broken on stable
+Wallet SDK releases through 1.2.0 and fixed upstream in midnight-wallet PR
+#615 (Aug 18, 2026), awaiting release. The canary
+`1.2.1-canary.20260821172758-6e1050e` is published under both package names
+(`@midnightntwrk/wallet-sdk`, which TacitPay depends on, and
+`@midnight-ntwrk/wallet-sdk`).
+
+- **Scope:** programmatic wallets only: the CLI, the Node SDK, the MCP server
+  and the devnet demo, all of which hold a seed and run the SDK themselves.
+  Browser wallets reach TacitPay through the DApp Connector and cannot be
+  asked to shield; they keep the contract-minted wrapper (BACKLOG "Shield
+  funds") as their route.
+- **Step 1, the retest (isolated):** run the archived spike
+  (`swap-shield-final.mjs`) against the canary in a workspace outside the
+  app's dependency tree, twice: once on stable 1.2.0 as the control (this
+  also re-captures the raw rejection JSON and tx hashes the servicedesk
+  filing needs), once on the canary. Never bump the app's pinned SDK before
+  the Wave 1 submission.
+- **Step 2, the deliverables:** `TacitPayApi.shieldFunds(amount)` for the
+  Node provider stack; `tacitpay wallet shield <amount>` in the CLI; a
+  `--shielded` option for `demo seed` on Preview; U-series coverage for the
+  shielded lane on a public network; the Wave 2 video pays a Preview invoice
+  on the shielded lane from the CLI.
+- **Step 3, the report:** file the repro under midnightntwrk/servicedesk with
+  #99 as the parent (SDK versions, network id, commit SHA, script, tx hashes,
+  raw rejection JSON, and the 199 `InvariantViolation` versus 213 clarification).
+- **Gate:** the app's own dependency moves to the first stable release that
+  carries PR #615; until then the shielded lane on public networks is a CLI
+  and SDK capability, and the pay page keeps the Private card greyed for
+  browser wallets until the wrapper lands.
 ---
 
 ## 16. Wave 3 feature specifications
@@ -1265,7 +1299,7 @@ body hashes into the same `memoHash` and stays bound to the settlement.
   - `tacitpay.compact` is 100% token-agnostic: the constructor takes `paymentToken: Bytes<32>`, and `payInvoice` asserts `coin.color == paymentToken`.
   - Deploying an instance with `paymentToken = 0x003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73` instantly enables native USDM settlement on Preview without any contract logic modifications.
 - **SDK vs. Wallet Extension Execution (corrected 2026-08-26 — see DECISIONS D-020 correction + D-022):**
-  - At the **Code / SDK level (`@midnight-ntwrk/wallet-sdk`)**, transaction building and payment execution are automated and programmatic. Shielding is **not**: the SDK exposes no self-shield primitive (`initSwap` is a documented two-party exchange), so bridged USDM stays unshielded — on public networks that is the only pool it can occupy. The earlier claim that shielding/unshielding were "completely automated" predated this audit and was wrong.
+  - At the **Code / SDK level (`@midnight-ntwrk/wallet-sdk`)**, transaction building and payment execution are automated and programmatic. Shielding is **not**: the single-wallet `initSwap` shield is broken on stable SDK releases through 1.2.0 (fixed upstream on Aug 18, 2026, unreleased; D-020 amended 2026-08-29), so bridged USDM stays unshielded — on public networks that is the only pool it can occupy. The earlier claim that shielding/unshielding were "completely automated" predated this audit and was wrong.
   - End-user browser wallet interactions (Lace) follow the standard DApp Connector flow. `receiveUnshielded` is no longer a contingency: it is the Wave 1 settlement lane (D-022), with USDM as the Preview payment token via `deploy --token 003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`.
 
 ### 16.3 Mobile
@@ -1329,7 +1363,7 @@ Kuira SDK (Android) repo: https://github.com/kuiralabs/kuira-sdk-android . Minim
 |---|---|---|
 | Shielded coin custody (`receiveShielded` + `insertCoin` + `sendShielded`) behaves differently than assumed | Medium | Day-2 spike on local devnet before any UI work. If not working by end of Day 3: fall back to **unshielded** NIGHT for Wave 1 (`receiveUnshielded`/`sendUnshielded`, amounts public), keep the commitment scheme for invoice contents, and state clearly that shielded settlement is the Wave 2 target. Record in DECISIONS.md. |
 | DUST not available on Preview wallets in time | Medium | Register Day 0; develop on local devnet; demo can fall back to local devnet video with a note if Preview DUST fails. |
-| tUSDM cannot be shielded in any wallet | Medium | Ship the unshielded-USDM circuit path (§16.2) and keep the shielded lane on the local devnet (genesis shielded funds) as the full-privacy demo; state the limitation plainly. Confirmed 2026-08-29 by the Midnight community: tNIGHT is unshielded by nature and the ZK side runs on DUST. |
+| tUSDM cannot be shielded in any wallet | Medium | Ship the unshielded-USDM circuit path (§16.2) and keep the shielded lane on the local devnet (genesis shielded funds) as the full-privacy demo; state the limitation plainly. Confirmed 2026-08-29 by the Midnight community: tNIGHT is unshielded by nature and the ZK side runs on DUST. Upstream: the SDK shielding fix (midnight-wallet PR #615) is merged and unreleased; retest on canary per §15.12. |
 | Lace browser proving/balancing API differs from expectation | Medium | Mirror `example-bboard` UI wiring exactly; if the browser path blocks, ship the CLI flow in the video and keep the UI read-only for payment, with an explicit note. |
 | Proof generation too slow for demo | Low | Keep circuits small; avoid large Vectors; benchmark; show the stepper. |
 | Compiler upgrade mid-wave breaks artifacts | Low | Pin versions in `package.json` and `docs/DECISIONS.md`; upgrade only between waves. |
