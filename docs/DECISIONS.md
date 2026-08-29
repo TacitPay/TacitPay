@@ -697,3 +697,15 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
   one true sentence about it (the limitation beat in
   `docs/DEMO-TALK-TRACK.md`) and no more; the detail lives here and in
   `docs/AUDIT-RESPONSE.md` for judges who dig.
+
+- **D-025 (2026-08-30) — Redeploy the same contract inside the wave.** The
+  Wave 1 build period is Aug 27 to Sep 16; the first Preview deployment was
+  Aug 26, one day early, three hours after the kickoff workshop. Nothing in
+  the rubric scores deployment dates, but an explorer timestamp before the
+  wave invites the wrong question. The same compiled artifacts (compact
+  0.31.1, six circuits) were deployed again on Aug 30 as
+  `241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0`, and
+  every live reference moved with it. Costs accepted: the new contract has no
+  history until the recording rehearsal, and the Aug 26 and Aug 27 proofs
+  now cite the earlier deployment explicitly. Not a new version of anything:
+  one contract, one live instance, one earlier instance kept as evidence.

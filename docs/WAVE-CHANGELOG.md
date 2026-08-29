@@ -343,3 +343,22 @@ took, in order:
   pain, not stale configuration; `testnet-02` is retired. The docs site's
   Networks page carries the notes and the cloud proof server.
 - **Deferred to Wave 2 (D-024):** the archived swap spike retests against the canary SDK in an isolated workspace as Wave 2's opening task, and the repro files under servicedesk #99 with the raw rejection JSON re-captured then (the copy on disk turned out to be a search result, not the node's output). Wave 1 stays frozen for the recording.
+
+### Field notes — Aug 30, 2026, 03:10 (a fresh deployment inside the wave)
+
+- **The live contract is now `241b760e…2a2df0`**, deployed at 03:07 GMT+8 on
+  Aug 30 (19:07 UTC on Aug 29 on the explorer), deploy tx `000a4b00…8c7bdd`,
+  the same compiled code (compact 0.31.1, six circuits, bridged tUSDM as the
+  payment token). Reason: the build period opened on Aug 27 and the first
+  deployment went up on Aug 26, so a judge reading the explorer saw a
+  pre-wave contract; the owner wanted the on-chain record to show work in
+  the middle of the wave. Decision D-025.
+- **What moved:** `deployments/preview.json`, the app's baked address on
+  Vercel (`VITE_TACITPAY_CONTRACT_PREVIEW`, Production and Preview), the
+  README, the docs site's Networks page and whitepaper, the recording deck's
+  end card, the demo script's explorer link, and the submission text.
+- **What stays as history:** the Aug 26 first invoice and the Aug 27 full
+  lifecycle ran on the earlier deployment (`0847de8a…326d24`), which remains
+  on the explorer; the docs now say so. The new contract starts with empty
+  private state for both wallets, so the rehearsal on production re-proves
+  the loop on the live contract.

@@ -18,7 +18,7 @@ Proof serving defaults to `localhost:6300` everywhere — a prover is something 
 
 |                    |                                                                                                                                                                                       |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Contract           | [`0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24) |
+| Contract           | [`241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0`](https://preview.midnightexplorer.com/contracts/241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0) |
 | Payment token      | bridged USDM — `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`                                                                                                     |
 | Deployed           | Aug 26 2026 · compiler 0.31.1 · deploy tx `00fcae3c…d459bd`                                                                                                                           |
 | Lifecycle evidence | Invoice `084318a7…f0342` — created, paid and withdrawn between two Lace wallets on Aug 27 2026, every stage ledger-confirmed                                                          |

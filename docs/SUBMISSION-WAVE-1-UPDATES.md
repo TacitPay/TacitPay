@@ -4,13 +4,13 @@
 
 Wave 1 (Aug 27 to Sep 16): from a scaffold to a product live on Preview.
 
-LIve Deployed URL: https://tacitpay.xyz/
+Live deployed URL: https://tacitpay.xyz/
 Repo: https://github.com/TacitPay/TacitPay
 
-1. Contract, deployed on Preview.
+1. Contract, deployed on Preview (live contract deployed Aug 30; first live Aug 26).
 
 - Six Compact circuits: the core four with Variant A escrow plus an unshielded mirror pair so public networks settle bridged USDM. Ownership is proven from the witness secret, never ownPublicKey(); amount, memo and salt reach the chain only inside a hiding commitment.
-- Live contract: https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24
+- Live contract: https://preview.midnightexplorer.com/contracts/241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0
 
 2. Tests
 
@@ -54,9 +54,9 @@ Running record: https://github.com/TacitPay/TacitPay/blob/main/docs/WAVE-CHANGEL
   Ownership is proven from the witness secret, never from `ownPublicKey()`;
   the invoice commitment is a `persistentCommit`, so amount, memo and salt
   exist on chain only inside a hiding hash.
-- Deployed to Preview on Aug 26 (an earlier four-circuit deployment hosted the first real in-browser invoice that morning; the live contract with both lanes replaced it the same day):
-  `0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24`,
-  https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24
+- Live on Preview since Aug 26; the current contract was deployed on Aug 30 (earlier deployments of the same code hosted the first in-browser invoice on Aug 26 and the full lifecycle proof on Aug 27):
+  `241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0`,
+  https://preview.midnightexplorer.com/contracts/241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0
   (record: `deployments/preview.json`).
 - Source: https://github.com/TacitPay/TacitPay/blob/main/contracts/tacitpay.compact
 

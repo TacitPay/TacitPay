@@ -1,7 +1,7 @@
 {
-  "contractAddress": "0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24",
-  "deployedAt": "2026-08-26T16:47:33.686Z",
+  "contractAddress": "241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0",
+  "deployedAt": "2026-08-29T19:07:39.663Z",
   "compilerVersion": "0.31.1",
   "paymentToken": "003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73",
-  "txId": "00fcae3cd1afea102da83bcb8396091598bad3e1a824841fc801a6d5a234d459bd"
+  "txId": "000a4b00c3e06092da804c977fa133e2a3cdec9c0c7a0e8d6b65f3a945178c7bdd"
 }
