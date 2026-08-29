@@ -50,9 +50,9 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 | TacitPay (live)                           | [`0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24) |
 | Payment token: bridged tUSDM (token type) | `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`                                                                                                                    |
 
-💡 See [`deployments/preview.json`](./deployments/preview.json) for the deployment record.
+*See [`deployments/preview.json`](./deployments/preview.json) for the deployment record.
 
-## 🖥️ Demo links
+## Demo links
 
 - **Live application:** https://app.tacitpay.xyz
 - **Documentation and whitepaper:** https://docs.tacitpay.xyz
