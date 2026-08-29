@@ -250,3 +250,19 @@ webhooks, then a Node SDK and an MCP server so software agents can invoice
 the way people do. Wave 3 makes them provable: zero-knowledge revenue and
 receivables proofs a merchant can hand to a lender or an auditor without
 revealing a single invoice, accounting exports, USDM on mainnet, and a mobile app as an installable PWA (verification, QR, your books on a phone), with Android payments through Kuira.
+
+---
+
+The "Updates in this Wave" text lives in [`SUBMISSION-WAVE-1-UPDATES.md`](./SUBMISSION-WAVE-1-UPDATES.md).
+
+---
+
+# Milestones (form fields)
+
+## 2nd Wave
+
+Wave 2 (Sep 27 to Oct 17): the product completes. In order: (1) shielded settlement on public networks by two routes, native shielding through the fixed Wallet SDK for programmatic wallets (CLI, SDK, agents) and a contract-minted shielded wrapper for browser wallets, which turns on the greyed Private card so a merchant picks public or private settlement per invoice; (2) funds safety: Variant B escrow (no plaintext coin data in public state), milestone escrow with payer-approved release, claim-based refunds, and a timeout escape hatch so money can never get stuck; (3) zero-setup payers: sponsored DUST so a first-time payer pays from the first click, plus a guided wallet path; (4) secure links v2 (in-circuit invoice ids, link expiry and revocation, optional recipient binding) and invoice document v1 (number, dates, customer, line items, notes, all inside the same commitment); (5) encrypted backup and restore of private records across devices; (6) a public-state-only notifications relay and privacy-preserving webhooks; (7) a Node SDK on npm and an MCP server so software agents create, pay and reconcile invoices. Video: an agent creates an invoice from Claude Code, a client pays it privately on Preview, a milestone is approved and withdrawn, a refund is claimed, a retainer's second period is paid from one standing link.
+
+## 3rd Wave
+
+Wave 3 (Oct 27 to Nov 16): prove it to the auditor. (1) Zero-knowledge revenue proofs: a merchant proves "I received at least X between these dates" on chain, and a third party verifies it on a public page without seeing a single invoice; (2) receivables proofs, "at least X is outstanding, none expired", the underwriting primitive for invoice financing; (3) the rest of the invoice document: taxes and discounts, merchant profile and terms templates, PDF export, QR share, duplicate and template, attachments bound by hash; (4) reconciliation: search, tags, monthly statements, CSV and JSON exports, receipts, fiat value at pay time; (5) a mobile app as an installable PWA: verification, QR scanning and the merchant's own books on any phone, with payments on Android through the Kuira wallet; (6) trust before value: an independent Compact contract audit, a protocol version registry with a migration policy for old links, and the business-model decision; (7) USDM on mainnet as the stretch, validated on Preprod first. Video: a lender opens an audit page and sees a verified revenue claim with no invoice data exposed; a phone scans an invoice QR and verifies it; a real USDM invoice is paid and withdrawn.
