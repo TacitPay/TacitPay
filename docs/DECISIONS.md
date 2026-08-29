@@ -680,3 +680,20 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
   deliberately not zero. A sealed-token unlock (WebCrypto non-extractable key
   guarding an encrypted session token, per the reviewer's suggestion) is the
   Wave 2 way to remove the last step without storing a secret.
+
+- **D-024 (2026-08-29) — The canary shielding spike waits for Wave 2; Wave 1
+  stays frozen for the recording.** Midnight core engineering's answer (see
+  D-020's amendment) makes a retest of the archived `initSwap` spike against
+  `@midnightntwrk/wallet-sdk@1.2.1-canary.20260821172758-6e1050e` worthwhile:
+  a passing run would prove native shielding on a public network before the
+  stable release, and the control run on 1.2.0 would re-capture the raw
+  rejection JSON and tx hashes the servicedesk #99 filing needs. The owner's
+  decision: not now. The week belongs to rehearsing and recording; the spike
+  spends Preview funds and attention for no Wave 1 gain, because browser
+  wallets could not use the result anyway (they reach TacitPay only through
+  the DApp Connector) and the app's pinned SDK must not move before
+  submission. The spike opens Wave 2 as PRD §15.12's first step, in an
+  isolated workspace, never inside the app's dependency tree. The video says
+  one true sentence about it (the limitation beat in
+  `docs/DEMO-TALK-TRACK.md`) and no more; the detail lives here and in
+  `docs/AUDIT-RESPONSE.md` for judges who dig.

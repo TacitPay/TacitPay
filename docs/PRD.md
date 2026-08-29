@@ -1072,7 +1072,7 @@ Notes:
 **Scope:**
 1. `proveRevenueAtLeast` (§6.8) + "Audit proofs" dashboard tab + `/audit/<auditId>` verifier page showing the claim and its on-chain proof tx.
 2. **USDM on mainnet** (§16.2): deploy with `paymentToken = <mainnet USDM colour>` and make one real payment if funding allows; otherwise the Wave 2 Preview tUSDM flow remains the demo, with an explicit note.
-3. Mobile: Kuira SDK (Android) proof-of-concept pay screen — https://github.com/kuiralabs/kuira-sdk-android — or, if time is short, a responsive PWA pay page with QR scan.
+3. Mobile (amended 2026-08-29; §16.3): **a mobile app shipped as an installable PWA**, not a proof of concept. The wallet-free half in full on every phone (verification, scanning and reviewing invoice links by QR, receipts, and your own books after Wave 2's encrypted import), plus payments on Android through the Kuira SDK (https://github.com/kuiralabs/kuira-sdk-android), the one mobile Midnight wallet with public SDK docs today. iOS payments wait for a Midnight wallet on iOS.
 4. Optional: index contract state with EffectStream for a public "settlement feed" — https://docs.midnight.network/guides/index-state-with-effectstream .
 5. Batch operations (multi-withdraw), invoice expiry reminders, CSV export of private records.
 6. **Receivables proofs** (§16.4): `proveReceivablesAtLeast` + claim-kind badge on `/audit/<auditId>`.
@@ -1242,7 +1242,7 @@ Wallet SDK releases through 1.2.0 and fixed upstream in midnight-wallet PR
   Browser wallets reach TacitPay through the DApp Connector and cannot be
   asked to shield; they keep the contract-minted wrapper (BACKLOG "Shield
   funds") as their route.
-- **Step 1, the retest (isolated):** run the archived spike
+- **Step 1, the retest (isolated; opens Wave 2 by D-024):** run the archived spike
   (`swap-shield-final.mjs`) against the canary in a workspace outside the
   app's dependency tree, twice: once on stable 1.2.0 as the control (this
   also re-captures the raw rejection JSON and tx hashes the servicedesk
@@ -1305,6 +1305,8 @@ Wallet SDK releases through 1.2.0 and fixed upstream in midnight-wallet PR
 ### 16.3 Mobile
 
 Kuira SDK (Android) repo: https://github.com/kuiralabs/kuira-sdk-android . Minimum: scan invoice QR → show amount/memo → pay. If the SDK's wallet model differs from Lace, scope to "view + verify" and keep paying on desktop.
+
+> **Amended 2026-08-29: the deliverable is the PWA, not a proof of concept.** The app is already a static single-page bundle, so installability (manifest, service worker, offline shell, QR scanning) is cheap. The constraint is signing: Lace and 1AM are desktop browser extensions, and mobile browsers inject no DApp Connector, so creating or paying an invoice on a phone needs a mobile Midnight wallet. Today that is Kuira on Android (alpha, on-device proving, public SDK docs, per Midnight's community-wallets reference); iOS has none. So the PWA ships everything that needs no signature to every phone (`/verify`, QR-to-link, the pay page as a review screen, receipts, and the merchant's own records after an encrypted import), payments ship on Android through Kuira, and iOS payments arrive with the first iOS wallet, not with a TacitPay workaround: a seed-holding wallet inside the PWA would put custody on TacitPay, which D-010 and D-023 rule out.
 
 ### 16.4 Receivables proofs (prove what you're owed)
 

@@ -1,7 +1,6 @@
 # Demo talk track: what to say
 
-The spoken script for the Wave 1 video, start to finish. Target runtime 4:45,
-hard cap 5:00. Rules for the take (never say "anonymous", don't narrate clicks,
+The spoken script for the Wave 1 video, start to finish. Target runtime about 3:35 (slides in the first minute), hard cap 5:00. Rules for the take (never say "anonymous", don't narrate clicks,
 let proofs run, no music) live in [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md). The
 deck is `docs/deck/demo.html`.
 
@@ -10,92 +9,57 @@ bend. Lines in _italics_ are cues, not speech.
 
 ---
 
-## Slide 1: the app (0:00)
+## Slide 1: the app (0:00, about 10 seconds)
 
 _Slide 1 full-screen. Speak over it, then advance._
 
-This is TacitPay: private invoicing and settlement on Midnight.
+This is TacitPay: private invoicing on Midnight. You get paid on-chain, anyone
+can verify it, and **nobody sees what it was for**.
 
-One party issues an invoice, the other settles it on-chain, and anyone can
-verify the payment happened **without ever learning what it was for**. Private
-by default, provable on demand.
+## Slide 2: the problem (0:10, about 20 seconds)
 
-## Slide 2: the problem (0:20)
+_Slide 2. The cards carry the detail; you carry the point._
 
-_Slide 2. Land it slowly; this is the whole pitch._
+Today, paying or getting paid in crypto gives you two bad options.
 
-Today, paying or getting paid in crypto gives you two bad options. And only two.
+On a transparent chain, every payment shows who paid whom, and how much: **your
+prices and your clients, for anyone to see.**
 
-Invoice on a transparent chain, and every payment publishes who paid whom, and
-how much. Fresh addresses don't help: clustering stitches your history back
-together. **Your rate card to your competitors, your client list to anyone who
-looks.**
+On private rails, the only proof you were paid is **the other side's word.**
 
-Or invoice on private rails, and now your only proof of payment is **the other
-side's paperwork**. A receipt can be refused, disputed, or faked by the two
-people who wrote it. That's why auditors ask for bank statements, not receipts:
-paperwork asserts, rails witness.
+Businesses need both: privacy, and proof.
 
-Real businesses need both at once: privacy from the world, proof on demand.
+## Slide 3: the solution (0:30, about 12 seconds)
 
-## Slide 3: three promises (0:50)
+_Slide 3, the three cards, left to right._
 
-_Slide 3, the three cards. One sentence each, gesturing left to right._
+TacitPay does both. The invoice stays private: **the chain only holds a
+commitment.** Payment is **provable by anyone**, no wallet needed. And there is
+**no server**: the invoice travels as a link.
 
-The chain is the bank statement: a neutral witness neither party controls.
-Today's problem is that everyone can read it. **TacitPay keeps the witness and
-drops the readability.** Three promises.
+## Slide 4: how it works (0:42, about 18 seconds)
 
-Invoices are **private by construction**: the chain holds a commitment, never
-the contents. Settlement is **provable by anyone**: no wallet, no account, no
-permission. And there is **no server to trust**: the invoice travels as a link,
-and TacitPay couldn't read it if we wanted to.
+_Slide 4, the architecture. Point at the four numbers as you name them. Stay
+high level; the in-depth version is in the docs._
 
-## Slide 4: the machinery (1:10)
+Under the hood, in plain terms. One: the invoice travels as a link, never
+through a server. Two: every part of the app talks to the chain through **one
+door**. Three: your wallet and your private records **stay on your device**.
+Four: the chain only ever sees a commitment, a status, and an expiry.
 
-_Slide 4, the architecture. Four numbered zones: top band, middle-left,
-middle-right, bottom band. Point at each number as you reach it._
-
-And here's the machinery behind those promises: four pieces, numbered on the
-diagram.
-
-One, the link is the transport. The invoice itself never touches a server. It
-travels as a link, and everything after the hash mark is the invoice body:
-amount, memo, salt. **Browsers never transmit a fragment**: no server, no logs,
-no referer. It's exactly nine fields, strictly validated, because it parses
-untrusted input.
-
-Two, every caller funnels through one door. The web app, the CLI, and in Wave 2
-an SDK and an MCP server for software agents, all call one API package. It is
-**the only place circuits are ever invoked**: one door, one disclosure path,
-one audit surface.
-
-Below it, proving. Proofs are generated in your wallet, by a local prover, or on
-a server you run, in that order of trust. **TacitPay never operates a prover**,
-because whoever generates a proof sees the invoice.
-
-Three, six providers, two worlds. Beside it, the six pieces Midnight needs every dApp to plug in. The indexer reads public state. The compiled keys and circuits are served as static files. Your wallet balances the transaction and submits it to the Midnight node, and the indexer follows the node's blocks. And private state, your invoice records, sits encrypted on your own device, never transmitted. That's the two worlds: **public facts travel through the indexer and the node; private records and the proof never leave your device or your wallet.** The only thing that crosses between them is the commitment.
-
-Four, what actually lands on-chain. A four-circuit Compact contract. Per
-invoice, the public ledger holds an owner tag, a hiding commitment, a status
-flag, and an expiry. **The amount, the memo, the parties: on chain only inside
-that commitment.** Anyone can verify an invoice settled. Nobody can read what it
-was for.
-
-_Optional cut if the take runs long: the proving paragraph can move to the
-Settings moment in the demo._
+The full architecture is in our docs; I won't go deeper here.
 
 ---
 
-## Demo: live, end to end (2:10)
+## Demo: live, end to end (1:00)
 
-### Landing page (2:10)
+### Landing page (1:00)
 
 _tacitpay.xyz. One line, then click through to the docs._
 
 Enough slides. This is live on Midnight's Preview testnet.
 
-### Docs (2:15)
+### Docs (1:05)
 
 _docs.tacitpay.xyz. Scroll once through the sidebar, don't stop._
 
@@ -103,7 +67,7 @@ Everything I'm about to show is documented: the whitepaper, the privacy model
 with its tested invariants, guides for every flow. I'll leave it for the judges
 and go to the app.
 
-### Connect (2:25)
+### Connect (1:15)
 
 _app.tacitpay.xyz, merchant profile, wallet already connected. Gesture at the
 header chips: network, proving, wallet._
@@ -115,7 +79,7 @@ prover on my own machine.
 _If the unlock form is on screen:_ A passphrase seals my records on this
 device. TacitPay has no server that could hold them.
 
-### Create (2:35)
+### Create (1:25)
 
 _Invoices, New invoice. A real amount (3 tUSDM) and a real memo. Pause one beat
 on the Settlement pair before creating._
@@ -133,7 +97,7 @@ What's happening now: the amount and memo **never leave this browser**. My
 wallet is building a commitment, a hash, and a zero-knowledge proof that it's
 well-formed, then putting only those on chain.
 
-### The link (3:00)
+### The link (1:50)
 
 _Invoice ready. Point at the sentence under the copy buttons, copy the link._
 
@@ -141,7 +105,7 @@ The link **is** the invoice, and the app says the quiet part out loud: anyone
 holding it can read it and pay it. So it travels like a real invoice should:
 directly to my client, over a channel we trust.
 
-### Pay (3:10)
+### Pay (2:00)
 
 _Switch to the payer browser profile. Paste the link on /pay. Let the summary
 render, point at the fragment in the URL bar._
@@ -157,7 +121,7 @@ for the chain to confirm. On an unshielded testnet the transfer itself is
 public, **like cash handed over for a sealed envelope**. The envelope stays
 sealed.
 
-### Verify (3:40)
+### Verify (2:30)
 
 _Verification page, ideally a third context with no wallet at all. Paste the
 invoice ID._
@@ -170,7 +134,7 @@ _Optional, the money shot: flip to the explorer tab on the contract and search
 the page for the invoice amount._ And that's the entire public record. Search
 it for the amount. It isn't there.
 
-### Withdraw (3:55)
+### Withdraw (2:45)
 
 _Back in the merchant profile. Open the invoice, withdraw. Have the wallet
 balance visible before and after._
@@ -179,7 +143,7 @@ Back as the merchant: withdraw. Watch the balance, not just the badge. **The
 status flip proves state changed; the balance proves value moved.** That's the
 difference between a demo and a working system.
 
-### The limitation (4:10)
+### The limitation (3:00)
 
 _Stay on the app. Say it unprompted, calmly._
 
@@ -189,7 +153,7 @@ contents never touch the ledger either way. The fully shielded flow already runs
 
 ---
 
-## Slide 5: Wave 2 (4:15)
+## Slide 5: Wave 2 (3:05)
 
 _Slide 5, the roadmap. One breath per item, no detail; the slide carries the
 specifics._
@@ -201,7 +165,7 @@ milestone escrow, refunds, a timeout escape hatch. Gasless first payments with
 sponsored DUST. Real invoice documents, hardened links, encrypted backup. And then the SDK and the MCP
 server, **so software agents can invoice the way people do**.
 
-## Slide 6: end card (4:35)
+## Slide 6: end card (3:25)
 
 _Slide 6. Hold it five full seconds after the last line._
 

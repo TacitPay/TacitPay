@@ -242,165 +242,68 @@
     text-align: center;
   }
 
-  /* Architecture slide: the blueprint's four regions
-     (docs/tacitpay-architecture-*.png) redrawn at slide scale — same
-     detail, full-viewport, every label sized to survive 720p. */
+  /* Architecture slide: four plain-English facts, numbered to match the
+     spoken script. The in-depth blueprint stays in the docs. */
   .slide--diagram {
-    gap: clamp(0.5rem, 1.2vh, 0.9rem);
+    gap: clamp(0.75rem, 1.5vh, 1.25rem);
   }
   .slide--diagram h2 {
-    font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+    font-size: clamp(1.5rem, 2.8vw, 2.3rem);
     max-width: none;
   }
-  .arch {
+  .four {
     align-self: stretch;
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-rows: auto 1fr auto;
-    gap: clamp(0.6rem, 1.2vh, 0.9rem);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: clamp(0.8rem, 1.4vw, 1.25rem);
     text-align: left;
   }
-  .zone {
+  @media (max-width: 56rem) {
+    .four {
+      grid-template-columns: 1fr;
+    }
+  }
+  .fact {
     border: 1px solid var(--rule);
-    border-radius: 12px;
-    padding: clamp(0.7rem, 1.4vh, 1rem) clamp(0.9rem, 1.4vw, 1.25rem);
-    display: flex;
-    flex-direction: column;
-    gap: clamp(0.5rem, 1vh, 0.75rem);
-    min-height: 0;
-  }
-  .zone-label {
-    font-family: var(--mono);
-    font-size: clamp(0.7rem, 0.85vw, 0.82rem);
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: var(--faint);
-  }
-  .zone-label b {
-    color: var(--ink);
-    font-weight: 500;
-  }
-  .arch-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: stretch;
-    gap: clamp(0.5rem, 0.9vw, 0.8rem);
-  }
-  .arch-row > .arrow {
-    align-self: center;
-  }
-  .grow-row {
-    flex: 1;
-    min-height: 0;
-  }
-  .arch-mid {
-    display: grid;
-    gap: clamp(0.6rem, 1vw, 0.9rem);
-    grid-template-columns: repeat(auto-fit, minmax(26rem, 1fr));
-    min-height: 0;
-  }
-  .anode {
-    border: 1px solid var(--rule);
-    border-radius: 8px;
+    border-radius: 14px;
     background: var(--surface);
-    padding: clamp(0.5rem, 1vh, 0.75rem) clamp(0.7rem, 1vw, 1rem);
+    padding: clamp(1rem, 2.2vh, 1.6rem) clamp(1.1rem, 2vw, 1.8rem);
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 0.2rem;
-    min-width: 0;
+    gap: 0.5rem;
   }
-  .anode b {
-    font-weight: 600;
-    font-size: clamp(0.95rem, 1.15vw, 1.15rem);
-  }
-  .anode span {
+  .fact .n {
     font-family: var(--mono);
-    font-size: clamp(0.68rem, 0.82vw, 0.8rem);
-    color: var(--muted);
-  }
-  .anode--hero {
-    border-color: var(--ink);
-  }
-  .anode--ghost {
-    border-style: dashed;
-    background: transparent;
-  }
-  .anode--line {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
-    flex: 1;
-  }
-  .anode--line span {
-    text-align: right;
-  }
-  .caller-stack {
-    display: grid;
-    gap: clamp(0.45rem, 0.9vh, 0.7rem);
-    align-content: stretch;
-    flex: 0 1 clamp(15rem, 24vw, 21rem);
-  }
-  .caller-stack .anode {
-    flex: 1;
-  }
-  .provider-stack {
-    display: grid;
-    gap: clamp(0.4rem, 0.8vh, 0.6rem);
-    align-content: stretch;
-  }
-  .tiers {
-    display: grid;
-    gap: 0.3rem;
-    font-family: var(--mono);
-    font-size: clamp(0.7rem, 0.85vw, 0.82rem);
-    color: var(--muted);
-    border-top: 1px dashed var(--rule);
-    padding-top: clamp(0.5rem, 1vh, 0.7rem);
-  }
-  .tiers .tiers-close {
-    color: var(--faint);
-  }
-  .arrow {
-    font-family: var(--mono);
-    color: var(--faint);
-    flex: none;
-  }
-  .grow {
-    flex: 1 1 16rem;
-  }
-  .zone-note {
-    font-family: var(--mono);
-    font-size: clamp(0.7rem, 0.85vw, 0.82rem);
-    color: var(--muted);
-    margin: 0;
-  }
-  .states {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    font-family: var(--mono);
-    font-size: clamp(0.72rem, 0.85vw, 0.82rem);
-    color: var(--ink);
-  }
-  .states .st {
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 0.2rem 0.6rem;
-    background: var(--surface);
-  }
-  .states .st--fill {
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
     background: var(--ink);
     color: var(--ground);
-    border-color: var(--ink);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    align-self: flex-start;
   }
-  .states .st--ghost {
-    border-style: dashed;
+  .fact h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(1.5rem, 2.6vw, 2.2rem);
+    line-height: 1.15;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .fact p {
+    margin: 0;
     color: var(--muted);
-    background: transparent;
+    font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  }
+  .deeper {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--faint);
+    margin: 0;
   }
 
   /* Wave 2 slide: a real sequence — the audit fixed the order, so the
@@ -554,129 +457,33 @@
     <span class="eyebrow">The solution · under the hood</span>
     <h2>One chain sees a commitment. The invoice never leaves the parties.</h2>
 
-    <div class="arch">
-      <div class="zone">
-        <span class="zone-label"
-          ><b>1 · the link is the transport</b> — no server in the payment path</span
-        >
-        <div class="arch-row grow-row">
-          <div class="anode">
-            <b>Merchant browser</b>
-            <span>createInvoice() → encodeLink()</span>
-            <span>shares it over email · chat · QR</span>
-          </div>
-          <span class="arrow">──→</span>
-          <div class="anode grow">
-            <b>/pay#eyJ2IjoxLCJuZXQiOiJwcmV2aWV3Ii…</b>
-            <span
-              >{ v · net · contract · id · amount · token · memo · salt · exp } — nine fields
-              exactly, strictly validated</span
-            >
-            <span
-              >the # fragment is never transmitted: no server, no logs, no referer — as private as
-              the channel that carries it</span
-            >
-          </div>
-          <span class="arrow">──→</span>
-          <div class="anode">
-            <b>Payer browser</b>
-            <span>decodeLink() → checks status → pays</span>
-            <span>both run the same static bundle</span>
-          </div>
-        </div>
+    <div class="four">
+      <div class="fact">
+        <span class="n">1</span>
+        <h3>The invoice travels as a link.</h3>
+        <p>Never through a server. Everything after the # in the URL stays in the browser.</p>
       </div>
-
-      <div class="arch-mid">
-        <div class="zone">
-          <span class="zone-label"><b>2 · one door to the circuits</b> — one audit surface</span>
-          <div class="arch-row grow-row">
-            <div class="caller-stack">
-              <div class="anode">
-                <b>Web app</b><span>Vite + React 18 — static files only</span>
-              </div>
-              <div class="anode"><b>CLI</b><span>deploy · lifecycle · judge sandbox</span></div>
-              <div class="anode anode--ghost">
-                <b>SDK · MCP server</b><span>Wave 2 — agents invoice like people</span>
-              </div>
-            </div>
-            <span class="arrow">──→</span>
-            <div class="anode anode--hero grow">
-              <b>packages/api — TacitPayApi</b>
-              <span>the ONLY place circuits are called</span>
-              <span>one link parser · one disclosure path</span>
-            </div>
-          </div>
-          <div class="tiers">
-            <span class="zone-label"><b>proving</b> — trust-ordered tiers</span>
-            <span>1 · in-wallet WASM — nothing leaves the tab</span>
-            <span>2 · local proof server — localhost:6300</span>
-            <span>3 · your own remote prover — TLS only</span>
-            <span class="tiers-close"
-              >whoever proves, sees the invoice — TacitPay never operates a prover</span
-            >
-          </div>
-        </div>
-        <div class="zone">
-          <span class="zone-label"><b>3 · six providers</b> — two worlds</span>
-          <div class="provider-stack grow-row">
-            <div class="anode anode--line">
-              <b>Midnight Indexer</b
-              ><span>publicData · GraphQL + WS, whole-state public reads</span>
-            </div>
-            <div class="anode anode--line">
-              <b>Wallet</b><span>wallet · DApp Connector, balances the transaction</span>
-            </div>
-            <div class="anode anode--line">
-              <b>zk artifacts — keys/ + zkir/</b
-              ><span>zkConfig · compiler output, served static</span>
-            </div>
-            <div class="anode anode--line">
-              <b>Private state</b><span>privateState · encrypted on-device, never transmitted</span>
-            </div>
-            <div class="anode anode--line">
-              <b>Proof provider</b><span>proof · whichever tier you chose on the left</span>
-            </div>
-            <div class="anode anode--line">
-              <b>Submission</b><span>midnight · the wallet hands the balanced tx to the node</span>
-            </div>
-          </div>
-          <p class="zone-note">public facts and private records never share a channel</p>
-        </div>
+      <div class="fact">
+        <span class="n">2</span>
+        <h3>One door to the chain.</h3>
+        <p>
+          Every part of the app, the web app, the CLI and soon agents, goes through one library.
+        </p>
       </div>
-
-      <div class="zone">
-        <span class="zone-label"
-          ><b>4 · on chain — tacitpay.compact</b> — createInvoice · payInvoice · withdraw ·
-          cancelInvoice</span
-        >
-        <div class="arch-row grow-row">
-          <div class="anode grow">
-            <b>public ledger — invoices["0x7f3c…"]</b>
-            <span
-              >{ ownerTag · payerTag · commitment: persistentCommit(amount, memoHash, salt) · status
-              · expiresAt }</span
-            >
-            <span
-              >anyone can verify the invoice exists and settled — amount, memo and salt exist on
-              chain only inside the hiding commitment</span
-            >
-          </div>
-          <div class="anode">
-            <b>invoice status machine</b>
-            <div class="states">
-              <span class="st">OPEN</span><span class="arrow">→</span> <span class="st">PAID</span
-              ><span class="arrow">→</span>
-              <span class="st st--fill">WITHDRAWN</span>
-              <span class="st st--ghost">CANCELLED</span>
-            </div>
-            <span
-              >escrow holds the coin between pay and withdraw — the merchant initiates their own
-              payout</span
-            >
-          </div>
-        </div>
+      <div class="fact">
+        <span class="n">3</span>
+        <h3>Your wallet and your records stay on your device.</h3>
+        <p>Private state is encrypted locally. Proofs are made where you choose, never by us.</p>
+      </div>
+      <div class="fact">
+        <span class="n">4</span>
+        <h3>The chain sees only a commitment.</h3>
+        <p>A hash, a status and an expiry. Never the amount, the memo or the parties.</p>
       </div>
     </div>
+    <p class="deeper">
+      The full architecture, six providers and four circuits: docs.tacitpay.xyz → Architecture
+    </p>
   </section>
 
   <!-- 5 · Wave 2 -->

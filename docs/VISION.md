@@ -80,11 +80,11 @@ and no platform sits in the middle.
 
 ## How the axes map to the waves
 
-| Wave | Theme                   | Axes advanced                                        |
-| ---- | ----------------------- | ---------------------------------------------------- |
-| 1    | The loop works          | The minimal document; the private lifecycle          |
-| 2    | The product completes   | Document v1, workflow, relationships (series)        |
-| 3    | Prove it to the auditor | Evidence; the rest of the document; the payer's book |
+| Wave | Theme                   | Axes advanced                                                                  |
+| ---- | ----------------------- | ------------------------------------------------------------------------------ |
+| 1    | The loop works          | The minimal document; the private lifecycle                                    |
+| 2    | The product completes   | Document v1, workflow, relationships (series)                                  |
+| 3    | Prove it to the auditor | Evidence; the rest of the document; the payer's book; the app on a phone (PWA) |
 
 What is deliberately not on any axis (cards, gift instruments, oracle
 conversion, custodial checkout, an in-app assistant, a merchant super-app) is

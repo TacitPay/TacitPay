@@ -68,9 +68,7 @@ call path (the balancing-stage timeout moves to Wave 2 with its reason).
 
 Product completeness first, developer surface second:
 
-1. Shielded settlement on public networks: native SDK shielding for
-   programmatic wallets once midnight-wallet PR #615 ships (canary retest
-   first, PRD §15.12) and the contract-minted wrapper for browser wallets →
+1. Shielded settlement on public networks: native SDK shielding for programmatic wallets once midnight-wallet PR #615 ships (canary retest opens Wave 2, D-024, PRD §15.12) and the contract-minted wrapper for browser wallets →
    per-invoice settlement enforcement.
 2. Funds safety: Variant B escrow, milestone release, claim-based refunds,
    timeout escape hatch, orphaned-record cleanup.

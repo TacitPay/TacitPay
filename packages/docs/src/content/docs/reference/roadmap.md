@@ -25,7 +25,7 @@ The protocol grows edges other software can hold:
 The reason privacy plus provability matters:
 
 - **ZK revenue & receivables proofs** — "I received ≥ X this quarter", proven without revealing a single underlying invoice: the lender's, auditor's and tax season's view of a private book.
-- **USDM on mainnet** (stretch) and a mobile proof-of-concept.
+- **USDM on mainnet** (stretch) and **a mobile app as an installable PWA**: verification, QR scanning and your own books on any phone, with payments on Android through the Kuira wallet (iOS payments arrive with the first iOS Midnight wallet).
 
 Progress per wave is kept in the repository's [`docs/WAVE-CHANGELOG.md`](https://github.com/TacitPay/TacitPay/blob/main/docs/WAVE-CHANGELOG.md).
 

@@ -35,9 +35,7 @@ notes). Wave 1 items are marked; the rest is Wave 2 planning input:
   local-devnet flagship.
 - **[Parked, revive on the SDK release] `tacitpay wallet shield`** — the
   archived spike (swap-shield-final.mjs) exercised exactly the path core
-  engineering fixed in midnight-wallet PR #615. Retest in isolation against
-  `@midnight-ntwrk/wallet-sdk@canary` (1.2.1-canary.*), then on the first
-  stable release. If it passes, the CLI, SDK and MCP wallets shield natively;
+  engineering fixed in midnight-wallet PR #615. Retest in isolation against `@midnightntwrk/wallet-sdk@1.2.1-canary.20260821172758-6e1050e`, then on the first stable release. Owner decision 2026-08-29 (D-024): the retest opens Wave 2; nothing moves before the Wave 1 submission. If it passes, the CLI, SDK and MCP wallets shield natively;
   browser wallets still need the contract-minted wrapper below.
 - **[Wave 2] In-app "Shield funds"** — mint a contract-issued shielded
   wrapper token against unshielded deposits (the design-intended way to

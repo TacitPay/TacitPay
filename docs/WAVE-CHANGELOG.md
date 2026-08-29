@@ -342,7 +342,4 @@ took, in order:
 - **Preprod endpoints are current.** A 40 to 60 minute first sync is a known
   pain, not stale configuration; `testnet-02` is retired. The docs site's
   Networks page carries the notes and the cloud proof server.
-- **Next:** retest the archived swap spike against the canary SDK in an
-  isolated workspace, and file the repro under servicedesk #99 with the raw
-  rejection JSON re-captured (the copy on disk turned out to be a search
-  result, not the node's output).
+- **Deferred to Wave 2 (D-024):** the archived swap spike retests against the canary SDK in an isolated workspace as Wave 2's opening task, and the repro files under servicedesk #99 with the raw rejection JSON re-captured then (the copy on disk turned out to be a search result, not the node's output). Wave 1 stays frozen for the recording.

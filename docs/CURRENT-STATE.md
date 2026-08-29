@@ -47,18 +47,18 @@ anonymous one gives the second and makes the first impossible.
 
 Wave 1 scope is PRD §14.1.
 
-| #   | Scope item                                           | Status                                                                                        |
-| --- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| 1   | Contract: six circuits (shielded + unshielded pairs) | **Done** (v2 deployed, D-022)                                                                 |
-| 2   | Unit tests U-01…U-17                                 | **Done** (plus U-17b; 28 passing, 10 Wave 2/3 todos)                                          |
-| 3   | Integration test on local devnet                     | **Done**                                                                                      |
-| 4   | `packages/api`                                       | **Done** — both lanes; browser providers proven against real wallets                          |
-| 5   | `packages/cli`                                       | **Done**                                                                                      |
-| 6   | `packages/ui` — ten routes, works on Preview         | **Done** — full browser lifecycle proven on Preview on Aug 27 (create, pay, verify, withdraw) |
-| 7   | Deployed to Preview, address committed               | **Done** — `0847de8a…326d24` in `deployments/preview.json`, baked into the app bundle         |
-| 8   | README, PRIVACY, ARCHITECTURE, deck, video           | **Docs, both decks and the spoken script done; the video is the last piece**                  |
-| 9   | Repo topics, Apache-2.0, repo public                 | **Public at github.com/TacitPay/TacitPay, Apache-2.0, topics set**                            |
-| 10  | Judge sandbox (`demo seed`)                          | **Done**                                                                                      |
+| #   | Scope item                                           | Status                                                                                                                                                    |
+| --- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Contract: six circuits (shielded + unshielded pairs) | **Done** (v2 deployed, D-022)                                                                                                                             |
+| 2   | Unit tests U-01…U-17                                 | **Done** (plus U-17b; 28 passing, 10 Wave 2/3 todos)                                                                                                      |
+| 3   | Integration test on local devnet                     | **Done**                                                                                                                                                  |
+| 4   | `packages/api`                                       | **Done** — both lanes; browser providers proven against real wallets                                                                                      |
+| 5   | `packages/cli`                                       | **Done**                                                                                                                                                  |
+| 6   | `packages/ui` — ten routes, works on Preview         | **Done** — full browser lifecycle proven on Preview on Aug 27 (create, pay, verify, withdraw)                                                             |
+| 7   | Deployed to Preview, address committed               | **Done** — `0847de8a…326d24` in `deployments/preview.json`, baked into the app bundle                                                                     |
+| 8   | README, PRIVACY, ARCHITECTURE, deck, video           | **Docs, both decks and the spoken script done; the video is the last piece**                                                                              |
+| 9   | Repo topics, Apache-2.0, repo public                 | **Public at github.com/TacitPay/TacitPay, Apache-2.0, `midnightntwrk` topic set (verified 2026-08-29; it had been lost in the move to the TacitPay org)** |
+| 10  | Judge sandbox (`demo seed`)                          | **Done**                                                                                                                                                  |
 
 Nine of the ten items are complete. The tenth is the video, and everything it
 needs is ready: the six-slide recording deck (`docs/deck/demo.html`), the spoken
@@ -480,9 +480,7 @@ The historical Preview runbook is in [`docs/plans/wave-1.md`](./plans/wave-1.md)
 
 **Engineering, none of it blocking the video:**
 
-4. The canary shielding spike in an isolated workspace (PRD §15.12), whose
-   control run also re-captures the raw rejection for the servicedesk #99
-   filing.
+4. Wave 2 opens with the canary shielding spike in an isolated workspace (PRD §15.12, deferred by D-024), whose control run also re-captures the raw rejection for the servicedesk #99 filing.
 5. `yarn docs:deploy` after any docs-site change; the docs project is not
    git-connected.
 6. Wave 2 planning per PRD §14.2 (amended) and
