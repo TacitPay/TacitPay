@@ -41,13 +41,13 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 
 ## Latest deployment
 
-**Deployed:** Aug 26, 2026 (contract v2: both settlement lanes, denominated in bridged USDM)
-**Network:** Midnight Preview (network id `preview`)
-**Deploy transaction:** `00fcae3cd1afea102da83bcb8396091598bad3e1a824841fc801a6d5a234d459bd`
+- **Deployed:** Aug 26, 2026 (the contract: six circuits, both settlement lanes, denominated in bridged USDM)
+- **Network:** Midnight Preview (network id `preview`)
+- **Deploy transaction:** `00fcae3cd1afea102da83bcb8396091598bad3e1a824841fc801a6d5a234d459bd`
 
 | Contract                                  | Address                                                                                                                                                                               |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TacitPay v2 (live)                        | [`0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24) |
+| TacitPay (live)                           | [`0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24) |
 | Payment token: bridged tUSDM (token type) | `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`                                                                                                                    |
 
 💡 See [`deployments/preview.json`](./deployments/preview.json) for the deployment record.
@@ -72,7 +72,7 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 - **Only a commitment reaches the ledger:** a hash of the amount, the memo and a random salt, with a status flag and an expiry. The amount, the memo and the parties never do.
 - **Ownership proven from the witness secret**, never from `ownPublicKey()`; tags hash a derived key, never the secret.
 - **Variant A escrow:** the contract holds the payment between pay and withdraw, and the merchant triggers their own payout.
-- **Deployed on Preview** (v2) with a committed deployment record.
+- **Deployed on Preview** with a committed deployment record.
 
 ### ⚖️ Two settlement lanes
 

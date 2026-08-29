@@ -98,7 +98,7 @@ drops the readability, with three promises:
   and `/verify/:id`); wallet detection over `window.midnight`; live proving
   and network status in the header; a pay-page preflight for balance and
   DUST; honest sandbox and caution states throughout.
-- **Live on Preview.** Contract v2 deployed on Aug 26. The complete browser
+- **Live on Preview.** The contract was deployed on Aug 26. The complete browser
   lifecycle (create, pay, verify, withdraw) ran between two Lace wallets on
   Aug 27, every step confirmed on-chain.
 - **Hosted:** app.tacitpay.xyz, docs.tacitpay.xyz (whitepaper, concepts,

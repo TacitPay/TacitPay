@@ -49,7 +49,7 @@ Wave 1 scope is PRD §14.1.
 
 | #   | Scope item                                           | Status                                                                                                                                                    |
 | --- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Contract: six circuits (shielded + unshielded pairs) | **Done** (v2 deployed, D-022)                                                                                                                             |
+| 1   | Contract: six circuits (shielded + unshielded pairs) | **Done** (deployed, D-022)                                                                                                                                |
 | 2   | Unit tests U-01…U-17                                 | **Done** (plus U-17b; 28 passing, 10 Wave 2/3 todos)                                                                                                      |
 | 3   | Integration test on local devnet                     | **Done**                                                                                                                                                  |
 | 4   | `packages/api`                                       | **Done** — both lanes; browser providers proven against real wallets                                                                                      |
@@ -87,9 +87,7 @@ shielding step is a fixed-but-unreleased Wallet SDK gap, not a protocol limit
 
 Six exported circuits, compiled by compact 0.31.1 against
 `@midnight-ntwrk/compact-runtime` 0.16.0: the original shielded four plus an
-unshielded mirror pair added for public-network settlement (D-022). The v2
-contract is the one deployed on Preview; v1 (four circuits, `1f3783…bc547`)
-hosted the first real in-browser invoice.
+unshielded mirror pair added for public-network settlement (D-022). The six-circuit contract is the one deployed on Preview; an earlier four-circuit deployment (`1f3783…bc547`) hosted the first real in-browser invoice that morning.
 
 | Circuit                | Asserts                                                                                                             | `disclose()`d                                 |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
@@ -286,14 +284,14 @@ are changing underneath us. The active tier is shown in the app header.
 
 The distinction this whole document turns on.
 
-| Path                                               | Run against a real chain?                                                                                                                                               |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Contract circuits, all six                         | **Yes** — pure-JS runtime, 28 offline tests                                                                                                                             |
-| Full lifecycle via Node + CLI                      | **Yes** — live devnet (shielded lane) and Preview (unshielded)                                                                                                          |
-| Judge sandbox (`demo seed`)                        | **Yes** — deploys and seeds three invoices                                                                                                                              |
-| Browser **read** — `/verify/<id>`                  | **Yes** — real contract, cold load, dev _and_ production builds                                                                                                         |
-| Browser **write** — connect, create, pay, withdraw | **Yes** — Lace 4.0.1 on Preview: create on Aug 26 (v1), the whole loop on Aug 27 (v2, invoice `084318a7…f0342`, 2 tUSDM), every step ledger-confirmed by the truth gate |
-| Shielded lane on a public network                  | **No.** Blocked upstream (§6); runs on the local devnet only                                                                                                            |
+| Path                                               | Run against a real chain?                                                                                                                                                                               |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contract circuits, all six                         | **Yes** — pure-JS runtime, 28 offline tests                                                                                                                                                             |
+| Full lifecycle via Node + CLI                      | **Yes** — live devnet (shielded lane) and Preview (unshielded)                                                                                                                                          |
+| Judge sandbox (`demo seed`)                        | **Yes** — deploys and seeds three invoices                                                                                                                                                              |
+| Browser **read** — `/verify/<id>`                  | **Yes** — real contract, cold load, dev _and_ production builds                                                                                                                                         |
+| Browser **write** — connect, create, pay, withdraw | **Yes** — Lace 4.0.1 on Preview: create on Aug 26 (on the earlier four-circuit deployment), the whole loop on Aug 27 (invoice `084318a7…f0342`, 2 tUSDM), every step ledger-confirmed by the truth gate |
+| Shielded lane on a public network                  | **No.** Blocked upstream (§6); runs on the local devnet only                                                                                                                                            |
 
 Getting the browser read path working surfaced three defects that every offline
 check had passed — see D-015. They are worth knowing because they are the class

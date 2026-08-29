@@ -54,8 +54,7 @@ Running record: https://github.com/TacitPay/TacitPay/blob/main/docs/WAVE-CHANGEL
   Ownership is proven from the witness secret, never from `ownPublicKey()`;
   the invoice commitment is a `persistentCommit`, so amount, memo and salt
   exist on chain only inside a hiding hash.
-- Deployed to Preview on Aug 26 (v1 hosted the first real in-browser invoice;
-  v2 with both lanes is the live contract):
+- Deployed to Preview on Aug 26 (an earlier four-circuit deployment hosted the first real in-browser invoice that morning; the live contract with both lanes replaced it the same day):
   `0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24`,
   https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24
   (record: `deployments/preview.json`).
