@@ -10,16 +10,94 @@
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Status](https://img.shields.io/badge/status-Wave%201%20in%20progress-yellow)
 ![Tests](https://img.shields.io/badge/tests-98%20unit%20%C2%B7%2067%20integration-brightgreen)
+![Midnight](https://img.shields.io/badge/Midnight-Preview-18181b)
+![Buildathon](https://img.shields.io/badge/Buildathon-Wave%201-7c3aed)
+![Demo](https://img.shields.io/badge/Demo-Live-16a34a)
 
-## Wave 1 status
+> **Midnight Buildathon 2026 (AKINDO WaveHack) · Wave 1 submission**
+> Private invoicing and settlement on Midnight
 
-- **Where we are.** Wave 1 of the Midnight Buildathon 2026 (AKINDO WaveHack, three waves, Aug 27 to Nov 27). The Wave 1 loop is built, tested and live: a merchant issues an invoice, a client pays it, anyone can verify it settled, the merchant withdraws.
-- **Live on Midnight Preview since Aug 26, 2026.** The app: [app.tacitpay.xyz](https://app.tacitpay.xyz). Docs and whitepaper: [docs.tacitpay.xyz](https://docs.tacitpay.xyz). Landing: [tacitpay.xyz](https://tacitpay.xyz).
-- **The contract on chain:** [`0847de8a…326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24), recorded in [`deployments/preview.json`](./deployments/preview.json). This is version 2: both settlement lanes, denominated in bridged USDM (decision D-022). Version 1, [`1f3783…bc547`](https://preview.midnightexplorer.com/contracts/1f37835dd1f3ba29cfa912385ff6f0059f66aad9cad6b5dc8686b8a3e21bc547), hosted the first real in-browser invoice, created and proven from a Lace wallet on day one.
-- **Proven end to end.** On Aug 27 the full loop (create, pay, verify, withdraw) ran between two Lace wallets on the live contract, invoice `084318a7…f0342`, every step confirmed on chain.
-- **Tested.** 98 unit tests run offline in seconds with no wallet and no Docker; 67 integration tests run against a live devnet. `yarn test`.
-- **Where to read more.** [`PRD.md`](./PRD.md) is the single source of truth. [`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md) is what shipped, dated. [`docs/AUDIT-RESPONSE.md`](./docs/AUDIT-RESPONSE.md) answers an external product audit. [`docs/VISION.md`](./docs/VISION.md) is the three-wave arc.
-- **Deck, script, video.** [Twelve-slide deck](./docs/deck/index.html), [the six-slide recording deck](./docs/deck/demo.html), [the spoken script](./docs/DEMO-TALK-TRACK.md). Video: [link].
+TacitPay lets one party issue an invoice and another settle it on-chain. What reaches the public ledger is a commitment, a status and an expiry; the amount, the memo and both parties stay in encrypted private state on their own devices. Anyone can verify an invoice was paid, with no wallet and no permission. Nobody can read what it was for. The invoice travels as a link, never through a server, and proofs are generated where the user chooses, never by TacitPay.
+
+## Latest deployment
+
+**Deployed:** Aug 26, 2026 (contract v2: both settlement lanes, denominated in bridged USDM)
+**Network:** Midnight Preview (network id `preview`)
+**Deploy transaction:** `00fcae3cd1afea102da83bcb8396091598bad3e1a824841fc801a6d5a234d459bd`
+
+| Contract                                             | Address                                                                                                                                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TacitPay v2 (live)                                   | [`0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24) |
+| Payment token: bridged tUSDM (token type)            | `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`                                                                                                                    |
+
+💡 See [`deployments/preview.json`](./deployments/preview.json) for the deployment record.
+
+## 🖥️ Demo links
+
+- **Live application:** https://app.tacitpay.xyz
+- **Documentation and whitepaper:** https://docs.tacitpay.xyz
+- **Landing page:** https://tacitpay.xyz
+- **Demo video:** [link]
+- **Smart contract:** [Midnight Preview explorer](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24)
+- 🗂️ **Slide deck:** [`docs/deck/index.html`](./docs/deck/index.html) (twelve slides) and [`docs/deck/demo.html`](./docs/deck/demo.html) (the six used in the video)
+
+<a href="https://tacitpay.xyz">
+  <img src=".github/assets/landing.png" alt="TacitPay landing page: numbers only you can read, settlement anyone can verify">
+</a>
+
+## Wave 1 Delivered Items (Aug 27 to Sep 16, 2026)
+
+### 🔐 Private invoicing on chain
+
+- **Six Compact circuits:** `createInvoice`, `payInvoice`, `withdraw`, `cancelInvoice`, plus an unshielded pair (`payInvoiceUnshielded`, `withdrawUnshielded`).
+- **Only a commitment reaches the ledger:** a hash of the amount, the memo and a random salt, with a status flag and an expiry. The amount, the memo and the parties never do.
+- **Ownership proven from the witness secret**, never from `ownPublicKey()`; tags hash a derived key, never the secret.
+- **Variant A escrow:** the contract holds the payment between pay and withdraw, and the merchant triggers their own payout.
+- **Deployed on Preview** (v2) with a committed deployment record.
+
+### ⚖️ Two settlement lanes
+
+- **Shielded lane** (local devnet today): the transfer itself is hidden by the protocol.
+- **Unshielded lane** (Preview): settles bridged tUSDM with the invoice contents still private; each lane guards the other's exit, so funds can never be claimed through the wrong door.
+- **Per-invoice choice shown in the product:** Public active, Private greyed "Coming in Wave 2".
+
+### 💻 The web app, live on Preview
+
+- **Ten routes:** invoices (create, detail, withdraw, cancel), payments (pay bar and receipts), verification with no wallet, the wallet's profile page, settings, plus the frozen `/pay#…` and `/verify/:id`.
+- **Wallet detection** on `window.midnight` (Lace, 1AM), every injected value treated as untrusted; live network and proving chips in the header.
+- **Truth gate:** success is reported only after the ledger confirms the transaction.
+- **Pay-page preflight:** the payer's balance in the invoice's pool and their DUST, with the funding path when either falls short.
+- **Honest states everywhere:** a sandbox banner and caution register, bearer-link disclosure at the copy moment, a passphrase form that knows first-time setup from a return visit, and a plain-English wrong-passphrase error.
+- **Proven end to end:** first invoice on Aug 26; the full loop (create, pay, verify, withdraw) between two Lace wallets on Aug 27, invoice `084318a7…f0342`, every step confirmed on chain.
+
+### 🧰 Library, CLI and judge sandbox
+
+- **`packages/api`:** the only place circuits are called; strict invoice-link codec; private-state records; ledger reads; status observables; Node and browser providers with three proving tiers (your wallet, a local prover, a server you host; TacitPay never runs one).
+- **`packages/cli`:** deploy, the full lifecycle, DUST status, local funding.
+- **`yarn demo:seed`:** two funded wallets, a deployed contract, three invoices (OPEN, PAID, WITHDRAWN) and a ready pay link, in minutes.
+
+### 🧪 Tests and QA
+
+- **28 contract unit tests** offline in the pure-JS runtime, coin circuits included. U-17 sweeps the serialised ledger for the amount in four encodings, the memo hash, the salt and both secrets; U-17b pins the Variant A exposure window.
+- **70 library unit tests**, and **67 integration tests** on a live devnet asserting the merchant's balance increases after withdrawal.
+- `yarn test`: 98 tests in seconds, no wallet, no Docker.
+
+### 🌐 Hosted and documented
+
+- **Live:** [app.tacitpay.xyz](https://app.tacitpay.xyz), [docs.tacitpay.xyz](https://docs.tacitpay.xyz) (whitepaper, five concept chapters, architecture and circuit reference, three guides, networks, FAQ, roadmap), [tacitpay.xyz](https://tacitpay.xyz).
+- **Written down:** [`PRD.md`](./PRD.md), [`docs/PRIVACY.md`](./docs/PRIVACY.md) (eleven invariants mapped to tests), [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md), [`docs/DECISIONS.md`](./docs/DECISIONS.md) (24 records), an external audit answered point by point in [`docs/AUDIT-RESPONSE.md`](./docs/AUDIT-RESPONSE.md), the three-wave arc in [`docs/VISION.md`](./docs/VISION.md).
+
+### 🤝 Working with the Midnight ecosystem
+
+- **USDM:** tUSDM bridged from Cardano Preprod over the VIA Labs bridge; Preview invoices are denominated in it.
+- **The shielding gap:** diagnosed against the official docs, raised with the community, and confirmed by Midnight core engineering as a fixed-but-unreleased Wallet SDK bug (midnight-wallet PR #615), not a protocol limit. The unshielded lane shipped in response; the shielded lane stays live on the local devnet.
+- **Proving tiers** verified against Midnight's community-wallets reference: 1AM proves in-browser, Lace through its configured proof server.
+
+### 🎬 Video
+
+- Video: [link].
+
+## What TacitPay is
 
 TacitPay is a **protocol for private invoicing and settlement** on Midnight.
 
@@ -153,17 +231,6 @@ Where things are: `contracts/` (the Compact contract, witnesses, unit tests) · 
 ## Roadmap
 
 Three waves, one arc: **Wave 1 makes invoices private, Wave 2 makes them complete, Wave 3 makes them provable.** The arc is in [`docs/VISION.md`](./docs/VISION.md), progress in [`docs/WAVE-CHANGELOG.md`](./docs/WAVE-CHANGELOG.md), the ordering rationale in [`docs/AUDIT-RESPONSE.md`](./docs/AUDIT-RESPONSE.md).
-
-### Wave 1 (Aug 27 to Sep 16): the loop works. Done.
-
-- **Contract:** six circuits (`createInvoice`, `payInvoice`, `withdraw`, `cancelInvoice`, plus the unshielded pay and withdraw pair), Variant A escrow, deployed on Preview at `0847de8a…326d24`.
-- **Tests:** 28 contract and 70 library unit tests offline; 67 integration tests on a live devnet.
-- **`packages/api`:** the single audited path to the chain; strict link codec; private state; ledger reads; status observables; browser and Node providers with three proving tiers.
-- **`packages/cli`:** deploy, the lifecycle, DUST status, the judge sandbox.
-- **The web app, live on Preview:** ten routes; wallet detection; the truth gate; a pay-page preflight for balance and DUST; the settlement pair in the create dialog; bearer-link disclosure at the copy moment; a passphrase form that knows first-time from return. Full lifecycle proven between two Lace wallets on Aug 27.
-- **Docs:** PRD, PRIVACY (eleven invariants mapped to tests), ARCHITECTURE, DECISIONS (24 records), an external audit answered point by point, the vision.
-- **Platform:** the shielding gap diagnosed, raised with the community, and confirmed by Midnight core engineering as a fixed-but-unreleased Wallet SDK bug; the unshielded lane shipped in response.
-- **Decks and script:** [`docs/deck/index.html`](./docs/deck/index.html) (twelve slides), [`docs/deck/demo.html`](./docs/deck/demo.html) (the six used in the video), [`docs/DEMO-TALK-TRACK.md`](./docs/DEMO-TALK-TRACK.md).
 
 ### Wave 2 (Sep 27 to Oct 17): the product completes
 
