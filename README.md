@@ -17,7 +17,27 @@
 > **Midnight Buildathon 2026 (AKINDO WaveHack) · Wave 1 submission**
 > Private invoicing and settlement on Midnight
 
-TacitPay lets one party issue an invoice and another settle it on-chain. What reaches the public ledger is a commitment, a status and an expiry; the amount, the memo and both parties stay in encrypted private state on their own devices. Anyone can verify an invoice was paid, with no wallet and no permission. Nobody can read what it was for. The invoice travels as a link, never through a server, and proofs are generated where the user chooses, never by TacitPay.
+## What TacitPay is
+
+TacitPay is a protocol for private invoicing and settlement on Midnight. One party issues an invoice, the other settles it on-chain. Anyone can verify the payment happened; nobody can read what it was for. It ships as a Compact contract, a client library, a CLI and a web app, live on Midnight Preview. **Private by default, provable on demand.**
+
+### The problem
+
+Paying or getting paid in crypto gives you two bad options. On a transparent chain, every payment shows who paid whom and how much: your prices and your clients, for anyone to see. On private rails, the only proof you were paid is the other side's word. Businesses need both: privacy, and proof.
+
+### The solution
+
+TacitPay is private invoicing and settlement on Midnight. One party issues an invoice, the other pays it on-chain. The chain holds only a commitment (a hash of the amount, the memo and a salt), a status and an expiry; the invoice itself stays in encrypted private state on the parties' own devices. Anyone can verify an invoice was paid, with no wallet and no permission. Nobody can read what it was for. There is no server in the payment path: the invoice travels as a link, and proofs are made in your wallet or on a prover you choose, never by TacitPay.
+
+### Who this is for
+
+It is not a merchant app. The protocol knows exactly two roles, whoever issued an invoice and whoever paid it, and it does not care what either of them is. (The contract and the code call the issuing role _merchant_, because that is what the witness and the owner tag are named. Read it as "issuer" everywhere.)
+
+- **Anyone who bills anyone.** Freelancers, contractors, agencies, suppliers, B2B counterparties. The invoice is the unit; the business model behind it is none of the protocol's business.
+- **Anyone who pays.** Payers get their own private receipts and the same unlinkability the issuer does. This is not a one-sided privacy guarantee.
+- **Anyone who needs to verify.** `/verify/<id>` needs no wallet, no account and no permission. A third party (a counterparty, an accountant, a court) can confirm settlement without learning anything else.
+- **Software, not just people.** `packages/api` is the integration surface, and it is the only place a circuit call happens. Wave 2 adds an npm SDK and an MCP server so agents can issue and settle invoices the same way a person does.
+- **Auditors and lenders**, in Wave 3: prove facts about revenue, such as "I received ≥ X this quarter", without revealing a single underlying invoice.
 
 ## Latest deployment
 
@@ -25,10 +45,10 @@ TacitPay lets one party issue an invoice and another settle it on-chain. What re
 **Network:** Midnight Preview (network id `preview`)
 **Deploy transaction:** `00fcae3cd1afea102da83bcb8396091598bad3e1a824841fc801a6d5a234d459bd`
 
-| Contract                                             | Address                                                                                                                                                                               |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TacitPay v2 (live)                                   | [`0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24) |
-| Payment token: bridged tUSDM (token type)            | `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`                                                                                                                    |
+| Contract                                  | Address                                                                                                                                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TacitPay v2 (live)                        | [`0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24`](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24) |
+| Payment token: bridged tUSDM (token type) | `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`                                                                                                                    |
 
 💡 See [`deployments/preview.json`](./deployments/preview.json) for the deployment record.
 
@@ -39,7 +59,6 @@ TacitPay lets one party issue an invoice and another settle it on-chain. What re
 - **Landing page:** https://tacitpay.xyz
 - **Demo video:** [link]
 - **Smart contract:** [Midnight Preview explorer](https://preview.midnightexplorer.com/contracts/0847de8a3ad855db18622017f2333b673afd9a1a72e0127b3e766d0c23326d24)
-- 🗂️ **Slide deck:** [`docs/deck/index.html`](./docs/deck/index.html) (twelve slides) and [`docs/deck/demo.html`](./docs/deck/demo.html) (the six used in the video)
 
 <a href="https://tacitpay.xyz">
   <img src=".github/assets/landing.png" alt="TacitPay landing page: numbers only you can read, settlement anyone can verify">
@@ -96,24 +115,6 @@ TacitPay lets one party issue an invoice and another settle it on-chain. What re
 ### 🎬 Video
 
 - Video: [link].
-
-## What TacitPay is
-
-TacitPay is a **protocol for private invoicing and settlement** on Midnight.
-
-One party issues an invoice. Another settles it on-chain. What reaches the public ledger is a **commitment** (a hash of the amount, the memo and a random salt) plus a status flag and an expiry. The amount, the memo and both parties' identities stay in private state on their own devices and are never published.
-
-The point is holding two things at once that normally conflict: **anyone can verify an invoice was settled**, while **nobody can see what it was for**. A transparent chain gives you the first and destroys the second. A fully anonymous one gives you the second and makes the first impossible.
-
-### Who this is for
-
-It is not a merchant app. The protocol knows exactly two roles, whoever issued an invoice and whoever paid it, and it does not care what either of them is. (The contract and the code call the issuing role _merchant_, because that is what the witness and the owner tag are named. Read it as "issuer" everywhere.)
-
-- **Anyone who bills anyone.** Freelancers, contractors, agencies, suppliers, B2B counterparties. The invoice is the unit; the business model behind it is none of the protocol's business.
-- **Anyone who pays.** Payers get their own private receipts and the same unlinkability the issuer does. This is not a one-sided privacy guarantee.
-- **Anyone who needs to verify.** `/verify/<id>` needs no wallet, no account and no permission. A third party (a counterparty, an accountant, a court) can confirm settlement without learning anything else.
-- **Software, not just people.** `packages/api` is the integration surface, and it is the only place a circuit call happens. Wave 2 adds an npm SDK and an MCP server so agents can issue and settle invoices the same way a person does.
-- **Auditors and lenders**, in Wave 3: prove facts about revenue, such as "I received ≥ X this quarter", without revealing a single underlying invoice.
 
 ## Why privacy is load-bearing
 
