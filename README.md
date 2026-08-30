@@ -50,7 +50,7 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 | TacitPay (live)                           | [`241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0`](https://preview.midnightexplorer.com/contracts/241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0) |
 | Payment token: bridged tUSDM (token type) | `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`                                                                                                                    |
 
-*See [`deployments/preview.json`](./deployments/preview.json) for the deployment record.
+> **Wave 1 limitation (Preview Network), confirmed with Midnight core engineering team (Aug 29).** Moving funds into Midnight's shielded pool, the step our shielded payment lane needs, has no working path on public testnets yet: Lace 4.0.1 has no shield option, and the Wallet SDK's `initSwap` is broken through 1.2.0 (fix merged in midnight-wallet PR #615, not yet released). So for Wave 1 we deployed on Preview, the only public testnet with bridged testnet USDM (Preprod has none and shows the same shielding failures), and settle through the unshielded lane: the payment transfer is public, the invoice contents never reach the ledger. The shielded lane runs on the local devnet; Wave 2 brings it to public networks when the SDK ships.
 
 ## Demo links
 
