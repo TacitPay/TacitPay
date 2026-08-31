@@ -32,11 +32,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { WalletGate } from '@/components/WalletGate';
+import { useWalletDetails } from '@/components/WalletDetails';
 import { type InvoiceView, useTacitPay } from '@/lib/api';
 import { endpointsFor } from '@/lib/api/deployment';
 import { getErrorMessage } from '@/lib/errors';
 import { formatDateTime, parseAmount, toUnixSeconds } from '@/lib/format';
 import { useProving } from '@/lib/proving-context';
+import type { WalletConnection } from '@/lib/wallet';
 
 // The merchant's half of the lifecycle: issue an invoice, watch it settle,
 // open one to act on it. This index deliberately carries no row actions any
@@ -79,6 +81,29 @@ function SettlementOption({
   );
 }
 
+// The merchant-side mirror of PayPage's DUST preflight: creating an invoice
+// proves and submits a real transaction, and a fee-less wallet dies inside
+// the wallet with a blank error. Advisory only, and a null balance means
+// unknown (the wallet exposed no getter), so only a certain zero warns.
+function DustPreflight({ connection }: { connection: WalletConnection }) {
+  const { balances } = useWalletDetails(connection);
+  if (balances === 'loading' || balances.dust !== 0n) return null;
+  return (
+    // Same amber caution register as the pay page: provisional, not broken.
+    <div
+      role="status"
+      className="rounded-lg border border-[var(--sandbox-border)] bg-[var(--sandbox-bg)] p-4 text-sm text-[var(--sandbox-fg)]"
+    >
+      <p>
+        <span className="font-medium">No DUST for the network fee.</span> Creating an invoice
+        submits a real transaction, and this wallet reports zero DUST to pay for it. DUST accrues
+        over time from NIGHT registered for DUST generation: get tNIGHT from the network faucet,
+        register it (Lace calls this Generate tDUST), and give the tank a little time to fill.
+      </p>
+    </div>
+  );
+}
+
 function NewInvoiceDialog({
   open,
   onOpenChange,
@@ -88,7 +113,8 @@ function NewInvoiceDialog({
   onOpenChange(open: boolean): void;
   onCreated(): void;
 }) {
-  const { api, network, proofStage } = useTacitPay();
+  const { api, live, network, proofStage } = useTacitPay();
+  const { connection } = useProving();
   const { tokenSymbol, settlementLane } = endpointsFor(network);
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
@@ -232,6 +258,8 @@ function NewInvoiceDialog({
                 />
               </div>
             </div>
+
+            {live && connection ? <DustPreflight connection={connection} /> : null}
 
             {error ? (
               <div
