@@ -67,19 +67,32 @@ Everything I'm about to show is documented: the whitepaper, the privacy model
 with its tested invariants, guides for every flow. I'll leave it for the judges
 and go to the app.
 
-### Connect (1:15)
+### Connect and Settings (1:15, about 25 seconds)
 
 _app.tacitpay.xyz, merchant profile, wallet already connected. Gesture at the
-header chips: network, proving, wallet._
+header chips, then head straight to Settings. If you do show the connect click,
+the Lace popup is dead air: cut it or run it at 4x while the speech continues._
 
-The wallet is the account. No signup, no server-side profile. The header says
-which network I'm on and where my proofs will be generated: in this case, a
-prover on my own machine.
+The wallet is the account. No signup, no server-side profile.
 
-_If the unlock form is on screen:_ A passphrase seals my records on this
-device. TacitPay has no server that could hold them.
+_Settings, Network & proof tab. Gesture at the proving options:_
 
-### Create (1:25)
+This is where proofs come from. **Whoever generates a proof sees the invoice**,
+so TacitPay never runs a prover: your wallet, your own machine, or a server you
+choose. Mine runs on my machine.
+
+_Flip to the Private state tab:_
+
+And this is where my records live: **only in this browser profile**. The chain
+holds commitments and can never restore the contents. Encrypted backup ships in
+Wave 2, and the buttons are already in the product, greyed.
+
+_Back to Network & proof, the unlock form. Type the passphrase:_
+
+A passphrase seals those records on this device. TacitPay has no server that
+could hold them. Unlock, and I'm live on Preview.
+
+### Create (1:40)
 
 _Invoices, New invoice. A real amount (3 tUSDM) and a real memo. Pause one beat
 on the Settlement pair before creating._
@@ -97,7 +110,12 @@ What's happening now: the amount and memo **never leave this browser**. My
 wallet is building a commitment, a hash, and a zero-knowledge proof that it's
 well-formed, then putting only those on chain.
 
-### The link (1:50)
+_If the proof outruns those lines, ramp to 4x with a small "sped up" caption,
+then land back at real speed and name the real number: "in real time, about
+forty seconds; that's the cost of proving client-side." A named number reads as
+confidence; a silent jump cut reads as concealment._
+
+### The link (2:00)
 
 _Invoice ready. Point at the sentence under the copy buttons, copy the link._
 
@@ -105,7 +123,7 @@ The link **is** the invoice, and the app says the quiet part out loud: anyone
 holding it can read it and pay it. So it travels like a real invoice should:
 directly to my client, over a channel we trust.
 
-### Pay (2:00)
+### Pay (2:10)
 
 _Switch to the payer browser profile. Paste the link on /pay. Let the summary
 render, point at the fragment in the URL bar._
@@ -121,7 +139,13 @@ for the chain to confirm. On an unshielded testnet the transfer itself is
 public, **like cash handed over for a sealed envelope**. The envelope stays
 sealed.
 
-### Verify (2:30)
+And it's the payer's wallet doing the proving, on their own setup, for the
+reason I showed in Settings: whoever proves, sees.
+
+_Same rule if it runs long: speed-ramp with a caption, land at real speed, say
+the number._
+
+### Verify (2:35)
 
 _Verification page, ideally a third context with no wallet at all. Paste the
 invoice ID._
@@ -134,7 +158,7 @@ _Optional, the money shot: flip to the explorer tab on the contract and search
 the page for the invoice amount._ And that's the entire public record. Search
 it for the amount. It isn't there.
 
-### Withdraw (2:45)
+### Withdraw (2:50)
 
 _Back in the merchant profile. Open the invoice, withdraw. Have the wallet
 balance visible before and after._
@@ -142,6 +166,9 @@ balance visible before and after._
 Back as the merchant: withdraw. Watch the balance, not just the badge. **The
 status flip proves state changed; the balance proves value moved.** That's the
 difference between a demo and a working system.
+
+And it's the payer's wallet doing the proving, on their own setup, for the
+reason I showed in Settings: whoever proves, sees.
 
 ### The limitation (3:00)
 
