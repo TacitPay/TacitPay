@@ -17,6 +17,10 @@
 > **Midnight Buildathon 2026 (AKINDO WaveHack) · Wave 1 submission**
 > Private invoicing and settlement on Midnight
 
+<a href="https://tacitpay.xyz">
+  <img src=".github/assets/landing.jpg" alt="TacitPay landing page: numbers only you can read, settlement anyone can verify">
+</a>
+
 ## What TacitPay is
 
 TacitPay is a protocol for private invoicing and settlement on Midnight. One party issues an invoice, the other settles it on-chain. Anyone can verify the payment happened; nobody can read what it was for. It ships as a Compact contract, a client library, a CLI and a web app, live on Midnight Preview since Aug 26, 2026. **Private by default, provable on demand.**
@@ -59,10 +63,6 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 - **Landing page:** https://tacitpay.xyz
 - **Demo video:** https://www.youtube.com/watch?v=xLY7f3rPRSk
 - **Smart contract:** [Midnight Preview explorer](https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59)
-
-<a href="https://tacitpay.xyz">
-  <img src=".github/assets/landing.jpg" alt="TacitPay landing page: numbers only you can read, settlement anyone can verify">
-</a>
 
 ## Wave 1 Delivered Items (Aug 27 to Sep 16, 2026)
 
