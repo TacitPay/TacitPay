@@ -7,12 +7,12 @@
 
 **Private invoicing & settlement on Midnight. Private by default, provable on demand.**
 
-![License](https://img.shields.io/badge/license-Apache--2.0-blue)
-![Status](https://img.shields.io/badge/status-Wave%201%20in%20progress-yellow)
-![Tests](https://img.shields.io/badge/tests-98%20unit%20%C2%B7%2067%20integration-brightgreen)
+![License](https://img.shields.io/badge/license-Apache--2.0-18181b)
+![Status](https://img.shields.io/badge/status-Wave%201%20in%20progress-18181b)
+![Tests](https://img.shields.io/badge/tests-98%20unit%20%C2%B7%2067%20integration-18181b)
 ![Midnight](https://img.shields.io/badge/Midnight-Preview-18181b)
-![Buildathon](https://img.shields.io/badge/Buildathon-Wave%201-7c3aed)
-![Demo](https://img.shields.io/badge/Demo-Live-16a34a)
+![Buildathon](https://img.shields.io/badge/Buildathon-Wave%201-18181b)
+![Demo](https://img.shields.io/badge/Demo-Live-166534)
 
 > **Midnight Buildathon 2026 (AKINDO WaveHack) · Wave 1 submission**
 > Private invoicing and settlement on Midnight
