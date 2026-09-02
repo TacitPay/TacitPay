@@ -1,6 +1,6 @@
 # TacitPay — current state
 
-**As of 2026-08-29, commit `16f0389` plus the same-day amendment pass.** Status, contract, execution and limitations sections below were refreshed on Aug 29; the component detail in §3.2 to §3.5 dates from the Aug 24 snapshot and is verified against the code where cited. Route map and headline claims are current; for everything that landed after the original 2026-08-24 snapshot —
+**As of 2026-09-02: the recorded video, the Sep 2 live contract (`80b4d9af…b59c59`, D-025 amended) and the docs cleanup are reflected below; the base snapshot is 2026-08-29, commit `16f0389`.** Status, contract, execution and limitations sections below were refreshed on Aug 29; the component detail in §3.2 to §3.5 dates from the Aug 24 snapshot and is verified against the code where cited. Route map and headline claims are current; for everything that landed after the original 2026-08-24 snapshot —
 the unshielded settlement lane on Preview (D-020/D-022), the domains and docs
 site, and the lifecycle IA re-cut — the running record is
 [`docs/WAVE-CHANGELOG.md`](./WAVE-CHANGELOG.md). The Aug 28 external product
@@ -56,13 +56,13 @@ Wave 1 scope is PRD §14.1.
 | 5   | `packages/cli`                                       | **Done**                                                                                                                                                                                    |
 | 6   | `packages/ui` — ten routes, works on Preview         | **Done** — full browser lifecycle proven on Preview on Aug 27 (create, pay, verify, withdraw)                                                                                               |
 | 7   | Deployed to Preview, address committed               | **Done** — `80b4d9af…b59c59` (deployed Sep 2) in `deployments/preview.json`, baked into the app bundle; the earlier deployment `0847de8a…326d24` (Aug 26) hosted the Aug 27 lifecycle proof |
-| 8   | README, PRIVACY, ARCHITECTURE, deck, video           | **Docs, both decks and the spoken script done; the video is the last piece**                                                                                                                |
+| 8   | README, PRIVACY, ARCHITECTURE, deck, video           | **Done: docs, both decks, and the video (recorded Sep 2, linked from the README)**                                                                                                          |
 | 9   | Repo topics, Apache-2.0, repo public                 | **Public at github.com/TacitPay/TacitPay, Apache-2.0, `midnightntwrk` topic set (verified 2026-08-29; it had been lost in the move to the TacitPay org)**                                   |
 | 10  | Judge sandbox (`demo seed`)                          | **Done**                                                                                                                                                                                    |
 
-Nine of the ten items are complete. The tenth is the video, and everything it
-needs is ready: the six-slide recording deck (`docs/deck/demo.html`), the spoken
-script (`docs/DEMO-TALK-TRACK.md`), and the prep checklist (`docs/DEMO-SCRIPT.md`).
+All ten items are complete. The video was recorded on Sep 2 with the six-slide
+deck (`docs/deck/demo.html`) and is linked from the README; the working scripts
+behind it were retired after the take (git history keeps them).
 The app is live at app.tacitpay.xyz, the docs at docs.tacitpay.xyz, the landing at
 tacitpay.xyz.
 
@@ -469,10 +469,10 @@ The historical Preview runbook is in [`docs/plans/wave-1.md`](./plans/wave-1.md)
 1. **Rehearse on production** with both wallets, everything on
    `app.tacitpay.xyz` (records are per origin). Roles by funding: the wallet
    holding tUSDM pays, the other issues. Keep the local proof server on
-   `:6300` for Lace. The checklist is at the top of
-   [`docs/DEMO-TALK-TRACK.md`](./DEMO-TALK-TRACK.md).
-2. **Record** from the six-slide deck and the spoken script; the rules for the
-   take are in [`docs/DEMO-SCRIPT.md`](./DEMO-SCRIPT.md).
+   `:6300` for Lace. The working scripts were
+   retired after the take; git history keeps them.
+2. **Record** from the six-slide deck and the spoken script. Done Sep 2:
+   https://www.youtube.com/watch?v=xLY7f3rPRSk
 3. **Submit** at least 12 hours before the Sep 16 deadline, with the repository
    visibility confirmed (D-003).
 

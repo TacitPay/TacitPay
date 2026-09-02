@@ -16,8 +16,6 @@ look before you clone deeper.
 | [`BACKLOG.md`](./BACKLOG.md)                                     | Deliberately parked scope, with the reasons.                                                                                    |
 | [`SUBMISSION-WAVE-1.md`](./SUBMISSION-WAVE-1.md)                 | The Wave 1 submission dossier: links, progress, checklist.                                                                      |
 | [`SUBMISSION-WAVE-1-UPDATES.md`](./SUBMISSION-WAVE-1-UPDATES.md) | The AKINDO "Updates in this Wave" text, form and long versions.                                                                 |
-| [`DEMO-SCRIPT.md`](./DEMO-SCRIPT.md)                             | Recording rules and the beat sheet for the demo video.                                                                          |
-| [`DEMO-TALK-TRACK.md`](./DEMO-TALK-TRACK.md)                     | The spoken script of the video, start to finish.                                                                                |
 | [`plans/`](./plans/)                                             | The Wave 1 execution runbook (historical; every step executed) and the app IA re-cut design spec (2026-08-27).                  |
 | [`deck/`](./deck/)                                               | The recording decks: `demo.html` (six slides) and `index.html` (twelve).                                                        |
 | [`diagrams/`](./diagrams/)                                       | Architecture, privacy-map and invoice-lifecycle diagrams (light and dark), plus the architecture's editable excalidraw sources. |

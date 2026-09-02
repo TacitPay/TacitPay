@@ -152,6 +152,4 @@ Running record: https://github.com/TacitPay/TacitPay/blob/main/docs/WAVE-CHANGEL
 
 - Twelve-slide deck: https://github.com/TacitPay/TacitPay/blob/main/docs/deck/index.html
 - Six-slide recording deck: https://github.com/TacitPay/TacitPay/blob/main/docs/deck/demo.html
-- The spoken script and the rules for the take:
-  https://github.com/TacitPay/TacitPay/blob/main/docs/DEMO-TALK-TRACK.md
 - Demo video: https://www.youtube.com/watch?v=xLY7f3rPRSk

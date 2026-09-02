@@ -190,7 +190,7 @@ Nothing else in Wave 1 is waiting on anything.
 
 7. **Commit `deployments/preview.json`**, put the address in the README badge and
    on deck slide 8, then record the video against
-   [`../DEMO-SCRIPT.md`](../DEMO-SCRIPT.md).
+   `docs/DEMO-SCRIPT.md` (retired after the Sep 2 take; in git history).
 
 ## Token plan (per PRD §3.4 timing hook + §16.2)
 

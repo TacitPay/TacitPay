@@ -956,8 +956,7 @@ tacitpay/
 │   ├── WAVE-CHANGELOG.md        what shipped per wave (judges read this)
 │   ├── DECISIONS.md             ADR-style log incl. every VERIFY outcome
 │   ├── PRIVACY.md               §4 expanded
-│   ├── ARCHITECTURE.md          §5 + diagrams (Mermaid)
-│   └── DEMO-SCRIPT.md           video script (§17.3)
+│   └── ARCHITECTURE.md          §5 + diagrams (Mermaid)
 ├── contracts/
 │   ├── tacitpay.compact
 │   ├── managed/tacitpay/        compiler output (commit `contract/` and `compiler/`; keys/zkir per .gitattributes — see note)
