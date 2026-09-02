@@ -134,21 +134,16 @@ TacitPay uses Midnight's dual-ledger model to hold both ends:
 
 The only values ever `disclose()`d are on the allowed-public list in PRD §4.3. The eleven privacy invariants (INV-1…INV-11) each get a test; see [`docs/PRIVACY.md`](./docs/PRIVACY.md).
 
+## Dual-ledger design
+
+Four layers hold the data, and the readable copies belong to the two parties alone:
+
 <a href="./docs/diagrams/tacitpay-privacy-map-dark.png">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./docs/diagrams/tacitpay-privacy-map-dark.png">
     <img src="./docs/diagrams/tacitpay-privacy-map.png" alt="Who sees what: TacitPay's four data layers">
   </picture>
 </a>
-
-## Dual-ledger design
-
-| Layer                                    | Holds                                                                                                  |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Public ledger (Compact `ledger`)         | `invoices` map (ownerTag, commitment, status, expiry, payerTag), escrow, token colour, global counters |
-| Zswap shielded ledger                    | The payment coin itself, amount and owner hidden by the protocol                                       |
-| Private state (client device, encrypted) | Merchant: secret key, invoice bodies, salts, memos · Payer: secret key, receipts                       |
-| Off-chain transport (URL fragment)       | The invoice link payload, never sent to any server                                                     |
 
 The whole system on one canvas: the link as the transport, every caller
 funnelling through one API, the six providers, and what actually reaches the
