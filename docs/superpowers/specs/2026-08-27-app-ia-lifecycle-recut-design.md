@@ -1,8 +1,9 @@
 # App IA: the lifecycle re-cut
 
 **Date:** 2026-08-27
-**Status:** SHIPPED. Implemented per the plan at
-`docs/superpowers/plans/2026-08-27-app-ia-lifecycle-recut.md`, committed as
+**Status:** SHIPPED. Implemented per the task-by-task plan (retired from the
+tree during the pre-submission cleanup; recover it from git history at
+`docs/superpowers/plans/2026-08-27-app-ia-lifecycle-recut.md`), committed as
 198c980 and live on app.tacitpay.xyz, then iterated live under Marcus's
 direction through cdb5baa — see "Post-approval iterations" at the end of this
 file; for those, the code and SESSION-STATE §15 are the source of truth.
