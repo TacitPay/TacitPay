@@ -136,6 +136,8 @@ The only values ever `disclose()`d are on the allowed-public list in PRD §4.3. 
 
 ## Dual-ledger design
 
+### Who sees what
+
 Four layers hold the data, and the readable copies belong to the two parties alone:
 
 <a href="./docs/diagrams/tacitpay-privacy-map-dark.png">
@@ -145,9 +147,10 @@ Four layers hold the data, and the readable copies belong to the two parties alo
   </picture>
 </a>
 
-The whole system on one canvas: the link as the transport, every caller
-funnelling through one API, the six providers, and what actually reaches the
-chain:
+### The whole system on one canvas
+
+The link as the transport, every caller funnelling through one API, the six
+providers, and what actually reaches the chain:
 
 <a href="./docs/diagrams/tacitpay-architecture-dark.png">
   <picture>
