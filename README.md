@@ -17,6 +17,15 @@
 > **Midnight Buildathon 2026 (AKINDO WaveHack) · Wave 1 submission**
 > Private invoicing and settlement on Midnight
 
+## Relevant links
+
+- **Live application:** https://app.tacitpay.xyz
+- **Documentation and whitepaper:** https://docs.tacitpay.xyz
+- **Landing page:** https://tacitpay.xyz
+- **Demo video:** https://www.youtube.com/watch?v=xLY7f3rPRSk
+- **Smart contract:** [Midnight Preview explorer](https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59)
+
+
 <a href="https://tacitpay.xyz">
   <img src=".github/assets/landing.jpg" alt="TacitPay landing page: numbers only you can read, settlement anyone can verify">
 </a>
@@ -55,14 +64,6 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 | Payment token: bridged tUSDM (token type) | `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`                                                                                                                    |
 
 > **Wave 1 limitation (Preview Network), confirmed with Midnight core engineering team (Aug 29).** Moving funds into Midnight's shielded pool, the step our shielded payment lane needs, has no working path on public testnets yet: Lace 4.0.1 has no shield option, and the Wallet SDK's `initSwap` is broken through 1.2.0 (fix merged in midnight-wallet PR #615, not yet released). So for Wave 1 we deployed on Preview, the only public testnet with bridged testnet USDM (Preprod has none and shows the same shielding failures), and settle through the unshielded lane: the payment transfer is public, the invoice contents never reach the ledger. The shielded lane runs on the local devnet; Wave 2 brings it to public networks when the SDK ships.
-
-## Demo links
-
-- **Live application:** https://app.tacitpay.xyz
-- **Documentation and whitepaper:** https://docs.tacitpay.xyz
-- **Landing page:** https://tacitpay.xyz
-- **Demo video:** https://www.youtube.com/watch?v=xLY7f3rPRSk
-- **Smart contract:** [Midnight Preview explorer](https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59)
 
 ## Wave 1 Delivered Items (Aug 27 to Sep 16, 2026)
 
