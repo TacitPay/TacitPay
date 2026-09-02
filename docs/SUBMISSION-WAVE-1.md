@@ -25,7 +25,7 @@ as a link whose payload sits in the URL fragment, which browsers never transmit.
 | Live app (Preview testnet)   | https://app.tacitpay.xyz                                                                                                                                                                                                     |
 | Documentation and whitepaper | https://docs.tacitpay.xyz                                                                                                                                                                                                    |
 | Landing                      | https://tacitpay.xyz                                                                                                                                                                                                         |
-| Preview contract             | `241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0` ([explorer](https://preview.midnightexplorer.com/contracts/241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0), `deployments/preview.json`) |
+| Preview contract             | `80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59` ([explorer](https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59), `deployments/preview.json`) |
 | Slide deck                   | `docs/deck/index.html` (twelve slides) and `docs/deck/demo.html` (the six slides used in the video); [hosted link]                                                                                                           |
 | Demo video                   | [link]                                                                                                                                                                                                                       |
 
@@ -98,7 +98,7 @@ drops the readability, with three promises:
   and `/verify/:id`); wallet detection over `window.midnight`; live proving
   and network status in the header; a pay-page preflight for balance and
   DUST; honest sandbox and caution states throughout.
-- **Live on Preview since Aug 26.** The live contract was deployed on Aug 30 (an earlier deployment of the same code went up on Aug 26 and hosted the first lifecycle proof). The complete browser
+- **Live on Preview since Aug 26.** The live contract was deployed on Sep 2 (an earlier deployment of the same code went up on Aug 26 and hosted the first lifecycle proof). The complete browser
   lifecycle (create, pay, verify, withdraw) ran between two Lace wallets on
   Aug 27, every step confirmed on-chain.
 - **Hosted:** app.tacitpay.xyz, docs.tacitpay.xyz (whitepaper, concepts,

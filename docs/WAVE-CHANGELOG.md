@@ -362,3 +362,19 @@ took, in order:
   on the explorer; the docs now say so. The new contract starts with empty
   private state for both wallets, so the rehearsal on production re-proves
   the loop on the live contract.
+
+### Field notes: Sep 2, 2026, 11:30 (the slate wiped for the take)
+
+- **The live contract is now `80b4d9af…b59c59`**, deployed at 11:21 GMT+8
+  (03:21 UTC), deploy tx `00bdea6f…19e6`, the same compiled code. Reason: a
+  stalled recording left an OPEN invoice on the merchant dashboard, and
+  private state is scoped per contract, so a fresh instance is the
+  comprehensive restart: both wallets reconnect to an empty book. D-025
+  amended.
+- **What moved:** the same list as Aug 30: `deployments/preview.json`, the
+  Vercel env (Production and Preview), README, the docs site (Networks page
+  and the whitepaper, which also lost a leftover mislabeled link), the deck
+  end card, the demo script, the submission text, CURRENT-STATE.
+- **What stays as history:** `0847de8a…326d24` (the Aug 26/27 proofs) and
+  `241b760e…2a2df0` (Aug 30, plus one CLI healthcheck invoice) remain on the
+  explorer.

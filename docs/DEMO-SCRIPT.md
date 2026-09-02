@@ -16,7 +16,7 @@ interesting to watch:
   cannot see the merchant's private state. This is the single most convincing
   thing in the video; do not fake it with one profile.
 - A block explorer tab already at the contract address — live:
-  <https://preview.midnightexplorer.com/contracts/241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0>.
+  <https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59>.
 - Terminal font large enough to read at 720p.
 
 ---

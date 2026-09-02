@@ -709,3 +709,10 @@ Format: `D-nnn (date) — decision. Rationale. Evidence/links.`
   history until the recording rehearsal, and the Aug 26 and Aug 27 proofs
   now cite the earlier deployment explicitly. Not a new version of anything:
   one contract, one live instance, one earlier instance kept as evidence.
+  Amended 2026-09-02: redeployed once more before the recording, as
+  `80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59`
+  (deploy tx `00bdea6f…19e6`, 11:21 GMT+8). A stalled take had left an OPEN
+  invoice in the merchant's records, and private state is scoped per
+  contract, so a fresh instance restarts every wallet at zero. Same
+  artifacts, same reasoning, same costs accepted; the Aug 30 instance
+  `241b760e…2a2df0` joins the earlier one as on-chain history.

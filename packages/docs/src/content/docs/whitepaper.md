@@ -118,7 +118,7 @@ Data lives in four layers: the public ledger (tags, commitments, statuses, escro
 
 Wave 1 of the Midnight Buildathon (Aug 27 – Sep 16, 2026) shipped the working loop:
 
-- **Live on Preview** since Aug 26 2026: contract [`0847de8a…326d24`](https://preview.midnightexplorer.com/contracts/241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0), denominated in bridged USDM, both lanes compiled in.
+- **Live on Preview** since Aug 26 2026: the live contract [`80b4d9afâ¦b59c59`](https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59), denominated in bridged USDM, both lanes compiled in.
 - **The complete browser lifecycle ran live on Aug 27 2026**: invoice `084318a7…f0342` (2 tUSDM) was created, paid and withdrawn between two Lace wallets, every stage confirmed on-chain by the truth gate, and the final status confirmed independently by a third observer with no private state.
 - **Tests:** 28 contract unit tests (plus pre-registered Wave 2/3 todos), 70 client-library unit tests, and 67 integration tests that run the same lifecycle against a live devnet — asserting, among other things, that the merchant's balance actually **increases** on withdrawal, not merely that a status flipped.
 

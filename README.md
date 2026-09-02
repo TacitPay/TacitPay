@@ -41,13 +41,13 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 
 ## Latest deployment
 
-- **Deployed:** Aug 30, 2026, 03:07 GMT+8 (Aug 29, 19:07 UTC on the explorer). The contract: six circuits, both settlement lanes, denominated in bridged USDM.
+- **Deployed:** Sep 2, 2026, 11:21 GMT+8 (Sep 2, 03:21 UTC on the explorer). The contract: six circuits, both settlement lanes, denominated in bridged USDM.
 - **Network:** Midnight Preview (network id `preview`)
-- **Deploy transaction:** `000a4b00c3e06092da804c977fa133e2a3cdec9c0c7a0e8d6b65f3a945178c7bdd`
+- **Deploy transaction:** `00bdea6f75e28338481496eb7996dbd21e9f042a5c05cced902b603c2c172519e6`
 
 | Contract                                  | Address                                                                                                                                                                               |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| TacitPay (live)                           | [`241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0`](https://preview.midnightexplorer.com/contracts/241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0) |
+| TacitPay (live)                           | [`80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59`](https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59) |
 | Payment token: bridged tUSDM (token type) | `003bacd9a361ba0d425e408776020e40271375e8b8de42d73eec046a44947d73`                                                                                                                    |
 
 > **Wave 1 limitation (Preview Network), confirmed with Midnight core engineering team (Aug 29).** Moving funds into Midnight's shielded pool, the step our shielded payment lane needs, has no working path on public testnets yet: Lace 4.0.1 has no shield option, and the Wallet SDK's `initSwap` is broken through 1.2.0 (fix merged in midnight-wallet PR #615, not yet released). So for Wave 1 we deployed on Preview, the only public testnet with bridged testnet USDM (Preprod has none and shows the same shielding failures), and settle through the unshielded lane: the payment transfer is public, the invoice contents never reach the ledger. The shielded lane runs on the local devnet; Wave 2 brings it to public networks when the SDK ships.
@@ -58,7 +58,7 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 - **Documentation and whitepaper:** https://docs.tacitpay.xyz
 - **Landing page:** https://tacitpay.xyz
 - **Demo video:** [link]
-- **Smart contract:** [Midnight Preview explorer](https://preview.midnightexplorer.com/contracts/241b760e380f86be5ed049e82ce2839decd199bd0c3b2427d77acd2d512a2df0)
+- **Smart contract:** [Midnight Preview explorer](https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59)
 
 <a href="https://tacitpay.xyz">
   <img src=".github/assets/landing.png" alt="TacitPay landing page: numbers only you can read, settlement anyone can verify">
@@ -87,7 +87,7 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 - **Truth gate:** success is reported only after the ledger confirms the transaction.
 - **Pay-page preflight:** the payer's balance in the invoice's pool and their DUST, with the funding path when either falls short.
 - **Honest states everywhere:** a sandbox banner and caution register, bearer-link disclosure at the copy moment, a passphrase form that knows first-time setup from a return visit, and a plain-English wrong-passphrase error.
-- **Proven end to end:** first invoice on Aug 26; the full loop (create, pay, verify, withdraw) between two Lace wallets on Aug 27, invoice `084318a7…f0342`, every step confirmed on chain, on the earlier deployment. The live contract was deployed on Aug 30 and carries the demo.
+- **Proven end to end:** first invoice on Aug 26; the full loop (create, pay, verify, withdraw) between two Lace wallets on Aug 27, invoice `084318a7…f0342`, every step confirmed on chain, on the earlier deployment. The live contract was deployed on Sep 2 and carries the demo.
 
 ### 🧰 Library, CLI and judge sandbox
 
@@ -215,7 +215,7 @@ yarn env:down
 
 **Proving.** Whoever generates a proof sees the invoice, so TacitPay never runs a prover. It feature-detects, in order: your wallet (1AM, in-browser), a local proof server on `localhost:6300`, or a server you host over TLS. The header shows which one is active.
 
-**Verified on Preview.** Lace 4.0.1 created the first real invoice on Aug 26 2026 (block 587,108). On Aug 27 the full loop (create, pay, verify, withdraw) ran between two Lace wallets on the earlier deployment (`0847de8a…326d24`), invoice `084318a7…f0342`, 2 tUSDM, every step confirmed on-chain. The live contract (`241b760e…2a2df0`) was deployed on Aug 30 and carries the demo. Preview settles through the unshielded lane in bridged tUSDM: the transfer is public, the invoice contents never are, and the shielded lane runs on the local devnet (see Known limitations).
+**Verified on Preview.** Lace 4.0.1 created the first real invoice on Aug 26 2026 (block 587,108). On Aug 27 the full loop (create, pay, verify, withdraw) ran between two Lace wallets on the earlier deployment (`0847de8a…326d24`), invoice `084318a7…f0342`, 2 tUSDM, every step confirmed on-chain. The live contract (`80b4d9af…b59c59`) was deployed on Sep 2 and carries the demo. Preview settles through the unshielded lane in bridged tUSDM: the transfer is public, the invoice contents never are, and the shielded lane runs on the local devnet (see Known limitations).
 
 **Tests.**
 
