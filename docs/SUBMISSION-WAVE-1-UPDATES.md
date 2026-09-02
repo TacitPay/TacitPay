@@ -25,14 +25,14 @@ Repo: https://github.com/TacitPay/TacitPay
 
 - Static files only: the invoice payload rides the URL fragment. Ten routes: invoices, payments, verification (no wallet needed), profile, settings, /pay#... and /verify/:id.
 - A truth gate confirms every mutation on the ledger before reporting success; a pay-page preflight checks balance and DUST; the link is disclosed as a bearer credential at the copy moment.
-- Proven end to end on Preview: first invoice Aug 26, the full create, pay, verify, withdraw loop between two Lace wallets on Aug 27, every step confirmed on chain.
+- Proven end to end on Preview: first invoice Aug 26, the full create, pay, verify, withdraw loop between two Lace wallets on Aug 27, run again on the Sep 2 live contract during the demo recording.
 
 5. Hosting and docs.
 
 - Landing https://tacitpay.xyz
 - docs and whitepaper https://docs.tacitpay.xyz.
 - README (privacy model, dual-ledger design, four judge paths, test inventory, known limitations)
-- PRD, PRIVACY (eleven invariants mapped to tests), ARCHITECTURE, DECISIONS (24 records), an external audit answered (docs/AUDIT-RESPONSE.md) and the three-wave vision (docs/VISION.md).
+- PRD, PRIVACY (eleven invariants mapped to tests), ARCHITECTURE, DECISIONS (25 records), an external audit answered (docs/AUDIT-RESPONSE.md) and the three-wave vision (docs/VISION.md).
 
 6. Platform work.
 
@@ -108,7 +108,8 @@ Running record: https://github.com/TacitPay/TacitPay/blob/main/docs/WAVE-CHANGEL
   gets a plain-English error instead of a WebCrypto code.
 - Proven end to end on Preview: Lace 4.0.1 created an invoice on Aug 26
   (block 587,108); the complete loop (create, pay, verify, withdraw) ran
-  between two Lace wallets on Aug 27, invoice `084318a7…f0342`, every step
+  between two Lace wallets on Aug 27, invoice `084318a7…f0342`, and again
+  on the Sep 2 live contract during the demo recording, every step
   confirmed on chain.
 
 ## 5. Hosting, docs site and landing
@@ -153,4 +154,4 @@ Running record: https://github.com/TacitPay/TacitPay/blob/main/docs/WAVE-CHANGEL
 - Six-slide recording deck: https://github.com/TacitPay/TacitPay/blob/main/docs/deck/demo.html
 - The spoken script and the rules for the take:
   https://github.com/TacitPay/TacitPay/blob/main/docs/DEMO-TALK-TRACK.md
-- Demo video: [link]
+- Demo video: https://www.youtube.com/watch?v=xLY7f3rPRSk

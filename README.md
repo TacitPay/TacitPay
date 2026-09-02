@@ -57,11 +57,11 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 - **Live application:** https://app.tacitpay.xyz
 - **Documentation and whitepaper:** https://docs.tacitpay.xyz
 - **Landing page:** https://tacitpay.xyz
-- **Demo video:** [link]
+- **Demo video:** https://www.youtube.com/watch?v=xLY7f3rPRSk
 - **Smart contract:** [Midnight Preview explorer](https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59)
 
 <a href="https://tacitpay.xyz">
-  <img src=".github/assets/landing.png" alt="TacitPay landing page: numbers only you can read, settlement anyone can verify">
+  <img src=".github/assets/landing.jpg" alt="TacitPay landing page: numbers only you can read, settlement anyone can verify">
 </a>
 
 ## Wave 1 Delivered Items (Aug 27 to Sep 16, 2026)
@@ -87,7 +87,7 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 - **Truth gate:** success is reported only after the ledger confirms the transaction.
 - **Pay-page preflight:** the payer's balance in the invoice's pool and their DUST, with the funding path when either falls short.
 - **Honest states everywhere:** a sandbox banner and caution register, bearer-link disclosure at the copy moment, a passphrase form that knows first-time setup from a return visit, and a plain-English wrong-passphrase error.
-- **Proven end to end:** first invoice on Aug 26; the full loop (create, pay, verify, withdraw) between two Lace wallets on Aug 27, invoice `084318a7…f0342`, every step confirmed on chain, on the earlier deployment. The live contract was deployed on Sep 2 and carries the demo.
+- **Proven end to end:** first invoice on Aug 26; the full loop (create, pay, verify, withdraw) between two Lace wallets on Aug 27, invoice `084318a7…f0342`, every step confirmed on chain, on the earlier deployment. The live contract was deployed on Sep 2 and ran the loop again the same day, during the demo recording.
 
 ### 🧰 Library, CLI and judge sandbox
 
@@ -114,7 +114,7 @@ It is not a merchant app. The protocol knows exactly two roles, whoever issued a
 
 ### 🎬 Video
 
-- Video: [link].
+- Video: https://www.youtube.com/watch?v=xLY7f3rPRSk (recorded Sep 2 on the live contract).
 
 ## Why privacy is load-bearing
 
@@ -215,7 +215,7 @@ yarn env:down
 
 **Proving.** Whoever generates a proof sees the invoice, so TacitPay never runs a prover. It feature-detects, in order: your wallet (1AM, in-browser), a local proof server on `localhost:6300`, or a server you host over TLS. The header shows which one is active.
 
-**Verified on Preview.** Lace 4.0.1 created the first real invoice on Aug 26 2026 (block 587,108). On Aug 27 the full loop (create, pay, verify, withdraw) ran between two Lace wallets on the earlier deployment (`0847de8a…326d24`), invoice `084318a7…f0342`, 2 tUSDM, every step confirmed on-chain. The live contract (`80b4d9af…b59c59`) was deployed on Sep 2 and carries the demo. Preview settles through the unshielded lane in bridged tUSDM: the transfer is public, the invoice contents never are, and the shielded lane runs on the local devnet (see Known limitations).
+**Verified on Preview.** Lace 4.0.1 created the first real invoice on Aug 26 2026 (block 587,108). On Aug 27 the full loop (create, pay, verify, withdraw) ran between two Lace wallets on the earlier deployment (`0847de8a…326d24`), invoice `084318a7…f0342`, 2 tUSDM, every step confirmed on-chain. The live contract (`80b4d9af…b59c59`) was deployed on Sep 2 and ran the full loop again the same day, during the demo recording. Preview settles through the unshielded lane in bridged tUSDM: the transfer is public, the invoice contents never are, and the shielded lane runs on the local devnet (see Known limitations).
 
 **Tests.**
 

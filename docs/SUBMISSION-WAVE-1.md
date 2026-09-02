@@ -27,7 +27,7 @@ as a link whose payload sits in the URL fragment, which browsers never transmit.
 | Landing                      | https://tacitpay.xyz                                                                                                                                                                                                         |
 | Preview contract             | `80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59` ([explorer](https://preview.midnightexplorer.com/contracts/80b4d9af1591239cb925c8145e054545605fe5f41c71d583af6ff48bebb59c59), `deployments/preview.json`) |
 | Slide deck                   | `docs/deck/index.html` (twelve slides) and `docs/deck/demo.html` (the six slides used in the video); [hosted link]                                                                                                           |
-| Demo video                   | [link]                                                                                                                                                                                                                       |
+| Demo video                   | https://www.youtube.com/watch?v=xLY7f3rPRSk                                                                                                                                                                                  |
 
 ## The problem
 
