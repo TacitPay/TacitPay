@@ -7,8 +7,9 @@
 
 **Private invoicing & settlement on Midnight. Private by default, provable on demand.**
 
-![License](https://img.shields.io/badge/license-Apache--2.0-18181b)
+![License](https://img.shields.io/badge/license-Apache--2.0-blue)
 ![Midnight](https://img.shields.io/badge/Midnight-Preview-18181b)
+![Buildathon](https://img.shields.io/badge/Buildathon-Wave%201-7c3aed)
 
 > **Midnight Buildathon 2026 (AKINDO WaveHack) · Wave 1 submission**
 > Private invoicing and settlement on Midnight
