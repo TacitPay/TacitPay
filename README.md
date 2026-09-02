@@ -134,10 +134,10 @@ TacitPay uses Midnight's dual-ledger model to hold both ends:
 
 The only values ever `disclose()`d are on the allowed-public list in PRD §4.3. The eleven privacy invariants (INV-1…INV-11) each get a test; see [`docs/PRIVACY.md`](./docs/PRIVACY.md).
 
-<a href="./docs/tacitpay-privacy-map-dark.png">
+<a href="./docs/diagrams/tacitpay-privacy-map-dark.png">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./docs/tacitpay-privacy-map-dark.png">
-    <img src="./docs/tacitpay-privacy-map.png" alt="Who sees what: TacitPay's four data layers">
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/diagrams/tacitpay-privacy-map-dark.png">
+    <img src="./docs/diagrams/tacitpay-privacy-map.png" alt="Who sees what: TacitPay's four data layers">
   </picture>
 </a>
 
@@ -154,14 +154,14 @@ The whole system on one canvas: the link as the transport, every caller
 funnelling through one API, the six providers, and what actually reaches the
 chain:
 
-<a href="./docs/tacitpay-architecture-dark.png">
+<a href="./docs/diagrams/tacitpay-architecture-dark.png">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./docs/tacitpay-architecture-dark.png">
-    <img src="./docs/tacitpay-architecture.png" alt="TacitPay architecture">
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/diagrams/tacitpay-architecture-dark.png">
+    <img src="./docs/diagrams/tacitpay-architecture.png" alt="TacitPay architecture">
   </picture>
 </a>
 
-<sub>Follows your color scheme · editable sources: [`dark`](./docs/tacitpay-architecture-dark.excalidraw) · [`light`](./docs/tacitpay-architecture.excalidraw); open them at [excalidraw.com](https://excalidraw.com).</sub>
+<sub>Follows your color scheme · editable sources: [`dark`](./docs/diagrams/tacitpay-architecture-dark.excalidraw) · [`light`](./docs/diagrams/tacitpay-architecture.excalidraw); open them at [excalidraw.com](https://excalidraw.com).</sub>
 
 More in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md), which expands each
 circuit into its own diagram derived from the code.

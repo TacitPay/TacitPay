@@ -98,10 +98,10 @@ document most likely to be stale.
 The whole lifecycle at a glance — the dashed line is the device/chain boundary,
 and only hashes, proofs and status ever cross it:
 
-<a href="./tacitpay-invoice-lifecycle-dark.png">
+<a href="./diagrams/tacitpay-invoice-lifecycle-dark.png">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./tacitpay-invoice-lifecycle-dark.png">
-    <img src="./tacitpay-invoice-lifecycle.png" alt="One invoice, end to end">
+    <source media="(prefers-color-scheme: dark)" srcset="./diagrams/tacitpay-invoice-lifecycle-dark.png">
+    <img src="./diagrams/tacitpay-invoice-lifecycle.png" alt="One invoice, end to end">
   </picture>
 </a>
 

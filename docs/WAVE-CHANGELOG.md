@@ -225,7 +225,7 @@ took, in order:
 ### Field notes — Aug 28, 2026, 01:00 (the app re-cut to lifecycle nouns, and the wallet gets a page)
 
 - **The IA re-cut shipped** (spec:
-  `docs/superpowers/specs/2026-08-27-app-ia-lifecycle-recut-design.md`). The
+  `docs/plans/2026-08-27-app-ia-lifecycle-recut-design.md`). The
   spine renamed from roles to lifecycle: `/invoices` (+ `/invoices/:id`
   detail with withdraw/cancel), `/payments` (pay + receipts in one room),
   `/verification` in the nav, old routes kept as redirects. The frozen URLs

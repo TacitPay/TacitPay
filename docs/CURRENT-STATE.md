@@ -186,7 +186,7 @@ claim denies.
 
 Plus a 404, and `/merchant` → `/invoices`, `/receipts` → `/payments` redirects
 for old bookmarks. The spine was renamed to lifecycle nouns in the 2026-08-27
-IA re-cut (`docs/superpowers/specs/2026-08-27-app-ia-lifecycle-recut-design.md`).
+IA re-cut (`docs/plans/2026-08-27-app-ia-lifecycle-recut-design.md`).
 
 **How it decides what to talk to** (`src/lib/api/`):
 

@@ -752,7 +752,7 @@ Read `/mnt/skills/public/frontend-design/SKILL.md` (if present in your environme
 > `/verification`, plus `/profile` behind the wallet pill — with the old
 > role-named routes kept as redirects. This table stands as the original
 > intent; the re-cut's rationale lives in
-> `docs/superpowers/specs/2026-08-27-app-ia-lifecycle-recut-design.md`.
+> `docs/plans/2026-08-27-app-ia-lifecycle-recut-design.md`.
 
 | Route | Who | Purpose |
 |---|---|---|
